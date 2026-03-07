@@ -2,13 +2,14 @@
  * XBoard 结算对话框
  *
  * 流程：
- *   select 步骤：加载支付方式 → 用户填写优惠码 → 选择支付方式 → createOrder → checkoutOrder
+ *   select 步骤：加载支付方式 → 用户填写优惠码（可预验证）→ 选择支付方式 → createOrder → checkoutOrder
  *     type=-1: 免费/余额抵扣，直接成功关闭
  *     type=0/1: 打开外部支付链接，切换到 waiting 步骤
  *   waiting 步骤：用户完成浏览器支付后点击"已完成支付"→ checkOrderStatus 确认
  */
 
 import {
+  CheckCircleOutlineRounded,
   OpenInNewRounded,
   PaymentRounded,
 } from "@mui/icons-material";
@@ -17,6 +18,7 @@ import {
   Box,
   CircularProgress,
   FormControlLabel,
+  InputAdornment,
   Radio,
   RadioGroup,
   Stack,
@@ -26,24 +28,24 @@ import {
   useTheme,
 } from "@mui/material";
 import { open as openUrl } from "@tauri-apps/plugin-shell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BaseDialog } from "@/components/base/base-dialog";
 import { showNotice } from "@/services/notice-service";
 import {
+  checkCoupon,
   checkOrderStatus,
   checkoutOrder,
   createOrder,
   getPaymentMethods,
 } from "@/services/xboard/api";
-import type { PaymentMethod, Plan, PlanPeriod } from "@/services/xboard/types";
+import type { CouponInfo, PaymentMethod, Plan, PlanPeriod } from "@/services/xboard/types";
 
 interface Props {
   open: boolean;
   plan: Plan | null;
   period: PlanPeriod | null;
-  baseUrl: string;
   authData: string;
   onClose: () => void;
   onSuccess: () => void;
@@ -55,7 +57,6 @@ export function CheckoutDialog({
   open,
   plan,
   period,
-  baseUrl,
   authData,
   onClose,
   onSuccess,
@@ -72,24 +73,30 @@ export function CheckoutDialog({
   const [loadingMethods, setLoadingMethods] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<number | null>(null);
   const [couponCode, setCouponCode] = useState("");
+  const [couponInfo, setCouponInfo] = useState<CouponInfo | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // waiting 步骤状态
   const [verifying, setVerifying] = useState(false);
   const [paymentPending, setPaymentPending] = useState(false);
 
+  // 防抖 ref
+  const couponDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // 加载支付方式
   useEffect(() => {
-    if (!open || !baseUrl || !authData) return;
+    if (!open || !authData) return;
     setLoadingMethods(true);
-    getPaymentMethods(baseUrl, authData)
+    getPaymentMethods(authData)
       .then((list) => {
         setMethods(list);
         if (list.length > 0) setSelectedMethod(list[0].id);
       })
       .catch(() => setMethods([]))
       .finally(() => setLoadingMethods(false));
-  }, [open, baseUrl, authData]);
+  }, [open, authData]);
 
   const resetState = () => {
     setStep("select");
@@ -97,6 +104,9 @@ export function CheckoutDialog({
     setMethods([]);
     setSelectedMethod(null);
     setCouponCode("");
+    setCouponInfo(null);
+    setCouponError("");
+    setCheckingCoupon(false);
     setSubmitting(false);
     setVerifying(false);
     setPaymentPending(false);
@@ -107,6 +117,30 @@ export function CheckoutDialog({
     onClose();
   };
 
+  // ── 优惠码验证（防抖 500ms）───────────────────────────────────────────────
+
+  const handleCouponChange = (val: string) => {
+    setCouponCode(val);
+    setCouponInfo(null);
+    setCouponError("");
+    if (couponDebounceRef.current) clearTimeout(couponDebounceRef.current);
+    if (!val.trim()) return;
+
+    couponDebounceRef.current = setTimeout(async () => {
+      setCheckingCoupon(true);
+      try {
+        const info = await checkCoupon(authData, val.trim(), plan?.id);
+        setCouponInfo(info);
+        setCouponError("");
+      } catch (err: any) {
+        setCouponInfo(null);
+        setCouponError(err?.message ?? t("account.shop.checkout.couponInvalid"));
+      } finally {
+        setCheckingCoupon(false);
+      }
+    }, 500);
+  };
+
   // ── select 步骤：创建订单并结算 ──────────────────────────────────────────
 
   const handleConfirm = async () => {
@@ -114,20 +148,14 @@ export function CheckoutDialog({
     setSubmitting(true);
     try {
       const tn = await createOrder(
-        baseUrl,
         authData,
         plan.id,
         period,
-        couponCode || undefined,
+        couponInfo ? couponCode : undefined,
       );
       setTradeNo(tn);
 
-      const result = await checkoutOrder(
-        baseUrl,
-        authData,
-        tn,
-        selectedMethod ?? 0,
-      );
+      const result = await checkoutOrder(authData, tn, selectedMethod ?? 0);
 
       if (result.type === -1) {
         // 免费 / 余额支付，直接成功
@@ -160,7 +188,7 @@ export function CheckoutDialog({
     setVerifying(true);
     setPaymentPending(false);
     try {
-      const status = await checkOrderStatus(baseUrl, authData, tradeNo);
+      const status = await checkOrderStatus(authData, tradeNo);
       if (status === 3 || status === 1) {
         // 已完成或处理中，均视为支付成功
         showNotice.success(t("account.shop.checkout.paymentVerified"));
@@ -182,7 +210,19 @@ export function CheckoutDialog({
   const periodLabel = period ? t(`account.shop.plan.period.${period}`) : "";
   const priceField = period as keyof Plan;
   const priceVal = plan ? (plan[priceField] as number | null) : null;
-  const amount = priceVal != null ? `¥${(priceVal / 100).toFixed(2)}` : "—";
+
+  // 计算折扣后价格
+  let finalPrice = priceVal ?? 0;
+  if (couponInfo && priceVal != null) {
+    if (couponInfo.type === 1) {
+      finalPrice = Math.max(0, priceVal - couponInfo.value);
+    } else {
+      finalPrice = Math.round((priceVal * couponInfo.value) / 100);
+    }
+  }
+  const amount = priceVal != null ? `¥${(finalPrice / 100).toFixed(2)}` : "—";
+  const originalAmount =
+    couponInfo && priceVal != null ? `¥${(priceVal / 100).toFixed(2)}` : null;
 
   // ── 对话框属性随步骤变化 ──────────────────────────────────────────────────
 
@@ -193,7 +233,7 @@ export function CheckoutDialog({
           okBtn: t("account.shop.checkout.confirm"),
           cancelBtn: t("account.shop.checkout.cancel"),
           loading: submitting,
-          disableOk: loadingMethods || methods.length === 0 || submitting,
+          disableOk: loadingMethods || methods.length === 0 || submitting || checkingCoupon,
           onOk: handleConfirm,
           onCancel: handleClose,
         }
@@ -231,9 +271,19 @@ export function CheckoutDialog({
               <Row
                 label={t("account.shop.checkout.amount")}
                 value={
-                  <Typography variant="body2" fontWeight="bold" color="primary">
-                    {amount}
-                  </Typography>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    {originalAmount && (
+                      <Typography
+                        variant="caption"
+                        sx={{ textDecoration: "line-through", color: "text.disabled" }}
+                      >
+                        {originalAmount}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" fontWeight="bold" color="primary">
+                      {amount}
+                    </Typography>
+                  </Stack>
                 }
               />
             </Stack>
@@ -245,8 +295,40 @@ export function CheckoutDialog({
             size="small"
             fullWidth
             value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value)}
+            onChange={(e) => handleCouponChange(e.target.value)}
             placeholder={t("account.shop.checkout.couponCodePlaceholder")}
+            error={!!couponError}
+            helperText={
+              couponError ||
+              (couponInfo
+                ? couponInfo.type === 1
+                  ? t("account.shop.checkout.couponDiscount", {
+                      value: `¥${(couponInfo.value / 100).toFixed(2)}`,
+                    })
+                  : t("account.shop.checkout.couponPercent", {
+                      value: couponInfo.value,
+                    })
+                : undefined)
+            }
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    {checkingCoupon ? (
+                      <CircularProgress size={16} />
+                    ) : couponInfo ? (
+                      <CheckCircleOutlineRounded
+                        fontSize="small"
+                        color="success"
+                      />
+                    ) : null}
+                  </InputAdornment>
+                ),
+              },
+              formHelperText: {
+                sx: couponInfo ? { color: "success.main" } : undefined,
+              },
+            }}
           />
 
           {/* 支付方式 */}

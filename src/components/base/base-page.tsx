@@ -21,16 +21,18 @@ export const BasePage: React.FC<Props> = (props) => {
   return (
     <BaseErrorBoundary>
       <div className="base-page">
-        <header data-tauri-drag-region="true" style={{ userSelect: "none" }}>
-          <Typography
-            sx={{ fontSize: "20px", fontWeight: "700 " }}
-            data-tauri-drag-region="true"
-          >
-            {title}
-          </Typography>
+        {(title || header) && (
+          <header data-tauri-drag-region="true" style={{ userSelect: "none" }}>
+            <Typography
+              sx={{ fontSize: "20px", fontWeight: "700 " }}
+              data-tauri-drag-region="true"
+            >
+              {title}
+            </Typography>
 
-          {header}
-        </header>
+            {header}
+          </header>
+        )}
 
         <div
           className={full ? "base-container no-padding" : "base-container"}

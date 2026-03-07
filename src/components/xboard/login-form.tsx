@@ -1,7 +1,7 @@
 /**
  * XBoard 登录 / 注册 / 找回密码 表单
  *
- * 三个 Tab 共享同一个面板地址输入，切换 Tab 时保留已输入的 panelUrl。
+ * 三个 Tab 共用固定服务器地址（BASE_URL），切换 Tab 时保留已输入内容。
  * 成功后通过 onSuccess 回调通知父组件更新 session。
  */
 
@@ -41,13 +41,11 @@ import type { XBoardSession } from "@/services/xboard/types";
 type TabKey = "login" | "register" | "forgot";
 
 interface LoginFields {
-  panelUrl: string;
   email: string;
   password: string;
 }
 
 interface RegisterFields {
-  panelUrl: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -69,22 +67,12 @@ interface Props {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Shared URL field (kept across tab switches via a single useState)
-// ────────────────────────────────────────────────────────────────────────────
-
-function isValidUrl(url: string) {
-  return /^https?:\/\/.+/.test(url.trim());
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // LoginTab
 // ────────────────────────────────────────────────────────────────────────────
 
 function LoginTab({
-  panelUrl,
   onSuccess,
 }: {
-  panelUrl: string;
   onSuccess: (session: XBoardSession) => void;
 }) {
   const { t } = useTranslation();
@@ -95,17 +83,13 @@ function LoginTab({
     register: reg,
     handleSubmit,
     formState: { errors },
-  } = useForm<Omit<LoginFields, "panelUrl">>();
+  } = useForm<LoginFields>();
 
   const onSubmit = handleSubmit(async ({ email, password }) => {
-    if (!isValidUrl(panelUrl)) {
-      showNotice.error(t("account.validation.panelUrlInvalid"));
-      return;
-    }
     setLoading(true);
     try {
-      const result = await login(panelUrl.trim(), email.trim(), password);
-      const session = persistAuthResult(panelUrl.trim(), result);
+      const result = await login(email.trim(), password);
+      const session = persistAuthResult(result);
       showNotice.success(t("account.login.feedback.success"));
       onSuccess(session);
       // 后台静默同步订阅，不阻塞登录流程
@@ -189,10 +173,8 @@ function LoginTab({
 // ────────────────────────────────────────────────────────────────────────────
 
 function RegisterTab({
-  panelUrl,
   onSuccess,
 }: {
-  panelUrl: string;
   onSuccess: (session: XBoardSession) => void;
 }) {
   const { t } = useTranslation();
@@ -204,25 +186,20 @@ function RegisterTab({
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<Omit<RegisterFields, "panelUrl">>();
+  } = useForm<RegisterFields>();
 
   const passwordValue = watch("password");
 
   const onSubmit = handleSubmit(
     async ({ email, password, inviteCode }) => {
-      if (!isValidUrl(panelUrl)) {
-        showNotice.error(t("account.validation.panelUrlInvalid"));
-        return;
-      }
       setLoading(true);
       try {
         const result = await register(
-          panelUrl.trim(),
           email.trim(),
           password,
           inviteCode || undefined,
         );
-        const session = persistAuthResult(panelUrl.trim(), result);
+        const session = persistAuthResult(result);
         showNotice.success(t("account.register.feedback.success"));
         onSuccess(session);
         // 后台静默同步订阅
@@ -328,7 +305,7 @@ function RegisterTab({
 
 const RESEND_COOLDOWN = 60; // 秒，与服务端限制一致
 
-function ForgotTab({ panelUrl }: { panelUrl: string }) {
+function ForgotTab() {
   const { t } = useTranslation();
   const [step, setStep] = useState<"email" | "reset">("email");
   const [confirmedEmail, setConfirmedEmail] = useState("");
@@ -364,13 +341,9 @@ function ForgotTab({ panelUrl }: { panelUrl: string }) {
   const passwordValue = watch2("password");
 
   const handleSendCode = submit1(async ({ email }) => {
-    if (!isValidUrl(panelUrl)) {
-      showNotice.error(t("account.validation.panelUrlInvalid"));
-      return;
-    }
     setSendingCode(true);
     try {
-      await sendEmailVerify(panelUrl.trim(), email.trim());
+      await sendEmailVerify(email.trim());
       setConfirmedEmail(email.trim());
       setStep("reset");
       setCooldown(RESEND_COOLDOWN);
@@ -391,7 +364,7 @@ function ForgotTab({ panelUrl }: { panelUrl: string }) {
     if (!email) return;
     setSendingCode(true);
     try {
-      await sendEmailVerify(panelUrl.trim(), email);
+      await sendEmailVerify(email);
       setCooldown(RESEND_COOLDOWN);
       showNotice.success(t("account.forgot.feedback.codeSent"));
     } catch (err: any) {
@@ -405,13 +378,9 @@ function ForgotTab({ panelUrl }: { panelUrl: string }) {
   };
 
   const handleReset = submit2(async ({ emailCode, password }) => {
-    if (!isValidUrl(panelUrl)) {
-      showNotice.error(t("account.validation.panelUrlInvalid"));
-      return;
-    }
     setResetting(true);
     try {
-      await forgotPassword(panelUrl.trim(), confirmedEmail, emailCode.trim(), password);
+      await forgotPassword(confirmedEmail, emailCode.trim(), password);
       showNotice.success(t("account.forgot.feedback.success"));
       // 重置到第一步
       setStep("email");
@@ -607,18 +576,6 @@ export function LoginForm({ onSuccess }: Props) {
   const isDark = theme.palette.mode === "dark";
 
   const [tab, setTab] = useState<TabKey>("login");
-  const [panelUrl, setPanelUrl] = useState("");
-  const [panelUrlError, setPanelUrlError] = useState("");
-
-  const validatePanelUrl = (val: string) => {
-    if (!val.trim()) {
-      setPanelUrlError(t("account.validation.panelUrlRequired"));
-    } else if (!isValidUrl(val)) {
-      setPanelUrlError(t("account.validation.panelUrlInvalid"));
-    } else {
-      setPanelUrlError("");
-    }
-  };
 
   return (
     <Box
@@ -640,32 +597,14 @@ export function LoginForm({ onSuccess }: Props) {
         mb={2}
         sx={{ color: "text.primary" }}
       >
-        XBoard
+        悦通
       </Typography>
-
-      {/* 面板地址（所有 Tab 共用） */}
-      <TextField
-        label={t("account.login.form.panelUrl")}
-        placeholder={t("account.login.form.panelUrlPlaceholder")}
-        value={panelUrl}
-        size="small"
-        fullWidth
-        error={!!panelUrlError}
-        helperText={panelUrlError}
-        onChange={(e) => {
-          setPanelUrl(e.target.value);
-          if (panelUrlError) validatePanelUrl(e.target.value);
-        }}
-        onBlur={() => validatePanelUrl(panelUrl)}
-      />
 
       {/* Tab 切换 */}
       <Tabs
         value={tab}
         onChange={(_, v: TabKey) => setTab(v)}
         sx={{
-          mt: 2,
-          mb: 0,
           minHeight: 36,
           "& .MuiTab-root": { minHeight: 36, py: 0.5, fontSize: 13 },
           "& .MuiTabs-indicator": {
@@ -680,12 +619,12 @@ export function LoginForm({ onSuccess }: Props) {
 
       {/* Tab 内容 */}
       {tab === "login" && (
-        <LoginTab panelUrl={panelUrl} onSuccess={onSuccess} />
+        <LoginTab onSuccess={onSuccess} />
       )}
       {tab === "register" && (
-        <RegisterTab panelUrl={panelUrl} onSuccess={onSuccess} />
+        <RegisterTab onSuccess={onSuccess} />
       )}
-      {tab === "forgot" && <ForgotTab panelUrl={panelUrl} />}
+      {tab === "forgot" && <ForgotTab />}
     </Box>
   );
 }

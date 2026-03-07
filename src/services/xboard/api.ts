@@ -2,14 +2,16 @@
  * XBoard API 客户端
  *
  * 接口参考：https://github.com/cedar2025/Xboard
+ * 官方服务地址：https://d7ccm19ki90mg.cloudfront.net
  *
  *   认证:  POST /api/v1/passport/auth/{login,register,forget}
  *          POST /api/v1/passport/comm/sendEmailVerify
- *   用户:  GET  /api/v1/user/{info,getSubscribe,invite,logout}
- *          POST /api/v1/user/{logout,changePassword}
+ *   用户:  GET  /api/v1/user/{info,getSubscribe,invite/fetch}
+ *          POST /api/v1/user/{changePassword}
  *   公告:  GET  /api/v1/user/notice/fetch?current=N  （每页 5 条，自动翻页）
  *   订单:  GET/POST /api/v1/user/order/{fetch,save,checkout,cancel,check,getPaymentMethod}
  *   套餐:  GET  /api/v1/guest/plan/fetch（公开，无需 auth）
+ *   优惠:  POST /api/v1/user/coupon/check
  */
 
 import { fetch } from "@tauri-apps/plugin-http";
@@ -17,6 +19,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 import type {
   AuthResult,
   CheckoutResult,
+  CouponInfo,
   InviteInfo,
   Notice,
   Order,
@@ -24,6 +27,12 @@ import type {
   Plan,
   UserInfo,
 } from "./types";
+
+// ────────────────────────────────────────────────────────────────────────────
+// 服务器地址（单一官方服务）
+// ────────────────────────────────────────────────────────────────────────────
+
+export const BASE_URL = "https://d7ccm19ki90mg.cloudfront.net";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Error
@@ -45,8 +54,8 @@ export class XBoardError extends Error {
 
 const TIMEOUT_MS = 15_000;
 
-function buildUrl(baseUrl: string, path: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}${path}`;
+function buildUrl(path: string): string {
+  return `${BASE_URL}${path}`;
 }
 
 function authHeaders(authData: string): Record<string, string> {
@@ -73,12 +82,8 @@ async function parseResponse(res: Response): Promise<any> {
   return json;
 }
 
-async function httpGet(
-  baseUrl: string,
-  path: string,
-  authData: string,
-): Promise<any> {
-  const res = await fetch(buildUrl(baseUrl, path), {
+async function httpGet(path: string, authData: string): Promise<any> {
+  const res = await fetch(buildUrl(path), {
     method: "GET",
     headers: authHeaders(authData),
     connectTimeout: TIMEOUT_MS,
@@ -86,8 +91,8 @@ async function httpGet(
   return parseResponse(res);
 }
 
-async function httpGetGuest(baseUrl: string, path: string): Promise<any> {
-  const res = await fetch(buildUrl(baseUrl, path), {
+async function httpGetGuest(path: string): Promise<any> {
+  const res = await fetch(buildUrl(path), {
     method: "GET",
     headers: { Accept: "application/json" },
     connectTimeout: TIMEOUT_MS,
@@ -96,7 +101,6 @@ async function httpGetGuest(baseUrl: string, path: string): Promise<any> {
 }
 
 async function httpPost(
-  baseUrl: string,
   path: string,
   body: Record<string, unknown>,
   authData?: string,
@@ -107,7 +111,7 @@ async function httpPost(
   };
   if (authData) headers.authorization = authData;
 
-  const res = await fetch(buildUrl(baseUrl, path), {
+  const res = await fetch(buildUrl(path), {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -121,21 +125,17 @@ async function httpPost(
 // ────────────────────────────────────────────────────────────────────────────
 
 async function fetchAuthData(
-  baseUrl: string,
   path: string,
   body: Record<string, unknown>,
 ): Promise<string> {
-  const root = await httpPost(baseUrl, path, body);
+  const root = await httpPost(path, body);
   const authData: string | undefined = root?.data?.auth_data;
   if (!authData) throw new XBoardError("服务器未返回 auth_data");
   return authData;
 }
 
-async function fetchSubscribeUrl(
-  baseUrl: string,
-  authData: string,
-): Promise<string> {
-  const root = await httpGet(baseUrl, "/api/v1/user/getSubscribe", authData);
+async function fetchSubscribeUrl(authData: string): Promise<string> {
+  const root = await httpGet("/api/v1/user/getSubscribe", authData);
   const url: string | undefined = root?.data?.subscribe_url?.trim();
   if (!url) throw new XBoardError("服务器未返回订阅地址，请联系管理员");
   return url;
@@ -147,48 +147,44 @@ async function fetchSubscribeUrl(
 
 /** 邮箱 + 密码登录 */
 export async function login(
-  baseUrl: string,
   email: string,
   password: string,
 ): Promise<AuthResult> {
-  const authData = await fetchAuthData(baseUrl, "/api/v1/passport/auth/login", {
+  const authData = await fetchAuthData("/api/v1/passport/auth/login", {
     email,
     password,
   });
-  const subscribeUrl = await fetchSubscribeUrl(baseUrl, authData);
+  const subscribeUrl = await fetchSubscribeUrl(authData);
   return { subscribeUrl, authData };
 }
 
 /** 注册新账号 */
 export async function register(
-  baseUrl: string,
   email: string,
   password: string,
   inviteCode?: string,
+  emailCode?: string,
 ): Promise<AuthResult> {
   const body: Record<string, string> = { email, password };
   if (inviteCode?.trim()) body.invite_code = inviteCode.trim();
+  if (emailCode?.trim()) body.email_code = emailCode.trim();
 
   const authData = await fetchAuthData(
-    baseUrl,
     "/api/v1/passport/auth/register",
     body,
   );
-  const subscribeUrl = await fetchSubscribeUrl(baseUrl, authData);
+  const subscribeUrl = await fetchSubscribeUrl(authData);
   return { subscribeUrl, authData };
 }
 
 /**
- * 发送邮件验证码（找回密码第一步）
+ * 发送邮件验证码（注册或找回密码前调用）
  *
  * 对应 POST /api/v1/passport/comm/sendEmailVerify
  * 服务端有 60 秒发送频率限制。
  */
-export async function sendEmailVerify(
-  baseUrl: string,
-  email: string,
-): Promise<void> {
-  await httpPost(baseUrl, "/api/v1/passport/comm/sendEmailVerify", { email });
+export async function sendEmailVerify(email: string): Promise<void> {
+  await httpPost("/api/v1/passport/comm/sendEmailVerify", { email });
 }
 
 /**
@@ -198,12 +194,11 @@ export async function sendEmailVerify(
  * 需先调用 sendEmailVerify 获取 6 位验证码。
  */
 export async function forgotPassword(
-  baseUrl: string,
   email: string,
   emailCode: string,
   password: string,
 ): Promise<void> {
-  await httpPost(baseUrl, "/api/v1/passport/auth/forget", {
+  await httpPost("/api/v1/passport/auth/forget", {
     email,
     email_code: emailCode,
     password,
@@ -212,13 +207,11 @@ export async function forgotPassword(
 
 /** 修改密码 */
 export async function changePassword(
-  baseUrl: string,
   authData: string,
   oldPassword: string,
   newPassword: string,
 ): Promise<void> {
   await httpPost(
-    baseUrl,
     "/api/v1/user/changePassword",
     { old_password: oldPassword, new_password: newPassword },
     authData,
@@ -228,24 +221,14 @@ export async function changePassword(
 /**
  * WebView 登录后，直接用页面存储的 auth_data 同步订阅
  */
-export async function syncFromSession(
-  baseUrl: string,
-  authData: string,
-): Promise<AuthResult> {
-  const subscribeUrl = await fetchSubscribeUrl(baseUrl, authData);
+export async function syncFromSession(authData: string): Promise<AuthResult> {
+  const subscribeUrl = await fetchSubscribeUrl(authData);
   return { subscribeUrl, authData };
 }
 
-/** 退出登录（失败时静默忽略） */
-export async function logout(
-  baseUrl: string,
-  authData: string,
-): Promise<void> {
-  try {
-    await httpPost(baseUrl, "/api/v1/user/logout", {}, authData);
-  } catch {
-    // 静默忽略，本地清除 session 即可
-  }
+/** 退出登录（仅本地清除，服务端无对应接口） */
+export async function logout(_authData: string): Promise<void> {
+  // XBoard 没有 /user/logout 端点，session 清除由调用方在本地完成
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -258,23 +241,16 @@ export async function logout(
  * 流量数据唯一来源：/api/v1/user/getSubscribe（u、d、transfer_enable）
  * 余额 / uuid：/api/v1/user/info
  */
-export async function getUserInfo(
-  baseUrl: string,
-  authData: string,
-): Promise<UserInfo> {
+export async function getUserInfo(authData: string): Promise<UserInfo> {
   // getSubscribe 是流量数据的权威来源，必须成功
-  const subRoot = await httpGet(
-    baseUrl,
-    "/api/v1/user/getSubscribe",
-    authData,
-  );
+  const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
   const sub = subRoot?.data;
   if (!sub) throw new XBoardError("获取订阅信息失败");
 
   // info 仅用于 balance / commission_balance / uuid，可选
   let info: any = null;
   try {
-    const infoRoot = await httpGet(baseUrl, "/api/v1/user/info", authData);
+    const infoRoot = await httpGet("/api/v1/user/info", authData);
     info = infoRoot?.data ?? null;
   } catch {
     // 忽略，降级到 sub 数据
@@ -297,19 +273,17 @@ export async function getUserInfo(
 }
 
 /** 获取邀请信息 */
-export async function getInviteInfo(
-  baseUrl: string,
-  authData: string,
-): Promise<InviteInfo | null> {
+export async function getInviteInfo(authData: string): Promise<InviteInfo | null> {
   try {
-    const root = await httpGet(baseUrl, "/api/v1/user/invite", authData);
+    // 正确路径：/api/v1/user/invite/fetch（非 /invite）
+    const root = await httpGet("/api/v1/user/invite/fetch", authData);
     const data = root?.data;
     if (!data) return null;
 
     const codes: any[] = data.codes ?? [];
     const code: string = codes[0]?.code ?? "";
     const inviteUrl = code
-      ? `${baseUrl.replace(/\/+$/, "")}/#/register?code=${code}`
+      ? `${BASE_URL}/#/register?code=${code}`
       : "";
     const stat: number[] = data.stat ?? [];
     return { inviteUrl, referralCount: stat[0] ?? 0 };
@@ -324,16 +298,12 @@ export async function getInviteInfo(
  * XBoard 每页固定返回 5 条，通过 current 参数翻页。
  * 响应结构：{ data: [...], total: N }（非 success 包装）
  */
-export async function getNotices(
-  baseUrl: string,
-  authData: string,
-): Promise<Notice[]> {
+export async function getNotices(authData: string): Promise<Notice[]> {
   try {
     const all: any[] = [];
     let current = 1;
     while (true) {
       const root = await httpGet(
-        baseUrl,
         `/api/v1/user/notice/fetch?current=${current}`,
         authData,
       );
@@ -359,9 +329,9 @@ export async function getNotices(
 // ────────────────────────────────────────────────────────────────────────────
 
 /** 获取套餐列表（公开接口，无需认证） */
-export async function getPlans(baseUrl: string): Promise<Plan[]> {
+export async function getPlans(): Promise<Plan[]> {
   try {
-    const root = await httpGetGuest(baseUrl, "/api/v1/guest/plan/fetch");
+    const root = await httpGetGuest("/api/v1/guest/plan/fetch");
     const arr: any[] = root?.data ?? [];
     return arr.map((item) => {
       const transferBytes: number = item.transfer_enable ?? 0;
@@ -386,20 +356,44 @@ export async function getPlans(baseUrl: string): Promise<Plan[]> {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// 优惠码
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * 验证优惠码
+ *
+ * 对应 POST /api/v1/user/coupon/check
+ * 返回优惠信息（名称、折扣类型、折扣值），验证失败时抛出 XBoardError。
+ */
+export async function checkCoupon(
+  authData: string,
+  couponCode: string,
+  planId?: number,
+): Promise<CouponInfo> {
+  const body: Record<string, unknown> = { code: couponCode };
+  if (planId != null) body.plan_id = planId;
+  const root = await httpPost("/api/v1/user/coupon/check", body, authData);
+  const data = root?.data;
+  if (!data) throw new XBoardError("优惠码无效");
+  return {
+    code: couponCode,
+    name: data.name ?? "",
+    /** 1=按金额减免（分），2=按比例折扣（百分比） */
+    type: data.type ?? 1,
+    value: data.value ?? 0,
+  };
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // 订单
 // ────────────────────────────────────────────────────────────────────────────
 
 /** 获取支付方式列表 */
 export async function getPaymentMethods(
-  baseUrl: string,
   authData: string,
 ): Promise<PaymentMethod[]> {
   try {
-    const root = await httpGet(
-      baseUrl,
-      "/api/v1/user/order/getPaymentMethod",
-      authData,
-    );
+    const root = await httpGet("/api/v1/user/order/getPaymentMethod", authData);
     const arr: any[] = root?.data ?? [];
     return arr.map((item) => ({
       id: item.id ?? 0,
@@ -417,7 +411,6 @@ export async function getPaymentMethods(
  * @param couponCode 可选优惠码
  */
 export async function createOrder(
-  baseUrl: string,
   authData: string,
   planId: number,
   period: string,
@@ -426,12 +419,7 @@ export async function createOrder(
   const body: Record<string, unknown> = { plan_id: planId, period };
   if (couponCode?.trim()) body.coupon_code = couponCode.trim();
 
-  const root = await httpPost(
-    baseUrl,
-    "/api/v1/user/order/save",
-    body,
-    authData,
-  );
+  const root = await httpPost("/api/v1/user/order/save", body, authData);
   const tradeNo: string | undefined = root?.data;
   if (!tradeNo) throw new XBoardError("创建订单失败：未返回 trade_no");
   return tradeNo;
@@ -440,22 +428,22 @@ export async function createOrder(
 /**
  * 结算订单
  * 返回 CheckoutResult：type=-1 免费成功，type=0 跳转 URL，type=1 HTML 内嵌
+ *
+ * XBoard OrderController::checkout 使用 response() 直接返回，不经过 success() 包装。
+ * 响应结构：{ type: -1|0|1, data: string|true }
  */
 export async function checkoutOrder(
-  baseUrl: string,
   authData: string,
   tradeNo: string,
   methodId: number,
 ): Promise<CheckoutResult> {
   const root = await httpPost(
-    baseUrl,
     "/api/v1/user/order/checkout",
     { trade_no: tradeNo, method: methodId },
     authData,
   );
-  // XBoard checkout 通过 success() 包装，响应结构：{ data: { type: -1|0|1, data: string|true } }
-  // 兼容部分面板直接在 root 层返回 type 的情况
-  const payload = root?.data ?? root;
+  // checkout 直接返回 { type, data }，不经过 success() 包装
+  const payload = root;
   const rawType: number =
     typeof payload?.type === "number" ? payload.type : 0;
   const type = rawType as -1 | 0 | 1;
@@ -479,12 +467,10 @@ export async function checkoutOrder(
  * 返回状态码：0=待支付 1=处理中 2=已取消 3=已完成 4=已折扣
  */
 export async function checkOrderStatus(
-  baseUrl: string,
   authData: string,
   tradeNo: string,
 ): Promise<Order["status"]> {
   const root = await httpGet(
-    baseUrl,
     `/api/v1/user/order/check?trade_no=${encodeURIComponent(tradeNo)}`,
     authData,
   );
@@ -492,30 +478,14 @@ export async function checkOrderStatus(
 }
 
 /** 取消订单（仅 status=0 待支付订单可取消） */
-export async function cancelOrder(
-  baseUrl: string,
-  authData: string,
-  tradeNo: string,
-): Promise<void> {
-  await httpPost(
-    baseUrl,
-    "/api/v1/user/order/cancel",
-    { trade_no: tradeNo },
-    authData,
-  );
+export async function cancelOrder(authData: string, tradeNo: string): Promise<void> {
+  await httpPost("/api/v1/user/order/cancel", { trade_no: tradeNo }, authData);
 }
 
 /** 获取订单列表 */
-export async function getOrders(
-  baseUrl: string,
-  authData: string,
-): Promise<Order[]> {
+export async function getOrders(authData: string): Promise<Order[]> {
   try {
-    const root = await httpGet(
-      baseUrl,
-      "/api/v1/user/order/fetch",
-      authData,
-    );
+    const root = await httpGet("/api/v1/user/order/fetch", authData);
     const arr: any[] = root?.data ?? [];
     return arr.map((item) => ({
       tradeNo: item.trade_no ?? "",

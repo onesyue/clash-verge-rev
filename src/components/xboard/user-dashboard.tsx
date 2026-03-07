@@ -110,7 +110,7 @@ function ChangePasswordDialog({
     if (!session) return;
     setSubmitting(true);
     try {
-      await changePassword(session.baseUrl, session.authData, oldPwd, newPwd);
+      await changePassword(session.authData, oldPwd, newPwd);
       showNotice.success("密码修改成功");
       handleClose();
     } catch (e: any) {
@@ -686,7 +686,7 @@ export function UserDashboard() {
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      await logout(session!.baseUrl, session!.authData);
+      await logout(session!.authData);
     } finally {
       clearSession();
       clearProfileUid();

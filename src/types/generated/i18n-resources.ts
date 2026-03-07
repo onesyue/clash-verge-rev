@@ -182,6 +182,9 @@ export interface TranslationResources {
           "confirm": string;
           "couponCode": string;
           "couponCodePlaceholder": string;
+          "couponDiscount": string;
+          "couponInvalid": string;
+          "couponPercent": string;
           "failed": string;
           "freeSuccess": string;
           "loading": string;

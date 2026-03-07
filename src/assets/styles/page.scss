@@ -6,7 +6,6 @@
   > header {
     flex: 0 0 58px;
     width: 100%;
-    // max-width: 850px;
     margin: 0 auto;
     padding: 0 20px;
     box-sizing: border-box;
@@ -17,7 +16,7 @@
   }
 
   .base-container {
-    height: 100%;
+    flex: 1;
     overflow: hidden;
     // border-radius: 10px;
     // border-top-left-radius: var(--border-radius);

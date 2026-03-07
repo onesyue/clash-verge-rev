@@ -39,19 +39,18 @@ const ShopPage = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<PlanPeriod | null>(null);
 
   const loadPlans = useCallback(async () => {
-    // 需要面板地址才能加载套餐；未登录时没有 baseUrl
-    if (!session?.baseUrl) return;
+    if (!session) return;
     setLoading(true);
     setError(false);
     try {
-      const list = await getPlans(session.baseUrl);
+      const list = await getPlans();
       setPlans(list);
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, [session?.baseUrl]);
+  }, [session]);
 
   useEffect(() => {
     loadPlans();
@@ -162,7 +161,6 @@ const ShopPage = () => {
           open={checkoutOpen}
           plan={selectedPlan}
           period={selectedPeriod}
-          baseUrl={session.baseUrl}
           authData={session.authData}
           onClose={handleCheckoutClose}
           onSuccess={handleCheckoutSuccess}

@@ -131,11 +131,20 @@ export type PlanPeriod =
   | "onetime_price";
 
 /**
+ * 优惠码信息
+ */
+export interface CouponInfo {
+  code: string;
+  name: string;
+  /** 1=按金额减免（单位：分），2=按比例折扣（百分比，如 80 = 8折） */
+  type: 1 | 2;
+  value: number;
+}
+
+/**
  * XBoard 会话信息（本地持久化）
  */
 export interface XBoardSession {
-  /** 面板域名，如 https://example.com */
-  baseUrl: string;
   /** 认证 token */
   authData: string;
   /** 订阅链接 */

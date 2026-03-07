@@ -2,7 +2,7 @@
  * XBoard 会话状态管理
  *
  * 职责：
- *  1. 持久化 session（baseUrl + authData + subscribeUrl）到 localStorage
+ *  1. 持久化 session（authData + subscribeUrl）到 localStorage
  *  2. 通过 React Context 在组件树中共享登录态
  *  3. 提供 login / logout / refresh helpers
  */
@@ -22,9 +22,8 @@ export function loadSession(): XBoardSession | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const obj = JSON.parse(raw) as Partial<XBoardSession>;
-    if (!obj.baseUrl || !obj.authData) return null;
+    if (!obj.authData) return null;
     return {
-      baseUrl: obj.baseUrl,
       authData: obj.authData,
       subscribeUrl: obj.subscribeUrl ?? "",
     };
@@ -41,13 +40,9 @@ export function clearSession(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-/** 从 AuthResult + baseUrl 组合成 XBoardSession 并保存 */
-export function persistAuthResult(
-  baseUrl: string,
-  result: AuthResult,
-): XBoardSession {
+/** 从 AuthResult 组合成 XBoardSession 并保存 */
+export function persistAuthResult(result: AuthResult): XBoardSession {
   const session: XBoardSession = {
-    baseUrl,
     authData: result.authData,
     subscribeUrl: result.subscribeUrl,
   };

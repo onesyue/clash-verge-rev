@@ -26,7 +26,10 @@ const AccountPage = () => {
   };
 
   return (
-    <BasePage title={t("account.page.title")}>
+    <BasePage
+      title={session ? undefined : t("account.page.title")}
+      contentStyle={session ? { padding: "12px 16px" } : undefined}
+    >
       {session ? (
         <UserDashboard />
       ) : (

@@ -558,8 +558,8 @@ const HomePage = () => {
   });
 
   return (
-    <BasePage title={t("home.page.title")} contentStyle={{ padding: "12px 16px" }}>
-      <Stack spacing={2} sx={{ height: "100%" }}>
+    <BasePage contentStyle={{ padding: "12px 16px" }}>
+      <Stack spacing={2}>
         {/* 用户信息卡 */}
         <AccountBar />
 

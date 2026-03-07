@@ -35,7 +35,6 @@ import type { PaymentMethod } from "@/services/xboard/types";
 interface Props {
   open: boolean;
   tradeNo: string;
-  baseUrl: string;
   authData: string;
   onClose: () => void;
   onSuccess: () => void;
@@ -46,7 +45,6 @@ type Step = "select" | "waiting";
 export function PayNowDialog({
   open,
   tradeNo,
-  baseUrl,
   authData,
   onClose,
   onSuccess,
@@ -68,14 +66,14 @@ export function PayNowDialog({
   useEffect(() => {
     if (!open) return;
     setLoadingMethods(true);
-    getPaymentMethods(baseUrl, authData)
+    getPaymentMethods(authData)
       .then((list) => {
         setMethods(list);
         if (list.length > 0) setSelectedMethod(list[0].id);
       })
       .catch(() => setMethods([]))
       .finally(() => setLoadingMethods(false));
-  }, [open, baseUrl, authData]);
+  }, [open, authData]);
 
   const resetState = () => {
     setStep("select");
@@ -97,7 +95,7 @@ export function PayNowDialog({
     if (!tradeNo || selectedMethod == null) return;
     setSubmitting(true);
     try {
-      const result = await checkoutOrder(baseUrl, authData, tradeNo, selectedMethod);
+      const result = await checkoutOrder(authData, tradeNo, selectedMethod);
       if (result.type === -1) {
         showNotice.success(t("account.orders.payNow.freeSuccess"));
         resetState();
@@ -127,7 +125,7 @@ export function PayNowDialog({
     setVerifying(true);
     setPaymentPending(false);
     try {
-      const status = await checkOrderStatus(baseUrl, authData, tradeNo);
+      const status = await checkOrderStatus(authData, tradeNo);
       if (status === 3 || status === 1) {
         showNotice.success(t("account.orders.payNow.paymentVerified"));
         resetState();

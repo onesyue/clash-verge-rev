@@ -74,7 +74,7 @@ const OrdersPage = () => {
     setLoading(true);
     setError(false);
     try {
-      const list = await getOrders(session.baseUrl, session.authData);
+      const list = await getOrders(session.authData);
       // 按创建时间倒序
       list.sort((a, b) => b.createdAt - a.createdAt);
       setOrders(list);
@@ -93,7 +93,7 @@ const OrdersPage = () => {
     if (!session) return;
     setCancellingSet((prev) => new Set(prev).add(tradeNo));
     try {
-      await cancelOrder(session.baseUrl, session.authData, tradeNo);
+      await cancelOrder(session.authData, tradeNo);
       showNotice.success(t("account.orders.actions.cancelSuccess"));
       // 本地更新状态为已取消，避免重新加载整个列表
       setOrders((prev) =>
@@ -219,7 +219,6 @@ const OrdersPage = () => {
         <PayNowDialog
           open={payNowTradeNo != null}
           tradeNo={payNowTradeNo ?? ""}
-          baseUrl={session.baseUrl}
           authData={session.authData}
           onClose={() => setPayNowTradeNo(null)}
           onSuccess={() => {

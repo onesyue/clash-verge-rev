@@ -23,8 +23,8 @@ export function useXBoardUserInfo() {
     isLoading: userInfoLoading,
     mutate: refreshUserInfo,
   } = useSWR<UserInfo | null>(
-    session ? ["xboard-user-info", session.baseUrl, session.authData] : null,
-    () => getUserInfo(session!.baseUrl, session!.authData),
+    session ? ["xboard-user-info", session.authData] : null,
+    () => getUserInfo(session!.authData),
     {
       ...SWR_DEFAULTS,
       refreshInterval: REFRESH_INTERVAL,
@@ -40,8 +40,8 @@ export function useXBoardUserInfo() {
     isLoading: inviteInfoLoading,
     mutate: refreshInviteInfo,
   } = useSWR<InviteInfo | null>(
-    session ? ["xboard-invite-info", session.baseUrl, session.authData] : null,
-    () => getInviteInfo(session!.baseUrl, session!.authData),
+    session ? ["xboard-invite-info", session.authData] : null,
+    () => getInviteInfo(session!.authData),
     {
       ...SWR_DEFAULTS,
       refreshInterval: REFRESH_INTERVAL,

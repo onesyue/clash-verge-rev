@@ -43,8 +43,8 @@ export function useXBoardNotices() {
   const session = useXBoardSession();
 
   const { data, error, isLoading, mutate } = useSWR<Notice[]>(
-    session ? ["xboard-notices", session.baseUrl, session.authData] : null,
-    () => getNotices(session!.baseUrl, session!.authData),
+    session ? ["xboard-notices", session.authData] : null,
+    () => getNotices(session!.authData),
     {
       ...SWR_DEFAULTS,
       refreshInterval: REFRESH_INTERVAL,
