@@ -65,14 +65,16 @@ export async function syncXBoardSubscription(
   let isNew: boolean;
 
   if (existing?.uid) {
-    // 2a. 已有 → 立即刷新
+    // 2a. 已有 → 立即刷新（不走代理，订阅 URL 直连即可）
     uid = existing.uid;
     isNew = false;
-    await updateProfile(uid, existing.option);
+    await updateProfile(uid, { ...existing.option, with_proxy: false });
   } else {
     // 2b. 没有 → 导入，并开启每 24h 自动更新
+    // with_proxy: false — 订阅 URL 是直连 HTTPS，不需要也不能走代理
+    // （初次登录时没有激活的 Profile，走代理会直接失败）
     await importProfile(subscribeUrl, {
-      with_proxy: true,
+      with_proxy: false,
       allow_auto_update: true,
       update_interval: AUTO_UPDATE_INTERVAL_MINUTES,
     });
@@ -117,6 +119,7 @@ export async function refreshXBoardProfile(): Promise<void> {
     throw new Error("绑定的订阅已被删除，请重新登录");
   }
 
-  await updateProfile(uid, item.option);
+  // with_proxy: false — 订阅 URL 直连，不走代理
+  await updateProfile(uid, { ...item.option, with_proxy: false });
   await mutate("getProfiles");
 }
