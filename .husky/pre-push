@@ -1,12 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-if ! command -v "cargo" >/dev/null 2>&1; then
-  echo "⚠️  cargo not found, skipping pre-push checks."
-  exit 0
-fi
-
 if ! command -v "cargo-make" >/dev/null 2>&1; then
+  echo "❌ cargo-make is required for pre-push checks."
   cargo install --force cargo-make
 fi
 
