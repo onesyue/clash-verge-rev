@@ -498,12 +498,21 @@ function SpeedCard() {
 function ProxyCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { clashConfig } = useAppData();
-  const { currentProxy, primaryGroupName, refreshProxy } = useCurrentProxy();
+  const { clashConfig, proxies, refreshProxy: appRefreshProxy } = useAppData();
+  const { currentProxy, primaryGroupName } = useCurrentProxy();
 
   useEffect(() => {
-    void refreshProxy();
-  }, [refreshProxy]);
+    void appRefreshProxy();
+  }, [appRefreshProxy]);
+
+  console.log(
+    "[ProxyCard] render, proxies:",
+    proxies ? "loaded" : "null",
+    "groups:",
+    proxies?.groups?.length ?? 0,
+    "currentProxy:",
+    currentProxy?.name ?? "none",
+  );
 
   const modeLabel = (() => {
     const m = clashConfig?.mode ?? "rule";
@@ -628,15 +637,26 @@ const HomePage = () => {
     if (connecting) return;
     setConnecting(true);
     const newState = !configState;
+    console.log(
+      "[HomePage] handleToggle called, current:",
+      configState,
+      "→",
+      newState,
+    );
     try {
-      if (!newState) await closeAllConnections();
-      mutateVerge({ ...verge, enable_system_proxy: newState }, false);
+      if (!newState) {
+        await closeAllConnections();
+        console.log("[HomePage] closeAllConnections done");
+      }
       await patchVergeConfig({ enable_system_proxy: newState });
+      console.log("[HomePage] patchVergeConfig done");
       await mutateVerge();
       await mutate("getSystemProxy");
       await mutate("getAutotemProxy");
+      console.log("[HomePage] all mutations done, newState:", newState);
     } catch (e: any) {
-      mutateVerge({ ...verge, enable_system_proxy: !newState }, false);
+      console.error("[HomePage] handleToggle error:", e);
+      await mutateVerge();
       showNotice.error(
         e instanceof Error ? e.message : String(e ?? "操作失败"),
       );
