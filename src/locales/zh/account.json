@@ -93,8 +93,8 @@
     "wallet": {
       "title": "钱包",
       "balance": "账户余额",
-      "commission": "佣金余额",
-      "unit": "元"
+      "commission": "返利余额",
+      "unit": "¥"
     },
     "invite": {
       "title": "邀请",

@@ -125,40 +125,23 @@ export function PlanCard({ plan, onBuy }: Props) {
               —
             </Typography>
           ) : (
-            availablePeriods.map(({ key, suffix }) => {
+            availablePeriods.map(({ key }) => {
               const priceVal = plan[key as keyof Plan] as number;
-              const label = `¥${(priceVal / 100).toFixed(2)} ${t(suffix)}`;
               return (
                 <Button
                   key={key}
                   variant="outlined"
                   size="small"
-                  startIcon={<CloudRounded sx={{ fontSize: 15 }} />}
                   fullWidth
                   onClick={() => onBuy(plan, key)}
-                  sx={{ justifyContent: "flex-start", borderRadius: 1.5 }}
+                  sx={{ justifyContent: "space-between", borderRadius: 1.5, px: 2 }}
                 >
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    sx={{ flex: 1 }}
-                  >
-                    <Typography variant="body2" fontWeight="medium">
-                      {t(`account.shop.plan.period.${key}`)}
-                    </Typography>
-                    <Typography variant="body2" color="primary" fontWeight="bold">
-                      ¥{(priceVal / 100).toFixed(2)}
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ ml: 0.5 }}
-                      >
-                        {t(suffix)}
-                      </Typography>
-                    </Typography>
-                  </Stack>
+                  <Typography variant="body2" fontWeight="medium">
+                    {t(`account.shop.plan.period.${key}`)}
+                  </Typography>
+                  <Typography variant="body2" color="primary" fontWeight="bold">
+                    ¥{(priceVal / 100).toFixed(2)}
+                  </Typography>
                 </Button>
               );
             })

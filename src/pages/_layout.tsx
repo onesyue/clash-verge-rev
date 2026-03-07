@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Outlet, useLocation, useNavigate } from "react-router";
+import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { SWRConfig } from "swr";
 
 import { BaseErrorBoundary } from "@/components/base";
@@ -24,6 +24,7 @@ import getSystem from "@/utils/get-system";
 import {
   XBoardSessionProvider,
   XBoardUserInfoProvider,
+  useXBoardSession,
 } from "@/services/xboard/store";
 import { XBoardNoticeWatcher } from "@/components/xboard/notice-watcher";
 import { GeoDataUpdater } from "@/components/xboard/geodata-updater";
@@ -34,6 +35,18 @@ import {
   useLayoutEvents,
   useLoadingOverlay,
 } from "./_layout/hooks";
+
+// 登录门：未登录时强制跳转到账户页（无闪屏）
+function LoginGuard() {
+  const session = useXBoardSession();
+  const location = useLocation();
+  const isAccountPage = location.pathname === "/account";
+
+  if (!session && !isAccountPage) {
+    return <Navigate to="/account" replace />;
+  }
+  return null;
+}
 import { handleNoticeMessage } from "./_layout/utils";
 import { bottomNavItems } from "./_routers";
 
@@ -165,6 +178,7 @@ const Layout = () => {
               {/* 主内容区 */}
               <div className="layout-content">
                 <BaseErrorBoundary>
+                  <LoginGuard />
                   <Outlet />
                 </BaseErrorBoundary>
               </div>

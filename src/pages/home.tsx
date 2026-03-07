@@ -550,8 +550,10 @@ const HomePage = () => {
         await closeAllConnections();
       }
       await toggleSystemProxy(!configState);
-    } catch (e) {
-      showNotice.error(e);
+    } catch (e: any) {
+      showNotice.error(
+        e instanceof Error ? e.message : String(e ?? "操作失败"),
+      );
     } finally {
       setConnecting(false);
     }
