@@ -42,15 +42,17 @@ import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+import { mutate } from "swr";
 import { closeAllConnections } from "tauri-plugin-mihomo-api";
 
 import { BasePage } from "@/components/base";
 import { useConnectionData } from "@/hooks/use-connection-data";
 import { useCurrentProxy } from "@/hooks/use-current-proxy";
-import { useSystemProxyState } from "@/hooks/use-system-proxy-state";
 import { useTrafficData } from "@/hooks/use-traffic-data";
+import { useVerge } from "@/hooks/use-verge";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { useAppData } from "@/providers/app-data-context";
+import { patchVergeConfig } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
 import parseTraffic from "@/utils/parse-traffic";
@@ -497,7 +499,11 @@ function ProxyCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { clashConfig } = useAppData();
-  const { currentProxy, primaryGroupName } = useCurrentProxy();
+  const { currentProxy, primaryGroupName, refreshProxy } = useCurrentProxy();
+
+  useEffect(() => {
+    void refreshProxy();
+  }, [refreshProxy]);
 
   const modeLabel = (() => {
     const m = clashConfig?.mode ?? "rule";
@@ -589,8 +595,8 @@ function ProxyCard() {
 // ─── 首页主体 ─────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
-  const { configState, toggleSystemProxy } = useSystemProxyState();
-
+  const { verge, mutateVerge } = useVerge();
+  const configState = verge?.enable_system_proxy ?? false;
   const isConnected = configState;
   const [connecting, setConnecting] = useState(false);
 
@@ -621,12 +627,16 @@ const HomePage = () => {
   const handleToggle = async () => {
     if (connecting) return;
     setConnecting(true);
+    const newState = !configState;
     try {
-      if (isConnected) {
-        await closeAllConnections();
-      }
-      await toggleSystemProxy(!configState);
+      if (!newState) await closeAllConnections();
+      mutateVerge({ ...verge, enable_system_proxy: newState }, false);
+      await patchVergeConfig({ enable_system_proxy: newState });
+      await mutateVerge();
+      await mutate("getSystemProxy");
+      await mutate("getAutotemProxy");
     } catch (e: any) {
+      mutateVerge({ ...verge, enable_system_proxy: !newState }, false);
       showNotice.error(
         e instanceof Error ? e.message : String(e ?? "操作失败"),
       );
