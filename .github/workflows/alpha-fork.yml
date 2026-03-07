@@ -110,7 +110,17 @@ jobs:
       - name: Pnpm install and prebuild
         run: |
           pnpm i
-          pnpm run prebuild ${{ matrix.target }}
+          # Retry prebuild up to 3 times with 30s delay (CI network transience)
+          for attempt in 1 2 3; do
+            pnpm run prebuild ${{ matrix.target }} && break
+            if [ $attempt -lt 3 ]; then
+              echo "Prebuild attempt $attempt failed, retrying in 30s..."
+              sleep 30
+            else
+              echo "Prebuild failed after 3 attempts"
+              exit 1
+            fi
+          done
 
       - name: Tauri build and upload
         uses: tauri-apps/tauri-action@v0
