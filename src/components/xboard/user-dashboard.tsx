@@ -72,16 +72,17 @@ function formatBalance(cents: number, unit: string): string {
   return `${unit}${(cents / 100).toFixed(2)}`;
 }
 
+// 返回浮点百分比（0–100），不提前取整，保留精度供 formatPercent 判断
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
-  return Math.min(Math.round((used / total) * 100), 100);
+  return Math.min((used / total) * 100, 100);
 }
 
 function formatPercent(pct: number): string {
   if (pct <= 0) return "0%";
-  if (pct < 1) return "<1%";
+  if (pct < 1) return "<1%"; // 避免整数截断后误报 0%
   if (pct >= 100) return "100%";
-  return `${pct}%`;
+  return `${Math.round(pct)}%`;
 }
 
 // ─── 修改密码对话框 ───────────────────────────────────────────────────────────

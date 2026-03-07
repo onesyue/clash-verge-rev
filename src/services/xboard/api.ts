@@ -235,38 +235,48 @@ export async function logout(_authData: string): Promise<void> {
 /**
  * 获取用户信息
  *
- * 流量数据唯一来源：/api/v1/user/getSubscribe（u、d、transfer_enable）
- * 余额 / uuid：/api/v1/user/info
+ * 流量数据唯一来源：/api/v1/user/getSubscribe（u、d、transfer_enable，单位字节）
+ * 余额 / uuid：/api/v1/user/info（可选，失败不影响流量显示）
+ *
+ * 根据 cedar2025/Xboard 源码确认：
+ *   - /api/v1/user/info 不含 u/d 字段
+ *   - /api/v1/user/getSubscribe 是 u/d/transfer_enable 的唯一来源
+ * 若 getSubscribe 失败，整体返回 null（由调用方判断 error 状态）。
  */
-export async function getUserInfo(authData: string): Promise<UserInfo> {
-  // getSubscribe 是流量数据的权威来源，必须成功
-  const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
-  const sub = subRoot?.data;
-  if (!sub) throw new XBoardError("获取订阅信息失败");
-
-  // info 仅用于 balance / commission_balance / uuid，可选
-  let info: any = null;
+export async function getUserInfo(authData: string): Promise<UserInfo | null> {
   try {
-    const infoRoot = await httpGet("/api/v1/user/info", authData);
-    info = infoRoot?.data ?? null;
-  } catch {
-    // 忽略，降级到 sub 数据
-  }
+    // ── 主调用：getSubscribe 必须成功，否则无法获取流量 ──────────────────────
+    const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
+    const sub = subRoot?.data;
+    if (!sub) return null;
 
-  return {
-    email: sub.email || info?.email || "",
-    balance: info?.balance ?? 0,
-    commissionBalance: info?.commission_balance ?? 0,
-    expiredAt:
-      sub.expired_at == null || sub.expired_at === 0
-        ? null
-        : Number(sub.expired_at),
-    transferEnable: sub.transfer_enable ?? 0,
-    usedDownload: sub.d ?? 0,
-    usedUpload: sub.u ?? 0,
-    uuid: info?.uuid || sub.uuid || "",
-    planName: sub.plan?.name?.trim() || null,
-  };
+    // ── 可选调用：info 仅补充 balance / commission_balance / uuid ────────────
+    let info: any = null;
+    try {
+      const infoRoot = await httpGet("/api/v1/user/info", authData);
+      info = infoRoot?.data ?? null;
+    } catch {
+      // 失败不影响流量数据，降级处理
+    }
+
+    return {
+      email: sub.email || info?.email || "",
+      balance: info?.balance ?? 0,
+      commissionBalance: info?.commission_balance ?? 0,
+      expiredAt:
+        sub.expired_at == null || sub.expired_at === 0
+          ? null
+          : Number(sub.expired_at),
+      // u / d / transfer_enable 来自 getSubscribe，单位字节
+      transferEnable: sub.transfer_enable ?? 0,
+      usedDownload: sub.d ?? 0,
+      usedUpload: sub.u ?? 0,
+      uuid: info?.uuid || sub.uuid || "",
+      planName: sub.plan?.name?.trim() || null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** 获取邀请信息 */
