@@ -1,37 +1,33 @@
 /**
- * 悦通用户中心 — 2026 VPN 风格
+ * 悦通用户中心（对齐安卓版 design_main.xml Tab 3: 我的）
  *
  * 布局：
- *  ┌──────────────────────────────────────┐
- *  │     [M]  my@yue.to                   │
- *  │   Infinity · 永久                    │  ← 居中大头像
- *  ├──────────────────────────────────────┤
- *  │ 订阅详情                             │
- *  │ [████░░░] 5%  已用 364 GB / 9999 GB │
- *  ├──────────────────────────────────────┤
- *  │  余额 ¥0.00   │   返利 ¥0.00        │
- *  ├──────────────────────────────────────┤
- *  │ 🔑 修改密码                >         │
- *  │ 📢 公告                    >         │
- *  │ 📦 我的订单                >         │
- *  │ 👥 邀请好友                >         │
- *  │ 🚪 退出登录                          │
- *  └──────────────────────────────────────┘
+ *  ┌──────────────────────────────────────────┐
+ *  │  [M]  my@yue.to                          │  ← 用户头部卡（水平）
+ *  │       Infinity · Ultimate                │
+ *  ├──────────────────────────────────────────┤
+ *  │  套餐: Infinity · ...                    │  ← 套餐信息卡
+ *  │  到期: 永久                              │
+ *  │  流量使用 <1%               364 GB / ... │
+ *  │  [==============================░░░░░░░] │
+ *  ├──────────────────────────────────────────┤
+ *  │    余额 ¥0.00   │   返利 ¥0.00          │  ← 余额卡
+ *  ├──────────────────────────────────────────┤
+ *  │  邀请链接: https://...          [复制]   │  ← 邀请卡（仅有链接时显示）
+ *  │  已邀请 N 人                             │
+ *  ├──────────────────────────────────────────┤
+ *  │  [       修改密码       ]               │  ← outlined buttons
+ *  │  [        公告         ]               │
+ *  │  [       我的订单       ]               │
+ *  │  [       退出登录       ]  (red)        │
+ *  └──────────────────────────────────────────┘
  */
 
 import {
-  AnnouncementRounded,
-  ChevronRightRounded,
-  GroupRounded,
-  KeyRounded,
-  ListAltRounded,
-  LogoutRounded,
-  MonetizationOnRounded,
   RefreshRounded,
   SyncRounded,
-  VisibilityOffRounded,
-  VisibilityRounded,
-  WorkspacePremiumRounded,
+  PersonRounded,
+  EventRepeatRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -41,13 +37,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Paper,
   Skeleton,
   Stack,
@@ -72,7 +63,7 @@ import {
   useXBoardSession,
 } from "@/services/xboard/store";
 import { clearProfileUid, refreshXBoardProfile } from "@/services/xboard/sync";
-import type { InviteInfo, UserInfo } from "@/services/xboard/types";
+import type { UserInfo } from "@/services/xboard/types";
 import parseTraffic from "@/utils/parse-traffic";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -84,6 +75,13 @@ function formatBalance(cents: number, unit: string): string {
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min(Math.round((used / total) * 100), 100);
+}
+
+function formatPercent(pct: number): string {
+  if (pct <= 0) return "0%";
+  if (pct < 1) return "<1%";
+  if (pct >= 100) return "100%";
+  return `${pct}%`;
 }
 
 // ─── 修改密码对话框 ───────────────────────────────────────────────────────────
@@ -99,24 +97,16 @@ function ChangePasswordDialog({
   const session = useXBoardSession();
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
-  const [confirmPwd, setConfirmPwd] = useState("");
-  const [showOld, setShowOld] = useState(false);
-  const [showNew, setShowNew] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleClose = () => {
     setOldPwd("");
     setNewPwd("");
-    setConfirmPwd("");
     onClose();
   };
 
   const handleSubmit = async () => {
     if (!newPwd || !oldPwd) return;
-    if (newPwd !== confirmPwd) {
-      showNotice.error("两次输入的新密码不一致");
-      return;
-    }
     if (!session) return;
     setSubmitting(true);
     try {
@@ -137,55 +127,19 @@ function ChangePasswordDialog({
         <Stack spacing={2} sx={{ pt: 1 }}>
           <TextField
             label="当前密码"
-            type={showOld ? "text" : "password"}
+            type="password"
             value={oldPwd}
             onChange={(e) => setOldPwd(e.target.value)}
             fullWidth
             size="small"
-            InputProps={{
-              endAdornment: (
-                <IconButton size="small" onClick={() => setShowOld((v) => !v)}>
-                  {showOld ? (
-                    <VisibilityOffRounded fontSize="small" />
-                  ) : (
-                    <VisibilityRounded fontSize="small" />
-                  )}
-                </IconButton>
-              ),
-            }}
           />
           <TextField
             label="新密码"
-            type={showNew ? "text" : "password"}
+            type="password"
             value={newPwd}
             onChange={(e) => setNewPwd(e.target.value)}
             fullWidth
             size="small"
-            InputProps={{
-              endAdornment: (
-                <IconButton size="small" onClick={() => setShowNew((v) => !v)}>
-                  {showNew ? (
-                    <VisibilityOffRounded fontSize="small" />
-                  ) : (
-                    <VisibilityRounded fontSize="small" />
-                  )}
-                </IconButton>
-              ),
-            }}
-          />
-          <TextField
-            label="确认新密码"
-            type="password"
-            value={confirmPwd}
-            onChange={(e) => setConfirmPwd(e.target.value)}
-            fullWidth
-            size="small"
-            error={confirmPwd.length > 0 && confirmPwd !== newPwd}
-            helperText={
-              confirmPwd.length > 0 && confirmPwd !== newPwd
-                ? "两次输入不一致"
-                : ""
-            }
           />
         </Stack>
       </DialogContent>
@@ -196,12 +150,8 @@ function ChangePasswordDialog({
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={submitting || !oldPwd || !newPwd || newPwd !== confirmPwd}
-          startIcon={
-            submitting ? (
-              <CircularProgress size={14} color="inherit" />
-            ) : undefined
-          }
+          disabled={submitting || !oldPwd || !newPwd}
+          startIcon={submitting ? <CircularProgress size={14} color="inherit" /> : undefined}
         >
           确认修改
         </Button>
@@ -210,7 +160,7 @@ function ChangePasswordDialog({
   );
 }
 
-// ─── 账号头部（居中大头像） ───────────────────────────────────────────────────
+// ─── 用户头部卡（水平布局，对齐安卓 profile_content 头部卡）─────────────────────
 
 function ProfileHeader({
   userInfo,
@@ -232,30 +182,20 @@ function ProfileHeader({
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const initial = userInfo?.email?.[0]?.toUpperCase() ?? "?";
-  const expiredAt = userInfo?.expiredAt ?? null;
-  const expiryLabel =
-    expiredAt === null
-      ? t("account.dashboard.account.noExpiry")
-      : dayjs(expiredAt * 1000).format("YYYY-MM-DD");
+  const initial = userInfo?.email?.[0]?.toUpperCase() ?? "U";
 
   return (
-    <Box
+    <Paper
+      elevation={4}
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 1,
-        py: 3,
-        px: 2,
-        borderRadius: 3,
-        background: `linear-gradient(160deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.06)} 100%)`,
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+        borderRadius: 2,
+        p: 2,
+        bgcolor: "background.paper",
         position: "relative",
       }}
     >
-      {/* 右上角操作区 */}
-      <Box sx={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 0.5 }}>
+      {/* 右上角操作按钮 */}
+      <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex" }}>
         <Tooltip title={t("account.dashboard.account.syncNow")}>
           <span>
             <IconButton
@@ -266,7 +206,13 @@ function ProfileHeader({
             >
               <SyncRounded
                 fontSize="small"
-                sx={{ animation: syncing ? "spin 1s linear infinite" : "none" }}
+                sx={{
+                  animation: syncing ? "spin 1s linear infinite" : "none",
+                  "@keyframes spin": {
+                    from: { transform: "rotate(0deg)" },
+                    to: { transform: "rotate(360deg)" },
+                  },
+                }}
               />
             </IconButton>
           </span>
@@ -294,58 +240,56 @@ function ProfileHeader({
         </Tooltip>
       </Box>
 
-      {/* 头像 */}
-      <Box
-        sx={{
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-        }}
-      >
-        {loading ? (
-          <CircularProgress size={28} sx={{ color: "white" }} />
-        ) : (
-          <Typography variant="h4" fontWeight="bold" sx={{ color: "white" }}>
-            {initial}
-          </Typography>
-        )}
-      </Box>
+      {/* 水平布局：头像 左 + 信息 右（对齐安卓 60dp avatar + column） */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, pr: 8 }}>
+        <Box
+          sx={{
+            width: 60,
+            height: 60,
+            borderRadius: "50%",
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {loading ? (
+            <CircularProgress size={22} sx={{ color: "white" }} />
+          ) : (
+            <Typography variant="h5" fontWeight="bold" sx={{ color: "white" }}>
+              {initial}
+            </Typography>
+          )}
+        </Box>
 
-      {/* 邮箱 */}
-      {loading ? (
-        <Skeleton width={160} height={22} />
-      ) : (
-        <Typography variant="body1" fontWeight="bold" noWrap sx={{ maxWidth: 260 }}>
-          {userInfo?.email ?? "—"}
-        </Typography>
-      )}
-
-      {/* 套餐 + 到期 */}
-      <Stack direction="row" alignItems="center" spacing={1}>
-        <WorkspacePremiumRounded sx={{ fontSize: 15, color: "primary.main" }} />
-        {loading ? (
-          <Skeleton width={120} height={18} />
-        ) : (
-          <>
-            <Typography variant="body2" color="primary.main" fontWeight="medium">
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <Skeleton width={160} height={22} />
+          ) : (
+            <Typography
+              variant="body1"
+              fontWeight="bold"
+              noWrap
+              sx={{ color: "#1A237E", fontSize: "15px" }}
+            >
+              {userInfo?.email ?? "—"}
+            </Typography>
+          )}
+          {loading ? (
+            <Skeleton width={120} height={16} sx={{ mt: 0.5 }} />
+          ) : (
+            <Typography variant="body2" sx={{ color: "#3A6BBF", mt: 0.5, fontSize: "12px" }}>
               {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
-              · {expiryLabel}
-            </Typography>
-          </>
-        )}
-      </Stack>
-    </Box>
+          )}
+        </Box>
+      </Box>
+    </Paper>
   );
 }
 
-// ─── 订阅详情卡 ───────────────────────────────────────────────────────────────
+// ─── 套餐信息卡（对齐安卓：套餐名 + 到期 + 流量% + 详情 + 进度条）──────────────
 
 function SubscriptionCard({
   userInfo,
@@ -364,8 +308,12 @@ function SubscriptionCard({
 
   const [usedVal, usedUnit] = parseTraffic(usedBytes);
   const [totalVal, totalUnit] = parseTraffic(totalBytes);
-  const [upVal, upUnit] = parseTraffic(userInfo?.usedUpload ?? 0);
-  const [downVal, downUnit] = parseTraffic(userInfo?.usedDownload ?? 0);
+
+  const expiredAt = userInfo?.expiredAt ?? null;
+  const expiryLabel =
+    expiredAt === null
+      ? t("account.dashboard.account.noExpiry")
+      : dayjs(expiredAt * 1000).format("YYYY-MM-DD");
 
   const barColor =
     pct >= 95
@@ -374,128 +322,121 @@ function SubscriptionCard({
         ? theme.palette.warning.main
         : theme.palette.primary.main;
 
-  return (
-    <Paper
-      elevation={0}
+  const trafficDetail = isUnlimited
+    ? t("account.dashboard.traffic.unlimited")
+    : usedBytes === 0
+      ? "暂未使用"
+      : `${usedVal} ${usedUnit} / ${totalVal} ${totalUnit}`;
+
+  const Row = ({
+    icon,
+    label,
+    value,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    value: React.ReactNode;
+  }) => (
+    <Box
       sx={{
-        p: 2,
-        borderRadius: 2.5,
-        bgcolor: alpha(theme.palette.background.paper, 0.7),
-        border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        mb: 1,
       }}
     >
-      <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1.5 }}>
-        {t("account.dashboard.traffic.title")}
+      <Box sx={{ color: "#3A6BBF", display: "flex", alignItems: "center", flexShrink: 0 }}>
+        {icon}
+      </Box>
+      <Typography variant="caption" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+        {label}
       </Typography>
+      <Box sx={{ flex: 1 }} />
+      {value}
+    </Box>
+  );
+
+  return (
+    <Paper
+      elevation={4}
+      sx={{ borderRadius: 2, p: 2, bgcolor: "background.paper" }}
+    >
+      {/* 套餐名 */}
+      <Row
+        icon={<PersonRounded sx={{ fontSize: 18 }} />}
+        label={t("account.dashboard.traffic.title")}
+        value={
+          loading ? (
+            <Skeleton width={100} />
+          ) : (
+            <Typography variant="body2" fontWeight="bold" sx={{ color: "#1A237E" }}>
+              {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
+            </Typography>
+          )
+        }
+      />
+
+      {/* 到期 */}
+      <Row
+        icon={<EventRepeatRounded sx={{ fontSize: 18 }} />}
+        label={`${t("account.dashboard.account.expiry")}：`}
+        value={
+          loading ? (
+            <Skeleton width={80} />
+          ) : (
+            <Typography variant="body2" fontWeight="bold" sx={{ color: "#1A237E" }}>
+              {expiryLabel}
+            </Typography>
+          )
+        }
+      />
+
+      {/* 流量使用标签 + 详情 */}
+      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+        <Typography variant="caption" sx={{ color: "#5C7CAB", flex: 1 }}>
+          {t("account.dashboard.traffic.title")} {formatPercent(pct)}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
+          {loading ? "" : trafficDetail}
+        </Typography>
+      </Box>
 
       {/* 进度条 */}
       {loading ? (
-        <Skeleton height={8} sx={{ borderRadius: 1, mb: 1 }} />
+        <Skeleton height={8} sx={{ borderRadius: 1 }} />
+      ) : isUnlimited ? (
+        <Box
+          sx={{
+            height: 6,
+            borderRadius: 3,
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          }}
+        />
       ) : (
-        <Box sx={{ mb: 1 }}>
-          {isUnlimited ? (
-            <Box
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-              }}
-            />
-          ) : (
-            <LinearProgress
-              variant="determinate"
-              value={pct}
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                bgcolor: alpha(barColor, 0.12),
-                "& .MuiLinearProgress-bar": {
-                  borderRadius: 4,
-                  background:
-                    pct >= 95
-                      ? theme.palette.error.main
-                      : pct >= 80
-                        ? theme.palette.warning.main
-                        : `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
-                },
-              }}
-            />
-          )}
-        </Box>
+        <LinearProgress
+          variant="determinate"
+          value={pct}
+          sx={{
+            height: 6,
+            borderRadius: 3,
+            bgcolor: alpha(barColor, 0.12),
+            "& .MuiLinearProgress-bar": {
+              borderRadius: 3,
+              background:
+                pct >= 95
+                  ? theme.palette.error.main
+                  : pct >= 80
+                    ? theme.palette.warning.main
+                    : `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
+            },
+          }}
+        />
       )}
-
-      {/* 已用 / 总计 */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
-        {loading ? (
-          <>
-            <Skeleton width={80} />
-            <Skeleton width={60} />
-          </>
-        ) : isUnlimited ? (
-          <Typography variant="body2" color="text.secondary">
-            {t("account.dashboard.traffic.unlimited")}
-          </Typography>
-        ) : (
-          <>
-            <Typography variant="body2" color="text.secondary">
-              {t("account.dashboard.traffic.used")}{" "}
-              <Box component="span" fontWeight="bold" color="text.primary">
-                {usedVal} {usedUnit}
-              </Box>
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              <Box component="span" fontWeight="bold" color="text.primary">
-                {totalVal} {totalUnit}
-              </Box>
-              {" "}总计
-            </Typography>
-          </>
-        )}
-      </Box>
-
-      {/* 上传 / 下载 */}
-      <Stack direction="row" spacing={1}>
-        {[
-          {
-            label: t("account.dashboard.traffic.upload"),
-            val: `${upVal} ${upUnit}`,
-            color: theme.palette.secondary.main,
-          },
-          {
-            label: t("account.dashboard.traffic.download"),
-            val: `${downVal} ${downUnit}`,
-            color: theme.palette.primary.main,
-          },
-        ].map((item) => (
-          <Box
-            key={item.label}
-            sx={{
-              flex: 1,
-              p: 1,
-              borderRadius: 1.5,
-              textAlign: "center",
-              bgcolor: alpha(item.color, 0.07),
-              border: `1px solid ${alpha(item.color, 0.18)}`,
-            }}
-          >
-            {loading ? (
-              <Skeleton width="70%" sx={{ mx: "auto" }} />
-            ) : (
-              <Typography variant="body2" fontWeight="bold" color={item.color} noWrap>
-                {item.val}
-              </Typography>
-            )}
-            <Typography variant="caption" color="text.secondary">
-              {item.label}
-            </Typography>
-          </Box>
-        ))}
-      </Stack>
     </Paper>
   );
 }
 
-// ─── 余额卡 ───────────────────────────────────────────────────────────────────
+// ─── 余额卡（对齐安卓两列横排）────────────────────────────────────────────────
 
 function BalanceCard({
   userInfo,
@@ -505,237 +446,228 @@ function BalanceCard({
   loading: boolean;
 }) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const unit = t("account.dashboard.wallet.unit");
-
-  const items = [
-    {
-      label: t("account.dashboard.wallet.balance"),
-      value: formatBalance(userInfo?.balance ?? 0, unit),
-      color: theme.palette.warning.main,
-    },
-    {
-      label: t("account.dashboard.wallet.commission"),
-      value: formatBalance(userInfo?.commissionBalance ?? 0, unit),
-      color: theme.palette.success.main,
-    },
-  ];
 
   return (
     <Paper
-      elevation={0}
-      sx={{
-        borderRadius: 2.5,
-        overflow: "hidden",
-        border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-      }}
+      elevation={4}
+      sx={{ borderRadius: 2, bgcolor: "background.paper", overflow: "hidden" }}
     >
-      <Stack direction="row" divider={<Divider orientation="vertical" flexItem />}>
-        {items.map((item) => (
-          <Box
-            key={item.label}
-            sx={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 0.25,
-              py: 1.75,
-              px: 1,
-            }}
-          >
-            <MonetizationOnRounded sx={{ fontSize: 18, color: item.color }} />
-            {loading ? (
-              <Skeleton width={60} height={24} />
-            ) : (
-              <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
-                {item.value}
-              </Typography>
-            )}
-            <Typography variant="caption" color="text.secondary">
-              {item.label}
+      <Box sx={{ display: "flex" }}>
+        {/* 余额 */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            py: 2.25,
+            px: 1,
+          }}
+        >
+          <Typography variant="caption" sx={{ color: "#8EAACB", fontSize: "11px" }}>
+            {t("account.dashboard.wallet.balance")}
+          </Typography>
+          {loading ? (
+            <Skeleton width={60} height={28} />
+          ) : (
+            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.5 }}>
+              {formatBalance(userInfo?.balance ?? 0, unit)}
             </Typography>
-          </Box>
-        ))}
-      </Stack>
+          )}
+        </Box>
+
+        {/* 分隔线 */}
+        <Box sx={{ width: 1, bgcolor: "#E0EAF8", alignSelf: "center", height: 40 }} />
+
+        {/* 返利余额 */}
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            py: 2.25,
+            px: 1,
+          }}
+        >
+          <Typography variant="caption" sx={{ color: "#8EAACB", fontSize: "11px" }}>
+            {t("account.dashboard.wallet.commission")}
+          </Typography>
+          {loading ? (
+            <Skeleton width={60} height={28} />
+          ) : (
+            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.5 }}>
+              {formatBalance(userInfo?.commissionBalance ?? 0, unit)}
+            </Typography>
+          )}
+        </Box>
+      </Box>
     </Paper>
   );
 }
 
-// ─── 菜单列表 ─────────────────────────────────────────────────────────────────
+// ─── 邀请卡（对齐安卓 profile_invite_card）────────────────────────────────────
 
-function MenuList({
-  inviteInfo,
+function InviteCard({
+  inviteUrl,
+  referralCount,
   loading,
-  onLogout,
-  loggingOut,
 }: {
-  inviteInfo: ReturnType<typeof useXBoardUserInfo>["inviteInfo"];
+  inviteUrl: string | null | undefined;
+  referralCount: number;
   loading: boolean;
-  onLogout: () => void;
-  loggingOut: boolean;
 }) {
   const { t } = useTranslation();
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const [changePwdOpen, setChangePwdOpen] = useState(false);
 
-  const handleCopyInvite = async () => {
-    if (!inviteInfo?.inviteUrl) return;
+  const handleCopy = async () => {
+    if (!inviteUrl) return;
     try {
-      await writeText(inviteInfo.inviteUrl);
+      await writeText(inviteUrl);
       showNotice.success(t("account.dashboard.invite.linkCopied"));
     } catch {
       showNotice.error("复制失败");
     }
   };
 
-  const menuItems = [
+  if (!loading && !inviteUrl) return null;
+
+  return (
+    <Paper
+      elevation={4}
+      sx={{ borderRadius: 2, p: 2, bgcolor: "background.paper" }}
+    >
+      {/* 标题行 + 邀请人数 */}
+      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+        <Typography variant="caption" sx={{ color: "#8EAACB", flex: 1 }}>
+          {t("account.dashboard.invite.title")}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "#3A6BBF" }}>
+          已邀请 {referralCount} 人
+        </Typography>
+      </Box>
+
+      {/* 链接框 + 复制按钮 */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          bgcolor: "#F5F8FF",
+          borderRadius: 1,
+          px: 1.25,
+          py: 1,
+          gap: 1,
+        }}
+      >
+        {loading ? (
+          <Skeleton sx={{ flex: 1 }} />
+        ) : (
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{ color: "#5C7CAB", flex: 1, fontSize: "12px" }}
+          >
+            {inviteUrl ?? "--"}
+          </Typography>
+        )}
+        <Typography
+          variant="caption"
+          onClick={handleCopy}
+          sx={{
+            color: "#3A6BBF",
+            cursor: "pointer",
+            flexShrink: 0,
+            fontWeight: "bold",
+            fontSize: "12px",
+            px: 0.75,
+            py: 0.25,
+            borderRadius: 0.5,
+            "&:hover": { bgcolor: "rgba(58,107,191,0.08)" },
+          }}
+        >
+          复制
+        </Typography>
+      </Box>
+    </Paper>
+  );
+}
+
+// ─── 操作按钮组（对齐安卓 OutlinedButton 全宽堆叠）────────────────────────────
+
+function ActionButtons({
+  onChangePassword,
+  onLogout,
+  loggingOut,
+}: {
+  onChangePassword: () => void;
+  onLogout: () => void;
+  loggingOut: boolean;
+}) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const btns = [
     {
-      icon: <KeyRounded fontSize="small" />,
       label: "修改密码",
-      onClick: () => setChangePwdOpen(true),
-      color: theme.palette.primary.main,
-      chevron: true,
+      onClick: onChangePassword,
+      color: "primary" as const,
     },
     {
-      icon: <AnnouncementRounded fontSize="small" />,
       label: t("account.notices.page.title"),
       onClick: () => navigate("/notices"),
-      color: theme.palette.info.main,
-      chevron: true,
+      color: "primary" as const,
     },
     {
-      icon: <ListAltRounded fontSize="small" />,
       label: t("account.orders.page.title"),
       onClick: () => navigate("/orders"),
-      color: theme.palette.warning.main,
-      chevron: true,
-    },
-    {
-      icon: <GroupRounded fontSize="small" />,
-      label: t("account.dashboard.invite.title"),
-      sublabel: loading
-        ? undefined
-        : inviteInfo?.referralCount
-          ? `已邀请 ${inviteInfo.referralCount} 人`
-          : undefined,
-      onClick: handleCopyInvite,
-      color: theme.palette.success.main,
-      chevron: false,
-      disabled: !inviteInfo?.inviteUrl,
+      color: "primary" as const,
     },
   ];
 
   return (
-    <>
-      <Paper
-        elevation={0}
+    <Stack spacing={1.25}>
+      {btns.map((btn) => (
+        <Button
+          key={btn.label}
+          variant="outlined"
+          fullWidth
+          onClick={btn.onClick}
+          sx={{
+            borderRadius: 1.5,
+            textTransform: "none",
+            fontWeight: "medium",
+            py: 1,
+          }}
+        >
+          {btn.label}
+        </Button>
+      ))}
+
+      {/* 退出登录（红色，对齐安卓 android:textColor="#D32F2F" app:strokeColor="#D32F2F"） */}
+      <Button
+        variant="outlined"
+        fullWidth
+        onClick={loggingOut ? undefined : onLogout}
+        disabled={loggingOut}
         sx={{
-          borderRadius: 2.5,
-          border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-          overflow: "hidden",
+          borderRadius: 1.5,
+          textTransform: "none",
+          fontWeight: "medium",
+          py: 1,
+          color: "#D32F2F",
+          borderColor: "#D32F2F",
+          "&:hover": {
+            borderColor: "#B71C1C",
+            bgcolor: "rgba(211,47,47,0.04)",
+          },
         }}
+        startIcon={
+          loggingOut ? <CircularProgress size={14} color="error" /> : undefined
+        }
       >
-        <List disablePadding>
-          {menuItems.map((item, idx) => (
-            <Box key={item.label}>
-              {idx > 0 && <Divider sx={{ mx: 2 }} />}
-              <ListItem
-                onClick={item.disabled ? undefined : item.onClick}
-                sx={{
-                  cursor: item.disabled ? "default" : "pointer",
-                  opacity: item.disabled ? 0.5 : 1,
-                  py: 1.25,
-                  "&:hover": item.disabled
-                    ? {}
-                    : {
-                        bgcolor: alpha(item.color, 0.05),
-                      },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 36 }}>
-                  <Box
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 1.5,
-                      bgcolor: alpha(item.color, 0.12),
-                      color: item.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item.icon}
-                  </Box>
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.label}
-                  secondary={item.sublabel}
-                  primaryTypographyProps={{ variant: "body2", fontWeight: "medium" }}
-                  secondaryTypographyProps={{ variant: "caption" }}
-                />
-                {item.chevron && (
-                  <ChevronRightRounded sx={{ fontSize: 18, color: "text.disabled" }} />
-                )}
-                {!item.chevron && item.label === t("account.dashboard.invite.title") && (
-                  <Typography variant="caption" color="text.secondary">
-                    复制链接
-                  </Typography>
-                )}
-              </ListItem>
-            </Box>
-          ))}
-
-          {/* 退出登录 */}
-          <Divider sx={{ mx: 2 }} />
-          <ListItem
-            onClick={loggingOut ? undefined : onLogout}
-            sx={{
-              cursor: loggingOut ? "default" : "pointer",
-              py: 1.25,
-              "&:hover": { bgcolor: alpha(theme.palette.error.main, 0.05) },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <Box
-                sx={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: 1.5,
-                  bgcolor: alpha(theme.palette.error.main, 0.12),
-                  color: theme.palette.error.main,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {loggingOut ? (
-                  <CircularProgress size={14} color="error" />
-                ) : (
-                  <LogoutRounded fontSize="small" />
-                )}
-              </Box>
-            </ListItemIcon>
-            <ListItemText
-              primary={t("account.session.logout")}
-              primaryTypographyProps={{
-                variant: "body2",
-                fontWeight: "medium",
-                color: "error.main",
-              }}
-            />
-          </ListItem>
-        </List>
-      </Paper>
-
-      <ChangePasswordDialog
-        open={changePwdOpen}
-        onClose={() => setChangePwdOpen(false)}
-      />
-    </>
+        {t("account.session.logout")}
+      </Button>
+    </Stack>
   );
 }
 
@@ -749,6 +681,7 @@ export function UserDashboard() {
   const [loggingOut, setLoggingOut] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [changePwdOpen, setChangePwdOpen] = useState(false);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -788,8 +721,8 @@ export function UserDashboard() {
   };
 
   return (
-    <Stack spacing={2}>
-      {/* 头像 + 账号信息 */}
+    <Stack spacing={1.5}>
+      {/* 用户头部卡 */}
       <ProfileHeader
         userInfo={userInfo}
         loading={loading}
@@ -800,16 +733,22 @@ export function UserDashboard() {
         subscribeUrl={session?.subscribeUrl ?? ""}
       />
 
-      {/* 订阅详情 */}
+      {/* 套餐信息卡 */}
       <SubscriptionCard userInfo={userInfo} loading={loading} />
 
-      {/* 余额 */}
+      {/* 余额卡 */}
       <BalanceCard userInfo={userInfo} loading={loading} />
 
-      {/* 菜单列表 */}
-      <MenuList
-        inviteInfo={inviteInfo}
+      {/* 邀请卡（仅有链接时显示） */}
+      <InviteCard
+        inviteUrl={inviteInfo?.inviteUrl}
+        referralCount={inviteInfo?.referralCount ?? 0}
         loading={loading}
+      />
+
+      {/* 操作按钮组 */}
+      <ActionButtons
+        onChangePassword={() => setChangePwdOpen(true)}
         onLogout={handleLogout}
         loggingOut={loggingOut}
       />
@@ -820,6 +759,11 @@ export function UserDashboard() {
           {t("account.dashboard.loadFailed")}
         </Typography>
       )}
+
+      <ChangePasswordDialog
+        open={changePwdOpen}
+        onClose={() => setChangePwdOpen(false)}
+      />
     </Stack>
   );
 }
