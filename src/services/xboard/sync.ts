@@ -17,6 +17,7 @@ import {
   getProfiles,
   importProfile,
   patchProfilesConfig,
+  patchVergeConfig,
   updateProfile,
 } from "@/services/cmds";
 
@@ -37,6 +38,22 @@ export function saveProfileUid(uid: string): void {
 
 export function clearProfileUid(): void {
   localStorage.removeItem(PROFILE_UID_KEY);
+}
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * 激活指定 uid 的 Profile 为当前配置，带一次重试。
+ * patchProfilesConfig 在并发切换时会返回 false（不抛出），重试一次兜底。
+ */
+async function activateProfile(uid: string): Promise<boolean> {
+  let ok = await patchProfilesConfig({ current: uid });
+  if (!ok) {
+    // 并发切换保护释放后重试
+    await new Promise((r) => setTimeout(r, 800));
+    ok = await patchProfilesConfig({ current: uid });
+  }
+  return ok;
 }
 
 // ── 核心同步逻辑 ──────────────────────────────────────────────────────────────
@@ -96,20 +113,27 @@ export async function syncXBoardSubscription(
   // 3. 持久化 uid
   saveProfileUid(uid);
 
-  // 4. 可选：激活该 Profile
+  // 4. 可选：激活该 Profile（带重试：并发切换时 patchProfilesConfig 返回 false）
   if (activate) {
-    await patchProfilesConfig({ current: uid });
+    const activated = await activateProfile(uid);
+    if (!activated) {
+      throw new Error("配置激活失败，请手动在订阅页面点击该配置以选中");
+    }
+    // 5. 激活成功后自动开启系统代理（首次同步或代理未开启时）
+    await patchVergeConfig({ enable_system_proxy: true }).catch(() => {
+      /* 开启系统代理失败不影响订阅同步 */
+    });
   }
 
-  // 5. 通知 SWR 刷新 Profiles
+  // 6. 通知 SWR 刷新 Profiles
   await mutate("getProfiles");
 
   return { uid, isNew };
 }
 
 /**
- * 仅刷新已绑定的 XBoard Profile（不激活，不导入）
- * 用于仪表盘"立即同步"按钮
+ * 刷新已绑定的 XBoard Profile 并确保它是当前激活配置。
+ * 用于仪表盘"立即同步"按钮。
  */
 export async function refreshXBoardProfile(): Promise<void> {
   const uid = loadProfileUid();
@@ -123,7 +147,20 @@ export async function refreshXBoardProfile(): Promise<void> {
     throw new Error("绑定的订阅已被删除，请重新登录");
   }
 
-  // with_proxy: false — 订阅 URL 直连，不走代理
+  // 刷新订阅内容（with_proxy: false — 直连，不走代理）
   await updateProfile(uid, { ...item.option, with_proxy: false });
+
+  // 确保该 Profile 是当前激活的配置（若之前被取消选中，则重新选中）
+  if (profiles.current !== uid) {
+    const activated = await activateProfile(uid);
+    if (!activated) {
+      throw new Error(
+        "订阅内容已更新，但配置激活失败，请手动在订阅页面点击选中",
+      );
+    }
+    // 同时开启系统代理
+    await patchVergeConfig({ enable_system_proxy: true }).catch(() => {});
+  }
+
   await mutate("getProfiles");
 }
