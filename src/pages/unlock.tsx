@@ -34,8 +34,8 @@ interface UnlockItem {
   check_time?: string | null;
 }
 
-const UNLOCK_RESULTS_STORAGE_KEY = "clash_verge_unlock_results";
-const UNLOCK_RESULTS_TIME_KEY = "clash_verge_unlock_time";
+const UNLOCK_RESULTS_STORAGE_KEY = "yuetong_unlock_results";
+const UNLOCK_RESULTS_TIME_KEY = "yuetong_unlock_time";
 
 const STATUS_LABEL_KEYS: Record<string, string> = {
   Pending: "tests.statuses.test.pending",
