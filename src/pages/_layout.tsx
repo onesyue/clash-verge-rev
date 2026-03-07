@@ -36,8 +36,8 @@ import {
   useLoadingOverlay,
 } from "./_layout/hooks";
 
-// 登录门：未登录时强制跳转到账户页（无闪屏）
-function LoginGuard() {
+// 受保护的 Outlet：未登录时直接渲染 Navigate，不渲染目标页（无闪屏）
+function ProtectedOutlet() {
   const session = useXBoardSession();
   const location = useLocation();
   const isAccountPage = location.pathname === "/account";
@@ -45,7 +45,7 @@ function LoginGuard() {
   if (!session && !isAccountPage) {
     return <Navigate to="/account" replace />;
   }
-  return null;
+  return <Outlet />;
 }
 import { handleNoticeMessage } from "./_layout/utils";
 import { bottomNavItems } from "./_routers";
@@ -178,8 +178,7 @@ const Layout = () => {
               {/* 主内容区 */}
               <div className="layout-content">
                 <BaseErrorBoundary>
-                  <LoginGuard />
-                  <Outlet />
+                  <ProtectedOutlet />
                 </BaseErrorBoundary>
               </div>
 

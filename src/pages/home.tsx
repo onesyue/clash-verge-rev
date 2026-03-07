@@ -48,6 +48,7 @@ import { closeAllConnections } from "tauri-plugin-mihomo-api";
 import { BasePage } from "@/components/base";
 import { useConnectionData } from "@/hooks/use-connection-data";
 import { useCurrentProxy } from "@/hooks/use-current-proxy";
+import { useProfiles } from "@/hooks/use-profiles";
 import { useSystemProxyState } from "@/hooks/use-system-proxy-state";
 import { useSystemState } from "@/hooks/use-system-state";
 import { useTrafficData } from "@/hooks/use-traffic-data";
@@ -56,6 +57,7 @@ import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { useAppData } from "@/providers/app-data-context";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
+import { syncXBoardSubscription } from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
 import dayjs from "dayjs";
 
@@ -508,6 +510,78 @@ function ProxyCard() {
   );
 }
 
+// ─── 订阅同步提示横幅（无激活配置时显示）────────────────────────────────────────
+
+function SyncBanner() {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const session = useXBoardSession();
+  const { profiles } = useProfiles();
+  const [syncing, setSyncing] = useState(false);
+  const [synced, setSynced] = useState(false);
+
+  // 已有激活配置或未登录则不显示
+  if (!session || profiles?.current || synced) return null;
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await syncXBoardSubscription(session.subscribeUrl);
+      setSynced(true);
+      showNotice.success(t("account.sync.feedback.success"));
+    } catch (err) {
+      console.warn("[SyncBanner] sync failed:", err);
+      showNotice.error(t("account.sync.feedback.failed"));
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 2,
+        p: 1.5,
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        bgcolor: alpha(theme.palette.warning.main, 0.1),
+        border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+      }}
+    >
+      <WorkspacePremiumRounded sx={{ fontSize: 20, color: "warning.main", flexShrink: 0 }} />
+      <Typography variant="body2" sx={{ flex: 1, color: "text.primary" }}>
+        未检测到订阅配置，点击同步后才能连接
+      </Typography>
+      <Box
+        component="button"
+        onClick={syncing ? undefined : handleSync}
+        sx={{
+          border: "none",
+          borderRadius: 1.5,
+          px: 1.5,
+          py: 0.5,
+          bgcolor: "warning.main",
+          color: "white",
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: syncing ? "default" : "pointer",
+          opacity: syncing ? 0.7 : 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          flexShrink: 0,
+          "&:hover": { opacity: syncing ? 0.7 : 0.9 },
+        }}
+      >
+        {syncing && <CircularProgress size={12} sx={{ color: "white" }} />}
+        {syncing ? "同步中…" : "同步订阅"}
+      </Box>
+    </Paper>
+  );
+}
+
 // ─── 首页主体 ─────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
@@ -564,6 +638,9 @@ const HomePage = () => {
       <Stack spacing={2}>
         {/* 用户信息卡 */}
         <AccountBar />
+
+        {/* 订阅未同步提示 */}
+        <SyncBanner />
 
         {/* 连接按钮卡 */}
         <ConnectButton

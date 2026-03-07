@@ -166,6 +166,12 @@ export interface TranslationResources {
         };
         "tab": string;
       };
+      "sync": {
+        "feedback": {
+          "failed": string;
+          "success": string;
+        };
+      };
       "session": {
         "feedback": {
           "logoutSuccess": string;

@@ -92,10 +92,15 @@ function LoginTab({
       const session = persistAuthResult(result);
       showNotice.success(t("account.login.feedback.success"));
       onSuccess(session);
-      // 后台静默同步订阅，不阻塞登录流程
-      syncXBoardSubscription(result.subscribeUrl).catch((err) => {
-        console.warn("[XBoard] 订阅同步失败:", err);
-      });
+      // 后台同步订阅，完成后通知用户
+      syncXBoardSubscription(result.subscribeUrl)
+        .then(() => {
+          showNotice.success(t("account.sync.feedback.success"));
+        })
+        .catch((err) => {
+          console.warn("[XBoard] 订阅同步失败:", err);
+          showNotice.error(t("account.sync.feedback.failed"));
+        });
     } catch (err: any) {
       showNotice.error(
         t("account.login.feedback.failed"),
@@ -202,10 +207,15 @@ function RegisterTab({
         const session = persistAuthResult(result);
         showNotice.success(t("account.register.feedback.success"));
         onSuccess(session);
-        // 后台静默同步订阅
-        syncXBoardSubscription(result.subscribeUrl).catch((err) => {
-          console.warn("[XBoard] 注册后订阅同步失败:", err);
-        });
+        // 后台同步订阅，完成后通知用户
+        syncXBoardSubscription(result.subscribeUrl)
+          .then(() => {
+            showNotice.success(t("account.sync.feedback.success"));
+          })
+          .catch((err) => {
+            console.warn("[XBoard] 注册后订阅同步失败:", err);
+            showNotice.error(t("account.sync.feedback.failed"));
+          });
       } catch (err: any) {
         showNotice.error(
           t("account.register.feedback.failed"),

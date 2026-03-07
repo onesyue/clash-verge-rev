@@ -5,7 +5,7 @@
  * 点击价格按钮后触发 onBuy(plan, period)。
  */
 
-import { CloudRounded, DataUsageRounded } from "@mui/icons-material";
+import { DataUsageRounded } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -17,7 +17,6 @@ import {
   useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import Markdown from "react-markdown";
 
 import type { Plan, PlanPeriod } from "@/services/xboard/types";
 import parseTraffic from "@/utils/parse-traffic";
@@ -90,30 +89,7 @@ export function PlanCard({ plan, onBuy }: Props) {
         </Stack>
       </Box>
 
-      {/* Markdown 描述 */}
-      {plan.content ? (
-        <Box
-          sx={{
-            flex: 1,
-            px: 2.5,
-            py: 1.5,
-            overflow: "hidden",
-            "& p": { margin: 0, fontSize: 13, color: theme.palette.text.secondary },
-            "& ul, & ol": {
-              margin: 0,
-              paddingLeft: 2,
-              fontSize: 13,
-              color: theme.palette.text.secondary,
-            },
-            "& li": { marginBottom: 2 },
-            "& strong": { color: theme.palette.text.primary },
-          }}
-        >
-          <Markdown>{plan.content}</Markdown>
-        </Box>
-      ) : (
-        <Box sx={{ flex: 1 }} />
-      )}
+      <Box sx={{ flex: 1 }} />
 
       <Divider />
 

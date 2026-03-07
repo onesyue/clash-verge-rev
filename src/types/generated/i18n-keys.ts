@@ -37,6 +37,8 @@ export const translationKeys = [
   "account.forgot.feedback.sendFailed",
   "account.forgot.feedback.success",
   "account.forgot.feedback.failed",
+  "account.sync.feedback.success",
+  "account.sync.feedback.failed",
   "account.session.panelUrl",
   "account.session.loggedInAs",
   "account.session.logout",

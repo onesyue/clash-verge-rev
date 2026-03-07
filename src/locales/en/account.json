@@ -54,6 +54,12 @@
       "failed": "Failed to reset password"
     }
   },
+  "sync": {
+    "feedback": {
+      "success": "Subscription synced, you can now connect",
+      "failed": "Subscription sync failed, please sync manually on Account page"
+    }
+  },
   "session": {
     "panelUrl": "Panel URL",
     "loggedInAs": "Signed in as",

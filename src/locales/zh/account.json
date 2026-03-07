@@ -54,6 +54,12 @@
       "failed": "密码重置失败"
     }
   },
+  "sync": {
+    "feedback": {
+      "success": "订阅已同步，可以开始连接",
+      "failed": "订阅同步失败，请在账户页手动同步"
+    }
+  },
   "session": {
     "panelUrl": "面板地址",
     "loggedInAs": "已登录",

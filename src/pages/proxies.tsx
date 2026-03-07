@@ -47,15 +47,32 @@ const ProxyPage = () => {
       title={t("proxies.page.title.default")}
       header={<ProviderButton />}
     >
-      {/* 模式 Tab（对齐安卓：规则模式/全局模式/直连模式） */}
-      <Box sx={{ borderBottom: 1, borderColor: "divider", flexShrink: 0 }}>
+      {/* 模式分段控件（对齐安卓，无下划线横线） */}
+      <Box sx={{ px: 1.5, pt: 1, pb: 0.5, flexShrink: 0 }}>
         <Tabs
           value={curMode ?? "rule"}
           onChange={(_, v) => onChangeMode(v as Mode)}
           variant="fullWidth"
+          TabIndicatorProps={{ style: { display: "none" } }}
           sx={{
-            minHeight: 44,
-            "& .MuiTab-root": { minHeight: 44, fontSize: 13, fontWeight: 500 },
+            minHeight: 36,
+            borderRadius: 2,
+            bgcolor: "action.hover",
+            p: 0.5,
+            "& .MuiTab-root": {
+              minHeight: 28,
+              fontSize: 13,
+              fontWeight: 500,
+              borderRadius: 1.5,
+              py: 0.5,
+              transition: "all 0.2s",
+              color: "text.secondary",
+            },
+            "& .Mui-selected": {
+              color: "primary.main",
+              bgcolor: "background.paper",
+              boxShadow: 1,
+            },
           }}
         >
           {modeList.map((mode) => (
