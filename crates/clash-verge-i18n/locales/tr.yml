@@ -20,13 +20,13 @@ notifications:
     body: Profil yeniden etkinleştirildi.
   appQuit:
     title: Çıkış Yapılmak Üzere
-    body: Clash Verge kapanmak üzere.
+    body: Yuetong kapanmak üzere.
   appHidden:
     title: Uygulama Gizlendi
-    body: Clash Verge arka planda çalışıyor.
+    body: Yuetong arka planda çalışıyor.
 service:
-  adminInstallPrompt: Clash Verge hizmetini kurmak için yönetici ayrıcalıkları gerekir.
-  adminUninstallPrompt: Clash Verge hizmetini kaldırmak için yönetici ayrıcalıkları gerekir.
+  adminInstallPrompt: Yuetong hizmetini kurmak için yönetici ayrıcalıkları gerekir.
+  adminUninstallPrompt: Yuetong hizmetini kaldırmak için yönetici ayrıcalıkları gerekir.
 tray:
   dashboard: Gösterge Paneli
   ruleMode: Kural Modu

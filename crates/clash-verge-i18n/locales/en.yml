@@ -7,11 +7,11 @@ notifications:
     title: Mode Switch
     body: Switched to {mode}.
   systemProxyToggled:
-    title: System Proxy
-    body: System proxy status has been updated.
+    title: System Connection
+    body: System connection status has been updated.
   tunModeToggled:
-    title: TUN Mode
-    body: TUN mode status has been updated.
+    title: Accelerate Mode
+    body: Accelerate mode status has been updated.
   lightweightModeEntered:
     title: Lightweight Mode
     body: Entered lightweight mode.
@@ -20,13 +20,13 @@ notifications:
     body: Profile Reactivated.
   appQuit:
     title: About to Exit
-    body: Clash Verge is about to exit.
+    body: Yuetong is about to exit.
   appHidden:
     title: Application Hidden
-    body: Clash Verge is running in the background.
+    body: Yuetong is running in the background.
 service:
-  adminInstallPrompt: Installing the Clash Verge service requires administrator privileges.
-  adminUninstallPrompt: Uninstalling the Clash Verge service requires administrator privileges.
+  adminInstallPrompt: Installing the Yuetong service requires administrator privileges.
+  adminUninstallPrompt: Uninstalling the Yuetong service requires administrator privileges.
 tray:
   dashboard: Dashboard
   ruleMode: Rule Mode
@@ -37,9 +37,9 @@ tray:
   direct: Direct
   global: Global
   profiles: Profiles
-  proxies: Proxies
-  systemProxy: System Proxy
-  tunMode: TUN Mode
+  proxies: Nodes
+  systemProxy: System Connection
+  tunMode: Accelerate Mode
   closeAllConnections: Close All Connections
   lightweightMode: Lightweight Mode
   copyEnv: Copy Environment Variables
@@ -49,12 +49,12 @@ tray:
   openDir: Open Directory
   appLog: Application Log
   coreLog: Core Log
-  restartClash: Restart Clash Core
+  restartClash: Restart Core
   restartApp: Restart Application
-  vergeVersion: Verge Version
+  vergeVersion: Yuetong Version
   more: More
   exit: Exit
   tooltip:
-    systemProxy: System Proxy
-    tun: TUN
+    systemProxy: System Connection
+    tun: Accelerate
     profile: Profile

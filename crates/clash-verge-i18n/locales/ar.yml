@@ -20,13 +20,13 @@ notifications:
     body: تمت إعادة تفعيل الملف التعريفي.
   appQuit:
     title: على وشك الخروج
-    body: Clash Verge على وشك الخروج.
+    body: Yuetong على وشك الخروج.
   appHidden:
     title: تم إخفاء التطبيق
-    body: Clash Verge يعمل في الخلفية.
+    body: Yuetong يعمل في الخلفية.
 service:
-  adminInstallPrompt: يتطلب تثبيت خدمة Clash Verge صلاحيات المسؤول.
-  adminUninstallPrompt: يتطلب إلغاء تثبيت خدمة Clash Verge صلاحيات المسؤول.
+  adminInstallPrompt: يتطلب تثبيت خدمة Yuetong صلاحيات المسؤول.
+  adminUninstallPrompt: يتطلب إلغاء تثبيت خدمة Yuetong صلاحيات المسؤول.
 tray:
   dashboard: لوحة التحكم
   ruleMode: وضع القواعد

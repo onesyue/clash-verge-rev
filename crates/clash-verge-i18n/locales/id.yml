@@ -20,13 +20,13 @@ notifications:
     body: Profil diaktifkan kembali.
   appQuit:
     title: Akan Keluar
-    body: Clash Verge akan keluar.
+    body: Yuetong akan keluar.
   appHidden:
     title: Aplikasi Disembunyikan
-    body: Clash Verge berjalan di latar belakang.
+    body: Yuetong berjalan di latar belakang.
 service:
-  adminInstallPrompt: Menginstal layanan Clash Verge memerlukan hak administrator.
-  adminUninstallPrompt: Menghapus instalasi layanan Clash Verge memerlukan hak administrator.
+  adminInstallPrompt: Menginstal layanan Yuetong memerlukan hak administrator.
+  adminUninstallPrompt: Menghapus instalasi layanan Yuetong memerlukan hak administrator.
 tray:
   dashboard: Dasbor
   ruleMode: Mode Aturan

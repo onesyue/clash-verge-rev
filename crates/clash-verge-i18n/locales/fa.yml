@@ -20,13 +20,13 @@ notifications:
     body: پروفایل دوباره فعال شد.
   appQuit:
     title: در آستانه خروج
-    body: Clash Verge در آستانه خروج است.
+    body: Yuetong در آستانه خروج است.
   appHidden:
     title: برنامه پنهان شد
-    body: Clash Verge در پس‌زمینه در حال اجراست.
+    body: Yuetong در پس‌زمینه در حال اجراست.
 service:
-  adminInstallPrompt: نصب سرویس Clash Verge به دسترسی مدیر نیاز دارد.
-  adminUninstallPrompt: حذف سرویس Clash Verge به دسترسی مدیر نیاز دارد.
+  adminInstallPrompt: نصب سرویس Yuetong به دسترسی مدیر نیاز دارد.
+  adminUninstallPrompt: حذف سرویس Yuetong به دسترسی مدیر نیاز دارد.
 tray:
   dashboard: داشبورد
   ruleMode: حالت قوانین

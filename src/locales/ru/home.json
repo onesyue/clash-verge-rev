@@ -31,7 +31,7 @@
       "status": {
         "systemProxyEnabled": "Системный прокси включен, ваши приложения будут получать доступ к сети через него",
         "systemProxyDisabled": "Системный прокси отключен, большинству пользователей рекомендуется включить эту опцию",
-        "tunModeServiceRequired": "Режим TUN требует установленную службу Clash Verge",
+        "tunModeServiceRequired": "Режим TUN требует установленную службу Yuetong",
         "tunModeEnabled": "Режим TUN включен, приложения будут получать доступ к сети через виртуальную сетевую карту",
         "tunModeDisabled": "Режим TUN отключен"
       },
@@ -57,7 +57,7 @@
         "autoLaunch": "Автозапуск",
         "runningMode": "Режим работы",
         "lastCheckUpdate": "Последняя проверка обновлений",
-        "vergeVersion": "Версия Clash Verge Rev"
+        "vergeVersion": "Версия Yuetong"
       },
       "actions": {
         "settings": "Настройки"

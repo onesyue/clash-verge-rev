@@ -20,13 +20,13 @@ notifications:
     body: プロファイルが再有効化されました。
   appQuit:
     title: 終了間近
-    body: Clash Verge はまもなく終了します。
+    body: Yuetong はまもなく終了します。
   appHidden:
     title: アプリが非表示
-    body: Clash Verge はバックグラウンドで実行中です。
+    body: Yuetong はバックグラウンドで実行中です。
 service:
-  adminInstallPrompt: Clash Verge サービスのインストールには管理者権限が必要です。
-  adminUninstallPrompt: Clash Verge サービスのアンインストールには管理者権限が必要です。
+  adminInstallPrompt: Yuetong サービスのインストールには管理者権限が必要です。
+  adminUninstallPrompt: Yuetong サービスのアンインストールには管理者権限が必要です。
 tray:
   dashboard: ダッシュボード
   ruleMode: ルールモード

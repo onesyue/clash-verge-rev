@@ -20,10 +20,10 @@ notifications:
     body: Profil reaktiviert.
   appQuit:
     title: Beenden steht bevor
-    body: Clash Verge wird gleich beendet.
+    body: Yuetong wird gleich beendet.
   appHidden:
     title: Anwendung ausgeblendet
-    body: Clash Verge läuft im Hintergrund.
+    body: Yuetong läuft im Hintergrund.
 service:
   adminInstallPrompt: Für die Installation des Clash-Verge-Dienstes sind Administratorrechte erforderlich.
   adminUninstallPrompt: Für die Deinstallation des Clash-Verge-Dienstes sind Administratorrechte erforderlich.

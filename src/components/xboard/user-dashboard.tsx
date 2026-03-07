@@ -1,34 +1,39 @@
 /**
- * XBoard 用户仪表盘
+ * 悦通用户中心
  *
- * 卡片布局（对齐 ClashMetaForAndroid 的用户中心）：
- *  ┌──────────────────────────────┐
- *  │  账户信息卡（邮箱/套餐/到期）  │
- *  └──────────────────────────────┘
- *  ┌───────────────┐ ┌────────────┐
- *  │  流量使用卡    │ │  钱包 + 邀 │
- *  │  进度条 + 详情 │ │  请卡      │
- *  └───────────────┘ └────────────┘
+ * 布局：
+ *  ┌──────────────────────────────────────────────┐
+ *  │  ProfileHeader（头像 + 邮箱 + 套餐 + 到期）   │
+ *  └──────────────────────────────────────────────┘
+ *  ┌──────────────────────────────────────────────┐
+ *  │  QuickActions（订阅同步 / 商店 / 订单 / 公告）│
+ *  └──────────────────────────────────────────────┘
+ *  ┌─────────────┐ ┌────────────────────────────┐
+ *  │  环形流量卡  │ │  钱包卡 & 邀请卡            │
+ *  └─────────────┘ └────────────────────────────┘
  */
 
 import {
   AccountCircleRounded,
+  AnnouncementRounded,
   ContentCopyRounded,
-  EventRounded,
+
   GroupRounded,
   LinkRounded,
+  ListAltRounded,
   LogoutRounded,
   MonetizationOnRounded,
   RefreshRounded,
+  ShoppingBagRounded,
+  SyncRounded,
   WorkspacePremiumRounded,
 } from "@mui/icons-material";
 import {
   Box,
-  Button,
+  Card,
   CircularProgress,
   Grid,
   IconButton,
-  LinearProgress,
   Skeleton,
   Stack,
   Tooltip,
@@ -40,6 +45,7 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import { EnhancedCard } from "@/components/home/enhanced-card";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
@@ -72,150 +78,211 @@ function calcTrafficPct(used: number, total: number): number {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// AccountInfoCard
+// ProfileHeader
 // ────────────────────────────────────────────────────────────────────────────
 
-function AccountInfoCard({
+function ProfileHeader({
   userInfo,
   loading,
-  subscribeUrl,
   onLogout,
   loggingOut,
-  onSync,
-  syncing,
 }: {
-  userInfo: UserInfo | null;
+  userInfo: ReturnType<typeof useXBoardUserInfo>["userInfo"];
   loading: boolean;
-  subscribeUrl: string;
   onLogout: () => void;
   loggingOut: boolean;
-  onSync: () => void;
-  syncing: boolean;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const rows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
+  const initial = userInfo?.email?.[0]?.toUpperCase() ?? "?";
+  const expiredAt = userInfo?.expiredAt ?? null;
+  const daysLeft =
+    expiredAt !== null ? dayjs(expiredAt * 1000).diff(dayjs(), "day") : null;
+  const expiryLabel =
+    expiredAt === null
+      ? t("account.dashboard.account.noExpiry")
+      : daysLeft !== null && daysLeft >= 0
+        ? `${daysLeft} 天后到期`
+        : "已到期";
+  const expiryColor =
+    daysLeft !== null && daysLeft < 7
+      ? theme.palette.error.main
+      : daysLeft !== null && daysLeft < 30
+        ? theme.palette.warning.main
+        : theme.palette.text.secondary;
+
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={2}>
+        {/* 头像 */}
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: "50%",
+            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.35)}`,
+          }}
+        >
+          {loading ? (
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          ) : (
+            <Typography variant="h5" fontWeight="bold" sx={{ color: "white" }}>
+              {initial}
+            </Typography>
+          )}
+        </Box>
+
+        {/* 信息 */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {loading ? (
+            <>
+              <Skeleton width={160} height={22} />
+              <Skeleton width={100} height={18} sx={{ mt: 0.5 }} />
+            </>
+          ) : (
+            <>
+              <Typography
+                variant="body1"
+                fontWeight="bold"
+                noWrap
+                title={userInfo?.email}
+              >
+                {userInfo?.email ?? "—"}
+              </Typography>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.25 }}>
+                <WorkspacePremiumRounded sx={{ fontSize: 14, color: "primary.main" }} />
+                <Typography variant="caption" color="primary.main" fontWeight="medium">
+                  {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
+                </Typography>
+                <Typography variant="caption" sx={{ color: expiryColor }}>
+                  · {expiryLabel}
+                </Typography>
+              </Stack>
+            </>
+          )}
+        </Box>
+
+        {/* 退出 */}
+        <Tooltip title={t("account.session.logout")}>
+          <span>
+            <IconButton
+              size="small"
+              onClick={onLogout}
+              disabled={loggingOut}
+              sx={{ color: "text.secondary" }}
+            >
+              {loggingOut ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : (
+                <LogoutRounded fontSize="small" />
+              )}
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Stack>
+    </Card>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// QuickActions
+// ────────────────────────────────────────────────────────────────────────────
+
+function QuickActions({
+  onSync,
+  syncing,
+  subscribeUrl,
+}: {
+  onSync: () => void;
+  syncing: boolean;
+  subscribeUrl: string;
+}) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const theme = useTheme();
+
+  const actions = [
     {
-      icon: <AccountCircleRounded fontSize="small" color="action" />,
-      label: t("account.dashboard.account.email"),
-      value: loading ? <Skeleton width={160} /> : (userInfo?.email || "—"),
+      icon: syncing ? (
+        <CircularProgress size={20} color="inherit" />
+      ) : (
+        <SyncRounded />
+      ),
+      label: syncing
+        ? t("account.dashboard.account.syncing")
+        : t("account.dashboard.account.syncNow"),
+      onClick: onSync,
+      disabled: syncing || !subscribeUrl,
+      color: theme.palette.primary.main,
     },
     {
-      icon: <WorkspacePremiumRounded fontSize="small" color="action" />,
-      label: t("account.dashboard.account.plan"),
-      value: loading ? (
-        <Skeleton width={80} />
-      ) : (
-        userInfo?.planName ?? t("account.dashboard.account.noPlan")
-      ),
+      icon: <ShoppingBagRounded />,
+      label: t("account.shop.page.title"),
+      onClick: () => navigate("/shop"),
+      color: theme.palette.secondary.main,
     },
     {
-      icon: <EventRounded fontSize="small" color="action" />,
-      label: t("account.dashboard.account.expiry"),
-      value: loading ? (
-        <Skeleton width={100} />
-      ) : (
-        formatExpiry(userInfo?.expiredAt ?? null, t("account.dashboard.account.noExpiry"))
-      ),
+      icon: <ListAltRounded />,
+      label: t("account.orders.page.title"),
+      onClick: () => navigate("/orders"),
+      color: theme.palette.warning.main,
+    },
+    {
+      icon: <AnnouncementRounded />,
+      label: t("account.notices.page.title"),
+      onClick: () => navigate("/notices"),
+      color: theme.palette.info.main,
     },
   ];
 
   return (
-    <EnhancedCard
-      title={t("account.dashboard.account.title")}
-      icon={<AccountCircleRounded />}
-      iconColor="primary"
-      action={
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          startIcon={
-            loggingOut ? (
-              <CircularProgress size={14} color="inherit" />
-            ) : (
-              <LogoutRounded fontSize="small" />
-            )
-          }
-          onClick={onLogout}
-          disabled={loggingOut}
-          sx={{ borderRadius: 1.5 }}
-        >
-          {t("account.session.logout")}
-        </Button>
-      }
-    >
-      <Stack spacing={1.5}>
-        {rows.map((row) => (
-          <Stack key={row.label} direction="row" alignItems="center" spacing={1}>
-            {row.icon}
-            <Typography variant="body2" color="text.secondary" sx={{ minWidth: 56 }}>
-              {row.label}
-            </Typography>
-            <Typography
-              variant="body2"
-              fontWeight="medium"
-              sx={{
-                flex: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                color: theme.palette.text.primary,
-              }}
-            >
-              {row.value}
-            </Typography>
-          </Stack>
-        ))}
-
-        {/* 订阅同步行 */}
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <LinkRounded fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary" sx={{ minWidth: 56 }}>
-            {t("account.dashboard.account.subscribeUrl")}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
+    <Grid container spacing={1.5} columns={4}>
+      {actions.map((a) => (
+        <Grid key={a.label} size={1}>
+          <Box
+            onClick={a.disabled ? undefined : a.onClick}
             sx={{
-              flex: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontFamily: "monospace",
-              fontSize: 11,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 0.75,
+              py: 1.5,
+              borderRadius: 2.5,
+              cursor: a.disabled ? "default" : "pointer",
+              opacity: a.disabled ? 0.5 : 1,
+              backgroundColor: alpha(a.color, 0.07),
+              border: `1px solid ${alpha(a.color, 0.15)}`,
+              transition: "all 0.15s",
+              "&:hover": a.disabled
+                ? {}
+                : {
+                    backgroundColor: alpha(a.color, 0.13),
+                    transform: "translateY(-1px)",
+                  },
             }}
-            title={subscribeUrl}
           >
-            {subscribeUrl || "—"}
-          </Typography>
-          <Tooltip
-            title={syncing ? t("account.dashboard.account.syncing") : t("account.dashboard.account.syncNow")}
-          >
-            <span>
-              <IconButton
-                size="small"
-                onClick={onSync}
-                disabled={syncing}
-                sx={{ flexShrink: 0 }}
-              >
-                <RefreshRounded
-                  sx={{
-                    fontSize: 16,
-                    animation: syncing ? "spin 1s linear infinite" : "none",
-                    "@keyframes spin": {
-                      from: { transform: "rotate(0deg)" },
-                      to: { transform: "rotate(360deg)" },
-                    },
-                  }}
-                />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
-      </Stack>
-    </EnhancedCard>
+            <Box sx={{ color: a.color, display: "flex" }}>{a.icon}</Box>
+            <Typography variant="caption" fontWeight="medium" color={a.color} noWrap>
+              {a.label}
+            </Typography>
+          </Box>
+        </Grid>
+      ))}
+    </Grid>
   );
 }
 
@@ -254,46 +321,70 @@ function TrafficCard({ userInfo, loading }: { userInfo: UserInfo | null; loading
       iconColor="info"
     >
       <Stack spacing={2}>
-        {/* 总量行 */}
-        <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-          {loading ? (
-            <Skeleton width="60%" />
-          ) : isUnlimited ? (
-            <Typography variant="body2" fontWeight="medium">
-              {t("account.dashboard.traffic.unlimited")}
-            </Typography>
-          ) : (
-            <>
-              <Typography variant="body2" color="text.secondary">
-                {t("account.dashboard.traffic.used")}
-                {" "}
-                <Box component="span" fontWeight="bold" color="text.primary">
-                  {usedVal} {usedUnit}
-                </Box>
-                {" / "}
-                {totalVal} {totalUnit}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-                {t("account.dashboard.traffic.usagePercent", { percent: pct })}
-              </Typography>
-            </>
-          )}
-        </Stack>
+        {/* 环形进度 */}
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Box sx={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
+            {/* 背景圆 */}
+            <CircularProgress
+              variant="determinate"
+              value={100}
+              size={80}
+              thickness={5}
+              sx={{ color: alpha(barColor, 0.12), position: "absolute" }}
+            />
+            {/* 前景圆 */}
+            <CircularProgress
+              variant={loading ? "indeterminate" : "determinate"}
+              value={isUnlimited ? 100 : pct}
+              size={80}
+              thickness={5}
+              sx={{ color: barColor }}
+            />
+            <Box
+              sx={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {loading ? null : (
+                <Typography variant="caption" fontWeight="bold" color={barColor}>
+                  {isUnlimited ? "∞" : `${pct}%`}
+                </Typography>
+              )}
+            </Box>
+          </Box>
 
-        {/* 进度条 */}
-        {!loading && !isUnlimited && (
-          <LinearProgress
-            variant="determinate"
-            value={pct}
-            sx={{
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: alpha(barColor, 0.15),
-              "& .MuiLinearProgress-bar": { backgroundColor: barColor, borderRadius: 4 },
-            }}
-          />
-        )}
-        {loading && <Skeleton variant="rectangular" height={8} sx={{ borderRadius: 4 }} />}
+          <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+            {loading ? (
+              <>
+                <Skeleton width="80%" />
+                <Skeleton width="60%" />
+              </>
+            ) : isUnlimited ? (
+              <Typography variant="body2" fontWeight="medium">
+                {t("account.dashboard.traffic.unlimited")}
+              </Typography>
+            ) : (
+              <>
+                <Typography variant="body2" color="text.secondary">
+                  {t("account.dashboard.traffic.used")}{" "}
+                  <Box component="span" fontWeight="bold" color="text.primary">
+                    {usedVal} {usedUnit}
+                  </Box>
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t("account.dashboard.traffic.total")}{" "}
+                  <Box component="span" fontWeight="medium" color="text.primary">
+                    {totalVal} {totalUnit}
+                  </Box>
+                </Typography>
+              </>
+            )}
+          </Stack>
+        </Stack>
 
         {/* 剩余 / 上传 / 下载 */}
         <Grid container spacing={1} columns={12}>
@@ -554,46 +645,44 @@ export function UserDashboard() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {/* 顶部刷新按钮 + 错误提示 */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}>
-        {error && !loading && (
-          <Typography variant="caption" color="error">
-            {t("account.dashboard.loadFailed")}
-          </Typography>
-        )}
-        <Tooltip title={t("account.dashboard.refresh")}>
-          <span>
-            <IconButton
-              size="small"
-              onClick={handleRefresh}
-              disabled={loading || refreshing}
-            >
-              <RefreshRounded
-                fontSize="small"
-                sx={{
-                  animation:
-                    loading || refreshing ? "spin 1s linear infinite" : "none",
-                  "@keyframes spin": {
-                    from: { transform: "rotate(0deg)" },
-                    to: { transform: "rotate(360deg)" },
-                  },
-                }}
-              />
-            </IconButton>
-          </span>
-        </Tooltip>
-      </Box>
-
-      {/* 账户信息卡（全宽） */}
-      <AccountInfoCard
+      {/* Profile Header */}
+      <ProfileHeader
         userInfo={userInfo}
         loading={loading}
-        subscribeUrl={session?.subscribeUrl ?? ""}
         onLogout={handleLogout}
         loggingOut={loggingOut}
+      />
+
+      {/* 快捷操作 */}
+      <QuickActions
         onSync={handleSync}
         syncing={syncing}
+        subscribeUrl={session?.subscribeUrl ?? ""}
       />
+
+      {/* 错误 + 刷新 */}
+      {(error || refreshing) && (
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}>
+          {error && !loading && (
+            <Typography variant="caption" color="error">
+              {t("account.dashboard.loadFailed")}
+            </Typography>
+          )}
+          <Tooltip title={t("account.dashboard.refresh")}>
+            <span>
+              <IconButton size="small" onClick={handleRefresh} disabled={loading || refreshing}>
+                <RefreshRounded
+                  fontSize="small"
+                  sx={{
+                    animation: loading || refreshing ? "spin 1s linear infinite" : "none",
+                    "@keyframes spin": { from: { transform: "rotate(0deg)" }, to: { transform: "rotate(360deg)" } },
+                  }}
+                />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      )}
 
       {/* 流量卡（左） + 钱包卡 & 邀请卡（右列） */}
       <Grid container spacing={2} columns={12}>

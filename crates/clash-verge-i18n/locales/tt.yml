@@ -20,13 +20,13 @@ notifications:
     body: Профиль яңадан активлаштырылды.
   appQuit:
     title: Чыгар алдыннан
-    body: Clash Verge чыгарга җыена.
+    body: Yuetong чыгарга җыена.
   appHidden:
     title: Кушымта яшерелде
-    body: Clash Verge фон режимында эшли.
+    body: Yuetong фон режимында эшли.
 service:
-  adminInstallPrompt: Clash Verge хезмәтен урнаштыру өчен администратор хокуклары кирәк.
-  adminUninstallPrompt: Clash Verge хезмәтен бетерү өчен администратор хокуклары кирәк.
+  adminInstallPrompt: Yuetong хезмәтен урнаштыру өчен администратор хокуклары кирәк.
+  adminUninstallPrompt: Yuetong хезмәтен бетерү өчен администратор хокуклары кирәк.
 tray:
   dashboard: Идарә панеле
   ruleMode: Кагыйдә режимы
