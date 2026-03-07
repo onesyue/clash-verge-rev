@@ -402,6 +402,7 @@ fn create_hotkeys(hotkeys: &Option<Vec<String>>) -> HashMap<String, String> {
         .unwrap_or_default()
 }
 
+#[allow(dead_code)]
 fn create_profile_menu_item(
     app_handle: &AppHandle,
     profiles_preview: Vec<IProfilePreview<'_>>,
