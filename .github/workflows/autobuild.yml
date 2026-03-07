@@ -1,10 +1,11 @@
-name: Auto Build
+name: Auto Build (Disabled)
 
 on:
   workflow_dispatch:
-  schedule:
-    # UTC+8 12:00, 18:00 -> UTC 4:00, 10:00
-    - cron: "0 4,10 * * *"
+    inputs:
+      _disabled:
+        description: "此 workflow 已禁用，请勿手动触发"
+        required: false
 permissions: write-all
 env:
   TAG_NAME: autobuild
@@ -17,8 +18,19 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  disabled:
+    name: Workflow Disabled
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exit
+        run: |
+          echo "此 AutoBuild workflow 已禁用。请使用 Alpha Build 或 Release workflow。"
+          exit 0
+
   check_commit:
     name: Check Commit Needs Build
+    needs: disabled
+    if: false
     uses: clash-verge-rev/clash-verge-rev/.github/workflows/check-commit-needs-build.yml@dev
     with:
       tag_name: autobuild
