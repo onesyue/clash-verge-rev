@@ -4,7 +4,7 @@
  * 职责：
  *  1. 检查是否已有匹配该订阅 URL 的 Profile
  *  2. 没有则通过 importProfile 导入，并开启自动更新（24h）
- *  3. 已有则调用 updateProfile 立即刷新
+ *  3. 已有则直接激活（跳过重新下载，避免 1-2 分钟等待）
  *  4. 返回关联的 profile uid（持久化到 localStorage 供后续刷新用）
  *
  * 为什么不用 uid 而用 URL 查找？
@@ -86,10 +86,11 @@ export async function syncXBoardSubscription(
   let isNew: boolean;
 
   if (existing?.uid) {
-    // 2a. 已有 → 立即刷新（不走代理，订阅 URL 直连即可）
+    // 2a. 已有 → 直接激活，跳过重新下载
+    // 参考 Android 端修复：URL 相同时无需重新拉取订阅（耗时 1-2 分钟），
+    // 直接激活现有配置即可。手动刷新订阅内容请用仪表盘"立即同步"按钮。
     uid = existing.uid;
     isNew = false;
-    await updateProfile(uid, { ...existing.option, with_proxy: false });
   } else {
     // 2b. 没有 → 导入，并开启每 24h 自动更新
     // with_proxy: false — 订阅 URL 是直连 HTTPS，不需要也不能走代理
