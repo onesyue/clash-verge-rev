@@ -35,6 +35,7 @@ import SettingsPage from "./settings";
 import ShopPage from "./shop";
 import UnlockPage from "./unlock";
 
+// 导航顺序：核心功能优先（首页 › 节点 › 商店 › 我的），高级功能靠后
 export const navItems = [
   {
     label: "layout.components.navigation.tabs.home",
@@ -47,6 +48,24 @@ export const navItems = [
     path: "/proxies",
     icon: [<WifiRoundedIcon key="mui" />, <ProxiesSvg key="svg" />],
     Component: ProxiesPage,
+  },
+  {
+    label: "layout.components.navigation.tabs.shop",
+    path: "/shop",
+    icon: [
+      <ShoppingCartRoundedIcon key="mui" />,
+      <ShoppingCartRoundedIcon key="svg" />,
+    ],
+    Component: ShopPage,
+  },
+  {
+    label: "layout.components.navigation.tabs.account",
+    path: "/account",
+    icon: [
+      <AccountCircleRoundedIcon key="mui" />,
+      <AccountCircleRoundedIcon key="svg" />,
+    ],
+    Component: AccountPage,
   },
   {
     label: "layout.components.navigation.tabs.profiles",
@@ -77,24 +96,6 @@ export const navItems = [
     path: "/unlock",
     icon: [<LockOpenRoundedIcon key="mui" />, <UnlockSvg key="svg" />],
     Component: UnlockPage,
-  },
-  {
-    label: "layout.components.navigation.tabs.account",
-    path: "/account",
-    icon: [
-      <AccountCircleRoundedIcon key="mui" />,
-      <AccountCircleRoundedIcon key="svg" />,
-    ],
-    Component: AccountPage,
-  },
-  {
-    label: "layout.components.navigation.tabs.shop",
-    path: "/shop",
-    icon: [
-      <ShoppingCartRoundedIcon key="mui" />,
-      <ShoppingCartRoundedIcon key="svg" />,
-    ],
-    Component: ShopPage,
   },
   {
     label: "layout.components.navigation.tabs.orders",

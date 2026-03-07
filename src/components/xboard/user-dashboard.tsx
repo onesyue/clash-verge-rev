@@ -1,41 +1,57 @@
 /**
- * 悦通用户中心
+ * 悦通用户中心 — 2026 VPN 风格
  *
  * 布局：
- *  ┌──────────────────────────────────────────────┐
- *  │  ProfileHeader（头像 + 邮箱 + 套餐 + 到期）   │
- *  └──────────────────────────────────────────────┘
- *  ┌──────────────────────────────────────────────┐
- *  │  QuickActions（订阅同步 / 商店 / 订单 / 公告）│
- *  └──────────────────────────────────────────────┘
- *  ┌─────────────┐ ┌────────────────────────────┐
- *  │  环形流量卡  │ │  钱包卡 & 邀请卡            │
- *  └─────────────┘ └────────────────────────────┘
+ *  ┌──────────────────────────────────────┐
+ *  │     [M]  my@yue.to                   │
+ *  │   Infinity · 永久                    │  ← 居中大头像
+ *  ├──────────────────────────────────────┤
+ *  │ 订阅详情                             │
+ *  │ [████░░░] 5%  已用 364 GB / 9999 GB │
+ *  ├──────────────────────────────────────┤
+ *  │  余额 ¥0.00   │   返利 ¥0.00        │
+ *  ├──────────────────────────────────────┤
+ *  │ 🔑 修改密码                >         │
+ *  │ 📢 公告                    >         │
+ *  │ 📦 我的订单                >         │
+ *  │ 👥 邀请好友                >         │
+ *  │ 🚪 退出登录                          │
+ *  └──────────────────────────────────────┘
  */
 
 import {
-  AccountCircleRounded,
   AnnouncementRounded,
-  ContentCopyRounded,
-
+  ChevronRightRounded,
   GroupRounded,
-  LinkRounded,
+  KeyRounded,
   ListAltRounded,
   LogoutRounded,
   MonetizationOnRounded,
   RefreshRounded,
-  ShoppingBagRounded,
   SyncRounded,
+  VisibilityOffRounded,
+  VisibilityRounded,
   WorkspacePremiumRounded,
 } from "@mui/icons-material";
 import {
   Box,
-  Card,
+  Button,
   CircularProgress,
-  Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   IconButton,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
   Skeleton,
   Stack,
+  TextField,
   Tooltip,
   Typography,
   alpha,
@@ -47,29 +63,22 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { EnhancedCard } from "@/components/home/enhanced-card";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { showNotice } from "@/services/notice-service";
-import { logout } from "@/services/xboard/api";
-import { clearSession, useSetXBoardSession, useXBoardSession } from "@/services/xboard/store";
+import { changePassword, logout } from "@/services/xboard/api";
 import {
-  clearProfileUid,
-  refreshXBoardProfile,
-} from "@/services/xboard/sync";
+  clearSession,
+  useSetXBoardSession,
+  useXBoardSession,
+} from "@/services/xboard/store";
+import { clearProfileUid, refreshXBoardProfile } from "@/services/xboard/sync";
 import type { InviteInfo, UserInfo } from "@/services/xboard/types";
 import parseTraffic from "@/utils/parse-traffic";
 
-// ────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ────────────────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function formatBalance(cents: number, unit: string): string {
   return `${unit}${(cents / 100).toFixed(2)}`;
-}
-
-function formatExpiry(expiredAt: number | null, noExpiry: string): string {
-  if (expiredAt === null) return noExpiry;
-  return dayjs(expiredAt * 1000).format("YYYY-MM-DD");
 }
 
 function calcTrafficPct(used: number, total: number): number {
@@ -77,236 +86,287 @@ function calcTrafficPct(used: number, total: number): number {
   return Math.min(Math.round((used / total) * 100), 100);
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// ProfileHeader
-// ────────────────────────────────────────────────────────────────────────────
+// ─── 修改密码对话框 ───────────────────────────────────────────────────────────
+
+function ChangePasswordDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const session = useXBoardSession();
+  const [oldPwd, setOldPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleClose = () => {
+    setOldPwd("");
+    setNewPwd("");
+    setConfirmPwd("");
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    if (!newPwd || !oldPwd) return;
+    if (newPwd !== confirmPwd) {
+      showNotice.error("两次输入的新密码不一致");
+      return;
+    }
+    if (!session) return;
+    setSubmitting(true);
+    try {
+      await changePassword(session.baseUrl, session.authData, oldPwd, newPwd);
+      showNotice.success("密码修改成功");
+      handleClose();
+    } catch (e: any) {
+      showNotice.error(e instanceof Error ? e.message : "修改失败");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+      <DialogTitle>修改密码</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          <TextField
+            label="当前密码"
+            type={showOld ? "text" : "password"}
+            value={oldPwd}
+            onChange={(e) => setOldPwd(e.target.value)}
+            fullWidth
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <IconButton size="small" onClick={() => setShowOld((v) => !v)}>
+                  {showOld ? (
+                    <VisibilityOffRounded fontSize="small" />
+                  ) : (
+                    <VisibilityRounded fontSize="small" />
+                  )}
+                </IconButton>
+              ),
+            }}
+          />
+          <TextField
+            label="新密码"
+            type={showNew ? "text" : "password"}
+            value={newPwd}
+            onChange={(e) => setNewPwd(e.target.value)}
+            fullWidth
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <IconButton size="small" onClick={() => setShowNew((v) => !v)}>
+                  {showNew ? (
+                    <VisibilityOffRounded fontSize="small" />
+                  ) : (
+                    <VisibilityRounded fontSize="small" />
+                  )}
+                </IconButton>
+              ),
+            }}
+          />
+          <TextField
+            label="确认新密码"
+            type="password"
+            value={confirmPwd}
+            onChange={(e) => setConfirmPwd(e.target.value)}
+            fullWidth
+            size="small"
+            error={confirmPwd.length > 0 && confirmPwd !== newPwd}
+            helperText={
+              confirmPwd.length > 0 && confirmPwd !== newPwd
+                ? "两次输入不一致"
+                : ""
+            }
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose} disabled={submitting}>
+          {t("shared.actions.cancel")}
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={submitting || !oldPwd || !newPwd || newPwd !== confirmPwd}
+          startIcon={
+            submitting ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : undefined
+          }
+        >
+          确认修改
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// ─── 账号头部（居中大头像） ───────────────────────────────────────────────────
 
 function ProfileHeader({
   userInfo,
   loading,
-  onLogout,
-  loggingOut,
+  onRefresh,
+  refreshing,
+  syncing,
+  onSync,
+  subscribeUrl,
 }: {
-  userInfo: ReturnType<typeof useXBoardUserInfo>["userInfo"];
+  userInfo: UserInfo | null;
   loading: boolean;
-  onLogout: () => void;
-  loggingOut: boolean;
+  onRefresh: () => void;
+  refreshing: boolean;
+  syncing: boolean;
+  onSync: () => void;
+  subscribeUrl: string;
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const initial = userInfo?.email?.[0]?.toUpperCase() ?? "?";
   const expiredAt = userInfo?.expiredAt ?? null;
-  const daysLeft =
-    expiredAt !== null ? dayjs(expiredAt * 1000).diff(dayjs(), "day") : null;
   const expiryLabel =
     expiredAt === null
       ? t("account.dashboard.account.noExpiry")
-      : daysLeft !== null && daysLeft >= 0
-        ? `${daysLeft} 天后到期`
-        : "已到期";
-  const expiryColor =
-    daysLeft !== null && daysLeft < 7
-      ? theme.palette.error.main
-      : daysLeft !== null && daysLeft < 30
-        ? theme.palette.warning.main
-        : theme.palette.text.secondary;
+      : dayjs(expiredAt * 1000).format("YYYY-MM-DD");
 
   return (
-    <Card
-      elevation={0}
+    <Box
       sx={{
-        p: 2.5,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 1,
+        py: 3,
+        px: 2,
         borderRadius: 3,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+        background: `linear-gradient(160deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.secondary.main, 0.06)} 100%)`,
         border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+        position: "relative",
       }}
     >
-      <Stack direction="row" alignItems="center" spacing={2}>
-        {/* 头像 */}
-        <Box
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.35)}`,
-          }}
-        >
-          {loading ? (
-            <CircularProgress size={20} sx={{ color: "white" }} />
-          ) : (
-            <Typography variant="h5" fontWeight="bold" sx={{ color: "white" }}>
-              {initial}
-            </Typography>
-          )}
-        </Box>
-
-        {/* 信息 */}
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {loading ? (
-            <>
-              <Skeleton width={160} height={22} />
-              <Skeleton width={100} height={18} sx={{ mt: 0.5 }} />
-            </>
-          ) : (
-            <>
-              <Typography
-                variant="body1"
-                fontWeight="bold"
-                noWrap
-                title={userInfo?.email}
-              >
-                {userInfo?.email ?? "—"}
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.25 }}>
-                <WorkspacePremiumRounded sx={{ fontSize: 14, color: "primary.main" }} />
-                <Typography variant="caption" color="primary.main" fontWeight="medium">
-                  {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
-                </Typography>
-                <Typography variant="caption" sx={{ color: expiryColor }}>
-                  · {expiryLabel}
-                </Typography>
-              </Stack>
-            </>
-          )}
-        </Box>
-
-        {/* 退出 */}
-        <Tooltip title={t("account.session.logout")}>
+      {/* 右上角操作区 */}
+      <Box sx={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 0.5 }}>
+        <Tooltip title={t("account.dashboard.account.syncNow")}>
           <span>
             <IconButton
               size="small"
-              onClick={onLogout}
-              disabled={loggingOut}
+              onClick={onSync}
+              disabled={syncing || !subscribeUrl}
               sx={{ color: "text.secondary" }}
             >
-              {loggingOut ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : (
-                <LogoutRounded fontSize="small" />
-              )}
+              <SyncRounded
+                fontSize="small"
+                sx={{ animation: syncing ? "spin 1s linear infinite" : "none" }}
+              />
             </IconButton>
           </span>
         </Tooltip>
-      </Stack>
-    </Card>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// QuickActions
-// ────────────────────────────────────────────────────────────────────────────
-
-function QuickActions({
-  onSync,
-  syncing,
-  subscribeUrl,
-}: {
-  onSync: () => void;
-  syncing: boolean;
-  subscribeUrl: string;
-}) {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const theme = useTheme();
-
-  const actions = [
-    {
-      icon: syncing ? (
-        <CircularProgress size={20} color="inherit" />
-      ) : (
-        <SyncRounded />
-      ),
-      label: syncing
-        ? t("account.dashboard.account.syncing")
-        : t("account.dashboard.account.syncNow"),
-      onClick: onSync,
-      disabled: syncing || !subscribeUrl,
-      color: theme.palette.primary.main,
-    },
-    {
-      icon: <ShoppingBagRounded />,
-      label: t("account.shop.page.title"),
-      onClick: () => navigate("/shop"),
-      color: theme.palette.secondary.main,
-    },
-    {
-      icon: <ListAltRounded />,
-      label: t("account.orders.page.title"),
-      onClick: () => navigate("/orders"),
-      color: theme.palette.warning.main,
-    },
-    {
-      icon: <AnnouncementRounded />,
-      label: t("account.notices.page.title"),
-      onClick: () => navigate("/notices"),
-      color: theme.palette.info.main,
-    },
-  ];
-
-  return (
-    <Grid container spacing={1.5} columns={4}>
-      {actions.map((a) => (
-        <Grid key={a.label} size={1}>
-          <Box
-            onClick={a.disabled ? undefined : a.onClick}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 0.75,
-              py: 1.5,
-              borderRadius: 2.5,
-              cursor: a.disabled ? "default" : "pointer",
-              opacity: a.disabled ? 0.5 : 1,
-              backgroundColor: alpha(a.color, 0.07),
-              border: `1px solid ${alpha(a.color, 0.15)}`,
-              transition: "all 0.15s",
-              "&:hover": a.disabled
-                ? {}
-                : {
-                    backgroundColor: alpha(a.color, 0.13),
-                    transform: "translateY(-1px)",
+        <Tooltip title={t("account.dashboard.refresh")}>
+          <span>
+            <IconButton
+              size="small"
+              onClick={onRefresh}
+              disabled={loading || refreshing}
+              sx={{ color: "text.secondary" }}
+            >
+              <RefreshRounded
+                fontSize="small"
+                sx={{
+                  animation: loading || refreshing ? "spin 1s linear infinite" : "none",
+                  "@keyframes spin": {
+                    from: { transform: "rotate(0deg)" },
+                    to: { transform: "rotate(360deg)" },
                   },
-            }}
-          >
-            <Box sx={{ color: a.color, display: "flex" }}>{a.icon}</Box>
-            <Typography variant="caption" fontWeight="medium" color={a.color} noWrap>
-              {a.label}
+                }}
+              />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </Box>
+
+      {/* 头像 */}
+      <Box
+        sx={{
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+        }}
+      >
+        {loading ? (
+          <CircularProgress size={28} sx={{ color: "white" }} />
+        ) : (
+          <Typography variant="h4" fontWeight="bold" sx={{ color: "white" }}>
+            {initial}
+          </Typography>
+        )}
+      </Box>
+
+      {/* 邮箱 */}
+      {loading ? (
+        <Skeleton width={160} height={22} />
+      ) : (
+        <Typography variant="body1" fontWeight="bold" noWrap sx={{ maxWidth: 260 }}>
+          {userInfo?.email ?? "—"}
+        </Typography>
+      )}
+
+      {/* 套餐 + 到期 */}
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <WorkspacePremiumRounded sx={{ fontSize: 15, color: "primary.main" }} />
+        {loading ? (
+          <Skeleton width={120} height={18} />
+        ) : (
+          <>
+            <Typography variant="body2" color="primary.main" fontWeight="medium">
+              {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
-          </Box>
-        </Grid>
-      ))}
-    </Grid>
+            <Typography variant="caption" color="text.secondary">
+              · {expiryLabel}
+            </Typography>
+          </>
+        )}
+      </Stack>
+    </Box>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// TrafficCard
-// ────────────────────────────────────────────────────────────────────────────
+// ─── 订阅详情卡 ───────────────────────────────────────────────────────────────
 
-function TrafficCard({ userInfo, loading }: { userInfo: UserInfo | null; loading: boolean }) {
+function SubscriptionCard({
+  userInfo,
+  loading,
+}: {
+  userInfo: UserInfo | null;
+  loading: boolean;
+}) {
   const { t } = useTranslation();
   const theme = useTheme();
 
   const usedBytes = (userInfo?.usedDownload ?? 0) + (userInfo?.usedUpload ?? 0);
   const totalBytes = userInfo?.transferEnable ?? 0;
-  const remainingBytes = Math.max(totalBytes - usedBytes, 0);
-  const pct = calcTrafficPct(usedBytes, totalBytes);
   const isUnlimited = totalBytes === 0;
+  const pct = calcTrafficPct(usedBytes, totalBytes);
 
   const [usedVal, usedUnit] = parseTraffic(usedBytes);
   const [totalVal, totalUnit] = parseTraffic(totalBytes);
-  const [remainVal, remainUnit] = parseTraffic(remainingBytes);
   const [upVal, upUnit] = parseTraffic(userInfo?.usedUpload ?? 0);
   const [downVal, downUnit] = parseTraffic(userInfo?.usedDownload ?? 0);
 
-  // 进度条颜色：>80% 警告色，>95% 错误色
   const barColor =
     pct >= 95
       ? theme.palette.error.main
@@ -315,207 +375,213 @@ function TrafficCard({ userInfo, loading }: { userInfo: UserInfo | null; loading
         : theme.palette.primary.main;
 
   return (
-    <EnhancedCard
-      title={t("account.dashboard.traffic.title")}
-      icon={<LinkRounded />}
-      iconColor="info"
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2,
+        borderRadius: 2.5,
+        bgcolor: alpha(theme.palette.background.paper, 0.7),
+        border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+      }}
     >
-      <Stack spacing={2}>
-        {/* 环形进度 */}
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Box sx={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
-            {/* 背景圆 */}
-            <CircularProgress
-              variant="determinate"
-              value={100}
-              size={80}
-              thickness={5}
-              sx={{ color: alpha(barColor, 0.12), position: "absolute" }}
-            />
-            {/* 前景圆 */}
-            <CircularProgress
-              variant={loading ? "indeterminate" : "determinate"}
-              value={isUnlimited ? 100 : pct}
-              size={80}
-              thickness={5}
-              sx={{ color: barColor }}
-            />
+      <Typography variant="body2" fontWeight="bold" color="text.secondary" sx={{ mb: 1.5 }}>
+        {t("account.dashboard.traffic.title")}
+      </Typography>
+
+      {/* 进度条 */}
+      {loading ? (
+        <Skeleton height={8} sx={{ borderRadius: 1, mb: 1 }} />
+      ) : (
+        <Box sx={{ mb: 1 }}>
+          {isUnlimited ? (
             <Box
               sx={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                height: 8,
+                borderRadius: 4,
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
               }}
-            >
-              {loading ? null : (
-                <Typography variant="caption" fontWeight="bold" color={barColor}>
-                  {isUnlimited ? "∞" : `${pct}%`}
-                </Typography>
-              )}
-            </Box>
-          </Box>
+            />
+          ) : (
+            <LinearProgress
+              variant="determinate"
+              value={pct}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                bgcolor: alpha(barColor, 0.12),
+                "& .MuiLinearProgress-bar": {
+                  borderRadius: 4,
+                  background:
+                    pct >= 95
+                      ? theme.palette.error.main
+                      : pct >= 80
+                        ? theme.palette.warning.main
+                        : `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
+                },
+              }}
+            />
+          )}
+        </Box>
+      )}
 
-          <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-            {loading ? (
-              <>
-                <Skeleton width="80%" />
-                <Skeleton width="60%" />
-              </>
-            ) : isUnlimited ? (
-              <Typography variant="body2" fontWeight="medium">
-                {t("account.dashboard.traffic.unlimited")}
-              </Typography>
-            ) : (
-              <>
-                <Typography variant="body2" color="text.secondary">
-                  {t("account.dashboard.traffic.used")}{" "}
-                  <Box component="span" fontWeight="bold" color="text.primary">
-                    {usedVal} {usedUnit}
-                  </Box>
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t("account.dashboard.traffic.total")}{" "}
-                  <Box component="span" fontWeight="medium" color="text.primary">
-                    {totalVal} {totalUnit}
-                  </Box>
-                </Typography>
-              </>
-            )}
-          </Stack>
-        </Stack>
-
-        {/* 剩余 / 上传 / 下载 */}
-        <Grid container spacing={1} columns={12}>
-          {[
-            {
-              label: t("account.dashboard.traffic.remaining"),
-              value: isUnlimited
-                ? t("account.dashboard.traffic.unlimited")
-                : `${remainVal} ${remainUnit}`,
-              color: theme.palette.success.main,
-            },
-            {
-              label: t("account.dashboard.traffic.upload"),
-              value: `${upVal} ${upUnit}`,
-              color: theme.palette.secondary.main,
-            },
-            {
-              label: t("account.dashboard.traffic.download"),
-              value: `${downVal} ${downUnit}`,
-              color: theme.palette.primary.main,
-            },
-          ].map((item) => (
-            <Grid key={item.label} size={4}>
-              <Box
-                sx={{
-                  p: 1,
-                  borderRadius: 1.5,
-                  textAlign: "center",
-                  backgroundColor: alpha(item.color, 0.07),
-                  border: `1px solid ${alpha(item.color, 0.18)}`,
-                }}
-              >
-                {loading ? (
-                  <Skeleton width="80%" sx={{ mx: "auto" }} />
-                ) : (
-                  <Typography variant="body2" fontWeight="bold" color={item.color} noWrap>
-                    {item.value}
-                  </Typography>
-                )}
-                <Typography variant="caption" color="text.secondary" noWrap>
-                  {item.label}
-                </Typography>
+      {/* 已用 / 总计 */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+        {loading ? (
+          <>
+            <Skeleton width={80} />
+            <Skeleton width={60} />
+          </>
+        ) : isUnlimited ? (
+          <Typography variant="body2" color="text.secondary">
+            {t("account.dashboard.traffic.unlimited")}
+          </Typography>
+        ) : (
+          <>
+            <Typography variant="body2" color="text.secondary">
+              {t("account.dashboard.traffic.used")}{" "}
+              <Box component="span" fontWeight="bold" color="text.primary">
+                {usedVal} {usedUnit}
               </Box>
-            </Grid>
-          ))}
-        </Grid>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <Box component="span" fontWeight="bold" color="text.primary">
+                {totalVal} {totalUnit}
+              </Box>
+              {" "}总计
+            </Typography>
+          </>
+        )}
+      </Box>
+
+      {/* 上传 / 下载 */}
+      <Stack direction="row" spacing={1}>
+        {[
+          {
+            label: t("account.dashboard.traffic.upload"),
+            val: `${upVal} ${upUnit}`,
+            color: theme.palette.secondary.main,
+          },
+          {
+            label: t("account.dashboard.traffic.download"),
+            val: `${downVal} ${downUnit}`,
+            color: theme.palette.primary.main,
+          },
+        ].map((item) => (
+          <Box
+            key={item.label}
+            sx={{
+              flex: 1,
+              p: 1,
+              borderRadius: 1.5,
+              textAlign: "center",
+              bgcolor: alpha(item.color, 0.07),
+              border: `1px solid ${alpha(item.color, 0.18)}`,
+            }}
+          >
+            {loading ? (
+              <Skeleton width="70%" sx={{ mx: "auto" }} />
+            ) : (
+              <Typography variant="body2" fontWeight="bold" color={item.color} noWrap>
+                {item.val}
+              </Typography>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              {item.label}
+            </Typography>
+          </Box>
+        ))}
       </Stack>
-    </EnhancedCard>
+    </Paper>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// WalletCard
-// ────────────────────────────────────────────────────────────────────────────
+// ─── 余额卡 ───────────────────────────────────────────────────────────────────
 
-function WalletCard({ userInfo, loading }: { userInfo: UserInfo | null; loading: boolean }) {
+function BalanceCard({
+  userInfo,
+  loading,
+}: {
+  userInfo: UserInfo | null;
+  loading: boolean;
+}) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const unit = t("account.dashboard.wallet.unit");
 
   const items = [
     {
-      icon: <MonetizationOnRounded fontSize="small" />,
       label: t("account.dashboard.wallet.balance"),
-      value: loading ? null : formatBalance(userInfo?.balance ?? 0, unit),
-      color: "warning" as const,
+      value: formatBalance(userInfo?.balance ?? 0, unit),
+      color: theme.palette.warning.main,
     },
     {
-      icon: <MonetizationOnRounded fontSize="small" />,
       label: t("account.dashboard.wallet.commission"),
-      value: loading ? null : formatBalance(userInfo?.commissionBalance ?? 0, unit),
-      color: "success" as const,
+      value: formatBalance(userInfo?.commissionBalance ?? 0, unit),
+      color: theme.palette.success.main,
     },
   ];
 
   return (
-    <EnhancedCard
-      title={t("account.dashboard.wallet.title")}
-      icon={<MonetizationOnRounded />}
-      iconColor="warning"
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 2.5,
+        overflow: "hidden",
+        border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+      }}
     >
-      <Stack spacing={1.5}>
+      <Stack direction="row" divider={<Divider orientation="vertical" flexItem />}>
         {items.map((item) => (
-          <Stack key={item.label} direction="row" alignItems="center" spacing={1.5}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                backgroundColor: (theme) => alpha(theme.palette[item.color].main, 0.12),
-                color: `${item.color}.main`,
-                flexShrink: 0,
-              }}
-            >
-              {item.icon}
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="caption" color="text.secondary" display="block">
-                {item.label}
+          <Box
+            key={item.label}
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0.25,
+              py: 1.75,
+              px: 1,
+            }}
+          >
+            <MonetizationOnRounded sx={{ fontSize: 18, color: item.color }} />
+            {loading ? (
+              <Skeleton width={60} height={24} />
+            ) : (
+              <Typography variant="h6" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+                {item.value}
               </Typography>
-              {item.value === null ? (
-                <Skeleton width={80} />
-              ) : (
-                <Typography variant="body1" fontWeight="bold">
-                  {item.value}
-                </Typography>
-              )}
-            </Box>
-          </Stack>
+            )}
+            <Typography variant="caption" color="text.secondary">
+              {item.label}
+            </Typography>
+          </Box>
         ))}
       </Stack>
-    </EnhancedCard>
+    </Paper>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// InviteCard
-// ────────────────────────────────────────────────────────────────────────────
+// ─── 菜单列表 ─────────────────────────────────────────────────────────────────
 
-function InviteCard({
+function MenuList({
   inviteInfo,
   loading,
+  onLogout,
+  loggingOut,
 }: {
-  inviteInfo: InviteInfo | null;
+  inviteInfo: ReturnType<typeof useXBoardUserInfo>["inviteInfo"];
   loading: boolean;
+  onLogout: () => void;
+  loggingOut: boolean;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const [changePwdOpen, setChangePwdOpen] = useState(false);
 
-  const handleCopy = async () => {
+  const handleCopyInvite = async () => {
     if (!inviteInfo?.inviteUrl) return;
     try {
       await writeText(inviteInfo.inviteUrl);
@@ -525,77 +591,155 @@ function InviteCard({
     }
   };
 
-  return (
-    <EnhancedCard
-      title={t("account.dashboard.invite.title")}
-      icon={<GroupRounded />}
-      iconColor="success"
-    >
-      <Stack spacing={1.5}>
-        {/* 已邀请人数 */}
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <GroupRounded fontSize="small" color="action" />
-          <Typography variant="body2" color="text.secondary">
-            {t("account.dashboard.invite.referrals")}
-          </Typography>
-          {loading ? (
-            <Skeleton width={40} />
-          ) : (
-            <Typography variant="body2" fontWeight="bold">
-              {inviteInfo?.referralCount ?? 0} {t("account.dashboard.invite.people")}
-            </Typography>
-          )}
-        </Stack>
+  const menuItems = [
+    {
+      icon: <KeyRounded fontSize="small" />,
+      label: "修改密码",
+      onClick: () => setChangePwdOpen(true),
+      color: theme.palette.primary.main,
+      chevron: true,
+    },
+    {
+      icon: <AnnouncementRounded fontSize="small" />,
+      label: t("account.notices.page.title"),
+      onClick: () => navigate("/notices"),
+      color: theme.palette.info.main,
+      chevron: true,
+    },
+    {
+      icon: <ListAltRounded fontSize="small" />,
+      label: t("account.orders.page.title"),
+      onClick: () => navigate("/orders"),
+      color: theme.palette.warning.main,
+      chevron: true,
+    },
+    {
+      icon: <GroupRounded fontSize="small" />,
+      label: t("account.dashboard.invite.title"),
+      sublabel: loading
+        ? undefined
+        : inviteInfo?.referralCount
+          ? `已邀请 ${inviteInfo.referralCount} 人`
+          : undefined,
+      onClick: handleCopyInvite,
+      color: theme.palette.success.main,
+      chevron: false,
+      disabled: !inviteInfo?.inviteUrl,
+    },
+  ];
 
-        {/* 邀请链接 */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            p: 1,
-            borderRadius: 1.5,
-            backgroundColor: (theme) =>
-              alpha(theme.palette.primary.main, 0.06),
-            border: (theme) =>
-              `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-          }}
-        >
-          <LinkRounded fontSize="small" color="action" sx={{ flexShrink: 0 }} />
-          {loading ? (
-            <Skeleton sx={{ flex: 1 }} />
-          ) : (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                flex: 1,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                fontFamily: "monospace",
+  return (
+    <>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 2.5,
+          border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+          overflow: "hidden",
+        }}
+      >
+        <List disablePadding>
+          {menuItems.map((item, idx) => (
+            <Box key={item.label}>
+              {idx > 0 && <Divider sx={{ mx: 2 }} />}
+              <ListItem
+                onClick={item.disabled ? undefined : item.onClick}
+                sx={{
+                  cursor: item.disabled ? "default" : "pointer",
+                  opacity: item.disabled ? 0.5 : 1,
+                  py: 1.25,
+                  "&:hover": item.disabled
+                    ? {}
+                    : {
+                        bgcolor: alpha(item.color, 0.05),
+                      },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <Box
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 1.5,
+                      bgcolor: alpha(item.color, 0.12),
+                      color: item.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </Box>
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  secondary={item.sublabel}
+                  primaryTypographyProps={{ variant: "body2", fontWeight: "medium" }}
+                  secondaryTypographyProps={{ variant: "caption" }}
+                />
+                {item.chevron && (
+                  <ChevronRightRounded sx={{ fontSize: 18, color: "text.disabled" }} />
+                )}
+                {!item.chevron && item.label === t("account.dashboard.invite.title") && (
+                  <Typography variant="caption" color="text.secondary">
+                    复制链接
+                  </Typography>
+                )}
+              </ListItem>
+            </Box>
+          ))}
+
+          {/* 退出登录 */}
+          <Divider sx={{ mx: 2 }} />
+          <ListItem
+            onClick={loggingOut ? undefined : onLogout}
+            sx={{
+              cursor: loggingOut ? "default" : "pointer",
+              py: 1.25,
+              "&:hover": { bgcolor: alpha(theme.palette.error.main, 0.05) },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 1.5,
+                  bgcolor: alpha(theme.palette.error.main, 0.12),
+                  color: theme.palette.error.main,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {loggingOut ? (
+                  <CircularProgress size={14} color="error" />
+                ) : (
+                  <LogoutRounded fontSize="small" />
+                )}
+              </Box>
+            </ListItemIcon>
+            <ListItemText
+              primary={t("account.session.logout")}
+              primaryTypographyProps={{
+                variant: "body2",
+                fontWeight: "medium",
+                color: "error.main",
               }}
-              title={inviteInfo?.inviteUrl || t("account.dashboard.invite.noLink")}
-            >
-              {inviteInfo?.inviteUrl || t("account.dashboard.invite.noLink")}
-            </Typography>
-          )}
-          {!loading && inviteInfo?.inviteUrl && (
-            <Tooltip title={t("account.dashboard.invite.copyLink")}>
-              <IconButton size="small" onClick={handleCopy} sx={{ flexShrink: 0 }}>
-                <ContentCopyRounded sx={{ fontSize: 15 }} />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-      </Stack>
-    </EnhancedCard>
+            />
+          </ListItem>
+        </List>
+      </Paper>
+
+      <ChangePasswordDialog
+        open={changePwdOpen}
+        onClose={() => setChangePwdOpen(false)}
+      />
+    </>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// UserDashboard (root export)
-// ────────────────────────────────────────────────────────────────────────────
+// ─── UserDashboard 根组件 ─────────────────────────────────────────────────────
 
 export function UserDashboard() {
   const { t } = useTranslation();
@@ -644,58 +788,38 @@ export function UserDashboard() {
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      {/* Profile Header */}
+    <Stack spacing={2}>
+      {/* 头像 + 账号信息 */}
       <ProfileHeader
         userInfo={userInfo}
+        loading={loading}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        syncing={syncing}
+        onSync={handleSync}
+        subscribeUrl={session?.subscribeUrl ?? ""}
+      />
+
+      {/* 订阅详情 */}
+      <SubscriptionCard userInfo={userInfo} loading={loading} />
+
+      {/* 余额 */}
+      <BalanceCard userInfo={userInfo} loading={loading} />
+
+      {/* 菜单列表 */}
+      <MenuList
+        inviteInfo={inviteInfo}
         loading={loading}
         onLogout={handleLogout}
         loggingOut={loggingOut}
       />
 
-      {/* 快捷操作 */}
-      <QuickActions
-        onSync={handleSync}
-        syncing={syncing}
-        subscribeUrl={session?.subscribeUrl ?? ""}
-      />
-
-      {/* 错误 + 刷新 */}
-      {(error || refreshing) && (
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1 }}>
-          {error && !loading && (
-            <Typography variant="caption" color="error">
-              {t("account.dashboard.loadFailed")}
-            </Typography>
-          )}
-          <Tooltip title={t("account.dashboard.refresh")}>
-            <span>
-              <IconButton size="small" onClick={handleRefresh} disabled={loading || refreshing}>
-                <RefreshRounded
-                  fontSize="small"
-                  sx={{
-                    animation: loading || refreshing ? "spin 1s linear infinite" : "none",
-                    "@keyframes spin": { from: { transform: "rotate(0deg)" }, to: { transform: "rotate(360deg)" } },
-                  }}
-                />
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Box>
+      {/* 错误提示 */}
+      {error && !loading && (
+        <Typography variant="caption" color="error" textAlign="center">
+          {t("account.dashboard.loadFailed")}
+        </Typography>
       )}
-
-      {/* 流量卡（左） + 钱包卡 & 邀请卡（右列） */}
-      <Grid container spacing={2} columns={12}>
-        <Grid size={7}>
-          <TrafficCard userInfo={userInfo} loading={loading} />
-        </Grid>
-        <Grid size={5}>
-          <Stack spacing={2} sx={{ height: "100%" }}>
-            <WalletCard userInfo={userInfo} loading={loading} />
-            <InviteCard inviteInfo={inviteInfo} loading={loading} />
-          </Stack>
-        </Grid>
-      </Grid>
-    </Box>
+    </Stack>
   );
 }
