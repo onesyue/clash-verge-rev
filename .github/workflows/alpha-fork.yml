@@ -1,0 +1,126 @@
+name: Alpha Build
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions: write-all
+
+concurrency:
+  group: alpha-build
+  cancel-in-progress: true
+
+env:
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: short
+  HUSKY: 0
+
+jobs:
+  prepare:
+    name: Create / reset Prerelease-alpha
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Reset Prerelease-alpha tag and release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag -f Prerelease-alpha
+          git push origin Prerelease-alpha --force
+          gh release delete Prerelease-alpha --yes || true
+          gh release create Prerelease-alpha \
+            --draft \
+            --prerelease \
+            --title "Prerelease-alpha" \
+            --notes "dev 分支最新构建，可能不稳定。"
+
+  build:
+    name: Build ${{ matrix.target }}
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundle: nsis
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            bundle: nsis
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            bundle: dmg
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            bundle: dmg
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundle: deb
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@1.91.0
+
+      - name: Add Rust Target
+        run: |
+          rustup target add ${{ matrix.target }} --toolchain 1.91.0 || rustup target add ${{ matrix.target }}
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: "v1-rust"
+          key: "rust-alpha-${{ matrix.os }}-${{ matrix.target }}"
+          workspaces: . -> target
+          cache-all-crates: true
+
+      - name: Install dependencies (ubuntu only)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxslt1.1 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - name: Install x86_64 OpenSSL (macOS Intel only)
+        if: matrix.target == 'x86_64-apple-darwin'
+        run: |
+          arch -x86_64 brew install openssl@3
+          echo "OPENSSL_DIR=$(brew --prefix openssl@3)" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=$(brew --prefix openssl@3)/include" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=$(brew --prefix openssl@3)/lib" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$(brew --prefix openssl@3)/lib/pkgconfig" >> $GITHUB_ENV
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: Install Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.14.0"
+          cache: "pnpm"
+
+      - name: Pnpm install and prebuild
+        run: |
+          pnpm i
+          pnpm run prebuild ${{ matrix.target }}
+
+      - name: Tauri build and upload
+        uses: tauri-apps/tauri-action@v0
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tauriScript: pnpm
+          tagName: Prerelease-alpha
+          releaseName: "Prerelease-alpha"
+          releaseDraft: true
+          prerelease: true
+          args: --target ${{ matrix.target }} -b ${{ matrix.bundle }} --config '{"bundle":{"createUpdaterArtifacts":false,"macOS":{"signingIdentity":null}}}'
