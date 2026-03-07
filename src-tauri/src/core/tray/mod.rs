@@ -843,22 +843,11 @@ async fn create_tray_menu(
 
     let separator = &PredefinedMenuItem::separator(app_handle)?;
 
-    // 动态构建菜单项
-    let mut menu_items: Vec<&dyn IsMenuItem<Wry>> = vec![open_window, separator];
+    // 简化 VPN 风格菜单：打开应用 → 系统代理 → 节点选择 → 退出
+    let mut menu_items: Vec<&dyn IsMenuItem<Wry>> =
+        vec![open_window, separator, system_proxy as &dyn IsMenuItem<Wry>];
 
-    if show_outbound_modes_inline {
-        menu_items.extend_from_slice(&[
-            rule_mode as &dyn IsMenuItem<Wry>,
-            global_mode as &dyn IsMenuItem<Wry>,
-            direct_mode as &dyn IsMenuItem<Wry>,
-        ]);
-    } else if let Some(ref outbound_modes) = outbound_modes {
-        menu_items.push(outbound_modes);
-    }
-
-    menu_items.extend_from_slice(&[separator, profiles]);
-
-    // 如果有代理节点，添加代理节点菜单
+    // 节点选择子菜单
     match tray_proxy_groups_display_mode {
         "default" => {
             menu_items.extend(proxies_menu.iter().map(|item| item as &dyn IsMenuItem<_>));
@@ -869,17 +858,7 @@ async fn create_tray_menu(
         _ => {}
     }
 
-    menu_items.extend_from_slice(&[
-        separator,
-        system_proxy as &dyn IsMenuItem<Wry>,
-        tun_mode as &dyn IsMenuItem<Wry>,
-        separator,
-        lightweight_mode as &dyn IsMenuItem<Wry>,
-        open_dir as &dyn IsMenuItem<Wry>,
-        more as &dyn IsMenuItem<Wry>,
-        separator,
-        quit as &dyn IsMenuItem<Wry>,
-    ]);
+    menu_items.extend_from_slice(&[separator, quit as &dyn IsMenuItem<Wry>]);
 
     let menu = tauri::menu::MenuBuilder::new(app_handle).items(&menu_items).build()?;
     Ok(menu)

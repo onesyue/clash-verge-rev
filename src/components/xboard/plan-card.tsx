@@ -17,17 +17,40 @@ import {
   useTheme,
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
+import Markdown from "react-markdown";
 
 import type { Plan, PlanPeriod } from "@/services/xboard/types";
 import parseTraffic from "@/utils/parse-traffic";
 
-const PERIODS: Array<{ key: PlanPeriod; suffix: string }> = [
-  { key: "month_price", suffix: "account.shop.plan.perMonth" },
-  { key: "quarter_price", suffix: "account.shop.plan.perQuarter" },
-  { key: "half_year_price", suffix: "account.shop.plan.perHalfYear" },
-  { key: "year_price", suffix: "account.shop.plan.perYear" },
-  { key: "onetime_price", suffix: "account.shop.plan.onetime" },
-];
+/** 套餐周期定义：key = PlanPeriod（API 使用），field = Plan 对象中的 camelCase 字段 */
+const PERIODS: Array<{ key: PlanPeriod; field: keyof Plan; labelKey: string }> =
+  [
+    {
+      key: "month_price",
+      field: "monthPrice",
+      labelKey: "account.shop.plan.perMonth",
+    },
+    {
+      key: "quarter_price",
+      field: "quarterPrice",
+      labelKey: "account.shop.plan.perQuarter",
+    },
+    {
+      key: "half_year_price",
+      field: "halfYearPrice",
+      labelKey: "account.shop.plan.perHalfYear",
+    },
+    {
+      key: "year_price",
+      field: "yearPrice",
+      labelKey: "account.shop.plan.perYear",
+    },
+    {
+      key: "onetime_price",
+      field: "onetimePrice",
+      labelKey: "account.shop.plan.onetime",
+    },
+  ];
 
 interface Props {
   plan: Plan;
@@ -38,9 +61,7 @@ export function PlanCard({ plan, onBuy }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
 
-  const availablePeriods = PERIODS.filter(
-    ({ key }) => plan[key as keyof Plan] != null,
-  );
+  const availablePeriods = PERIODS.filter(({ field }) => plan[field] != null);
 
   const [trafficVal, trafficUnit] = parseTraffic(
     plan.transferGb * 1024 * 1024 * 1024,
@@ -95,7 +116,36 @@ export function PlanCard({ plan, onBuy }: Props) {
         </Stack>
       </Box>
 
-      <Box sx={{ flex: 1 }} />
+      {/* Markdown 套餐描述 */}
+      {plan.content ? (
+        <Box
+          sx={{
+            flex: 1,
+            px: 2.5,
+            py: 1.5,
+            fontSize: 13,
+            color: "text.secondary",
+            lineHeight: 1.6,
+            overflow: "hidden",
+            "& p": { m: 0, mb: 0.5 },
+            "& ul, & ol": { pl: 2, m: 0, mb: 0.5 },
+            "& li": { mb: 0.25 },
+            "& strong": { color: "text.primary", fontWeight: 600 },
+            "& a": { color: "primary.main" },
+            "& h1, & h2, & h3": {
+              fontSize: 13,
+              fontWeight: 600,
+              color: "text.primary",
+              m: 0,
+              mb: 0.5,
+            },
+          }}
+        >
+          <Markdown>{plan.content}</Markdown>
+        </Box>
+      ) : (
+        <Box sx={{ flex: 1 }} />
+      )}
 
       <Divider />
 
@@ -111,8 +161,8 @@ export function PlanCard({ plan, onBuy }: Props) {
               —
             </Typography>
           ) : (
-            availablePeriods.map(({ key }) => {
-              const priceVal = plan[key as keyof Plan] as number;
+            availablePeriods.map(({ key, field, labelKey }) => {
+              const priceVal = plan[field] as number;
               return (
                 <Button
                   key={key}
@@ -131,6 +181,14 @@ export function PlanCard({ plan, onBuy }: Props) {
                   </Typography>
                   <Typography variant="body2" color="primary" fontWeight="bold">
                     ¥{(priceVal / 100).toFixed(2)}
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ ml: 0.5 }}
+                    >
+                      {t(labelKey)}
+                    </Typography>
                   </Typography>
                 </Button>
               );

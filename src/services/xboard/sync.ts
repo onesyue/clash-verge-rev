@@ -126,8 +126,10 @@ export async function syncXBoardSubscription(
     });
   }
 
-  // 6. 通知 SWR 刷新 Profiles
+  // 6. 通知 SWR 刷新 Profiles + 代理数据
   await mutate("getProfiles");
+  await mutate("getProxies");
+  await mutate("getClashConfig");
 
   return { uid, isNew };
 }
@@ -164,4 +166,6 @@ export async function refreshXBoardProfile(): Promise<void> {
   }
 
   await mutate("getProfiles");
+  await mutate("getProxies");
+  await mutate("getClashConfig");
 }

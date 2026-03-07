@@ -25,7 +25,6 @@ import {
   AppsRounded,
   NotificationsNoneRounded,
   ChevronRightRounded,
-  WorkspacePremiumRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -39,7 +38,6 @@ import {
   alpha,
   useTheme,
 } from "@mui/material";
-import { useLockFn } from "ahooks";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,16 +47,12 @@ import { closeAllConnections } from "tauri-plugin-mihomo-api";
 import { BasePage } from "@/components/base";
 import { useConnectionData } from "@/hooks/use-connection-data";
 import { useCurrentProxy } from "@/hooks/use-current-proxy";
-import { useProfiles } from "@/hooks/use-profiles";
 import { useSystemProxyState } from "@/hooks/use-system-proxy-state";
-import { useSystemState } from "@/hooks/use-system-state";
 import { useTrafficData } from "@/hooks/use-traffic-data";
-import { useVerge } from "@/hooks/use-verge";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { useAppData } from "@/providers/app-data-context";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
-import { syncXBoardSubscription } from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
 
 // ─── 计时器格式化 ────────────────────────────────────────────────────────────
@@ -592,92 +586,12 @@ function ProxyCard() {
   );
 }
 
-// ─── 订阅同步提示横幅（无激活配置时显示）────────────────────────────────────────
-
-function SyncBanner() {
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const session = useXBoardSession();
-  const { profiles, isLoading: profilesLoading } = useProfiles();
-  const [syncing, setSyncing] = useState(false);
-  const [synced, setSynced] = useState(false);
-
-  // 未登录 / profiles 还在加载 / 已有激活配置 / 刚同步成功 → 不显示
-  if (!session || profilesLoading || profiles?.current || synced) return null;
-
-  // subscribeUrl 为空时无法同步（旧 session 兼容）
-  if (!session.subscribeUrl) return null;
-
-  const handleSync = async () => {
-    setSyncing(true);
-    try {
-      await syncXBoardSubscription(session.subscribeUrl);
-      setSynced(true);
-      showNotice.success(t("account.sync.feedback.success"));
-    } catch (err) {
-      console.warn("[SyncBanner] sync failed:", err);
-      showNotice.error(t("account.sync.feedback.failed"));
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  return (
-    <Paper
-      elevation={0}
-      sx={{
-        borderRadius: 2,
-        p: 1.5,
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        bgcolor: alpha(theme.palette.warning.main, 0.1),
-        border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-      }}
-    >
-      <WorkspacePremiumRounded
-        sx={{ fontSize: 20, color: "warning.main", flexShrink: 0 }}
-      />
-      <Typography variant="body2" sx={{ flex: 1, color: "text.primary" }}>
-        未检测到订阅配置，点击同步后才能连接
-      </Typography>
-      <Box
-        component="button"
-        onClick={syncing ? undefined : handleSync}
-        sx={{
-          border: "none",
-          borderRadius: 1.5,
-          px: 1.5,
-          py: 0.5,
-          bgcolor: "warning.main",
-          color: "white",
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: syncing ? "default" : "pointer",
-          opacity: syncing ? 0.7 : 1,
-          display: "flex",
-          alignItems: "center",
-          gap: 0.5,
-          flexShrink: 0,
-          "&:hover": { opacity: syncing ? 0.7 : 0.9 },
-        }}
-      >
-        {syncing && <CircularProgress size={12} sx={{ color: "white" }} />}
-        {syncing ? "同步中…" : "同步订阅"}
-      </Box>
-    </Paper>
-  );
-}
-
 // ─── 首页主体 ─────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
-  const { verge } = useVerge();
-  const { isTunModeAvailable } = useSystemState();
   const { configState, toggleSystemProxy } = useSystemProxyState();
-  const enable_tun_mode = verge?.enable_tun_mode ?? false;
 
-  const isConnected = configState || (enable_tun_mode && isTunModeAvailable);
+  const isConnected = configState;
   const [connecting, setConnecting] = useState(false);
 
   // 连接计时器
@@ -704,7 +618,8 @@ const HomePage = () => {
     return () => clearInterval(id);
   }, [isConnected]);
 
-  const handleToggle = useLockFn(async () => {
+  const handleToggle = async () => {
+    if (connecting) return;
     setConnecting(true);
     try {
       if (isConnected) {
@@ -718,16 +633,13 @@ const HomePage = () => {
     } finally {
       setConnecting(false);
     }
-  });
+  };
 
   return (
     <BasePage contentStyle={{ padding: "12px 16px" }}>
       <Stack spacing={2}>
         {/* 用户信息卡 */}
         <AccountBar />
-
-        {/* 订阅未同步提示 */}
-        <SyncBanner />
 
         {/* 连接按钮卡 */}
         <ConnectButton
