@@ -108,6 +108,7 @@ jobs:
           cache: "pnpm"
 
       - name: Pnpm install and prebuild
+        shell: bash
         run: |
           pnpm i
           # Retry prebuild up to 3 times with 30s delay (CI network transience)
