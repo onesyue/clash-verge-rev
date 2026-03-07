@@ -44,7 +44,10 @@ export const navItems = [
   { label: "layout.components.navigation.tabs.account", path: "/account" },
   { label: "layout.components.navigation.tabs.proxies", path: "/proxies" },
   { label: "layout.components.navigation.tabs.profiles", path: "/profile" },
-  { label: "layout.components.navigation.tabs.connections", path: "/connections" },
+  {
+    label: "layout.components.navigation.tabs.connections",
+    path: "/connections",
+  },
   { label: "layout.components.navigation.tabs.rules", path: "/rules" },
   { label: "layout.components.navigation.tabs.logs", path: "/logs" },
   { label: "layout.components.navigation.tabs.settings", path: "/settings" },

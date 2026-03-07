@@ -30,13 +30,19 @@ import { useTranslation } from "react-i18next";
 
 import { BasePage } from "@/components/base";
 import { PayNowDialog } from "@/components/xboard/pay-now-dialog";
+import { showNotice } from "@/services/notice-service";
 import { cancelOrder, getOrders } from "@/services/xboard/api";
 import { useXBoardSession } from "@/services/xboard/store";
-import { showNotice } from "@/services/notice-service";
 import type { Order } from "@/services/xboard/types";
 
 // 订单状态色 / 标签配置
-type ChipColor = "default" | "warning" | "info" | "error" | "success" | "secondary";
+type ChipColor =
+  | "default"
+  | "warning"
+  | "info"
+  | "error"
+  | "success"
+  | "secondary";
 
 const STATUS_COLOR: Record<Order["status"], ChipColor> = {
   0: "warning",
@@ -64,7 +70,9 @@ const OrdersPage = () => {
   const [error, setError] = useState(false);
 
   // 取消中的订单号集合
-  const [cancellingSet, setCancellingSet] = useState<Set<string>>(new Set());
+  const [cancellingSet, setCancellingSet] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   // 立即支付对话框
   const [payNowTradeNo, setPayNowTradeNo] = useState<string | null>(null);
@@ -246,8 +254,9 @@ function OrderRow({
 }) {
   const { t } = useTranslation();
 
-  const periodLabel =
-    PERIOD_I18N[order.period] ? t(PERIOD_I18N[order.period]) : order.period;
+  const periodLabel = PERIOD_I18N[order.period]
+    ? t(PERIOD_I18N[order.period])
+    : order.period;
 
   const amountLabel = `¥${(order.totalAmount / 100).toFixed(2)}`;
 
@@ -262,7 +271,12 @@ function OrderRow({
         <Typography
           variant="body2"
           fontWeight="medium"
-          sx={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          sx={{
+            flex: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
         >
           {order.planName || "—"}
         </Typography>
@@ -307,13 +321,16 @@ function OrderRow({
       </Stack>
 
       {/* 第二行：周期 / 金额 / 时间 / 订单号 */}
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ mt: 0.5, flexWrap: "wrap" }}
-      >
-        <MetaItem label={t("account.orders.columns.period")} value={periodLabel} />
-        <MetaItem label={t("account.orders.columns.amount")} value={amountLabel} highlight />
+      <Stack direction="row" spacing={2} sx={{ mt: 0.5, flexWrap: "wrap" }}>
+        <MetaItem
+          label={t("account.orders.columns.period")}
+          value={periodLabel}
+        />
+        <MetaItem
+          label={t("account.orders.columns.amount")}
+          value={amountLabel}
+          highlight
+        />
         <MetaItem label={t("account.orders.columns.time")} value={dateLabel} />
         <MetaItem
           label={t("account.orders.columns.tradeNo")}

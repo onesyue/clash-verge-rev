@@ -57,7 +57,9 @@ export function useXBoardNotices() {
   );
 
   const notices = data ?? [];
-  const unreadCount = notices.filter((n) => n.createdAt > currentLastReadAt).length;
+  const unreadCount = notices.filter(
+    (n) => n.createdAt > currentLastReadAt,
+  ).length;
 
   const markAllRead = useCallback(() => {
     persistLastReadAt(Math.floor(Date.now() / 1000));

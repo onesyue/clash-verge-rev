@@ -23,7 +23,9 @@ export function XBoardNoticeWatcher() {
     if (!session || notifiedRef.current) return;
     if (unreadCount > 0) {
       notifiedRef.current = true;
-      showNotice.info(t("account.notices.newNoticeHint", { count: unreadCount }));
+      showNotice.info(
+        t("account.notices.newNoticeHint", { count: unreadCount }),
+      );
     }
   }, [session, unreadCount, t]);
 

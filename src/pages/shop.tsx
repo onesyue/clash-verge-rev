@@ -125,7 +125,15 @@ const ShopPage = () => {
 
       {/* 加载失败 */}
       {session && error && !loading && (
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, py: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            py: 6,
+          }}
+        >
           <Alert severity="error" sx={{ width: "100%", maxWidth: 480 }}>
             {t("account.shop.loadFailed")}
           </Alert>

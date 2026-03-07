@@ -8,14 +8,17 @@
 import { useEffect, useRef } from "react";
 import { updateGeo } from "tauri-plugin-mihomo-api";
 
-import { markGeoUpdated, shouldAutoUpdateGeo } from "@/hooks/use-geo-auto-update";
+import {
+  markGeoUpdated,
+  shouldAutoUpdateGeo,
+} from "@/hooks/use-geo-auto-update";
 
 export function GeoDataUpdater() {
-  const didRun = useRef(false);
+  const didRunRef = useRef(false);
 
   useEffect(() => {
-    if (didRun.current) return;
-    didRun.current = true;
+    if (didRunRef.current) return;
+    didRunRef.current = true;
 
     const timer = setTimeout(async () => {
       if (!shouldAutoUpdateGeo()) return;

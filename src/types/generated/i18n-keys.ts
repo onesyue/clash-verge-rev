@@ -978,7 +978,7 @@ export const translationKeys = [
   "tests.unlock.page.empty",
   "tests.unlock.page.messages.detectionFailedWithName",
   "tests.unlock.page.messages.detectionTimeout",
-  "tests.unlock.page.title"
+  "tests.unlock.page.title",
 ] as const;
 
-export type TranslationKey = typeof translationKeys[number];
+export type TranslationKey = (typeof translationKeys)[number];

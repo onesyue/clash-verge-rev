@@ -61,14 +61,22 @@ export function useGeoAutoUpdate() {
   );
 
   const setEnabled = (v: boolean) => setState({ enabled: v });
-  const setIntervalHours = (v: GeoIntervalHours) => setState({ intervalHours: v });
+  const setIntervalHours = (v: GeoIntervalHours) =>
+    setState({ intervalHours: v });
 
   const triggerUpdate = async () => {
     await updateGeo();
     setState({ lastUpdatedAt: Date.now() });
   };
 
-  return { enabled, intervalHours, lastUpdatedAt, setEnabled, setIntervalHours, triggerUpdate };
+  return {
+    enabled,
+    intervalHours,
+    lastUpdatedAt,
+    setEnabled,
+    setIntervalHours,
+    triggerUpdate,
+  };
 }
 
 /**

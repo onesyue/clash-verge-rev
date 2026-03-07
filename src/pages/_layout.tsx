@@ -6,7 +6,6 @@ import {
   ThemeProvider,
 } from "@mui/material";
 import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
@@ -15,19 +14,18 @@ import { SWRConfig } from "swr";
 import { BaseErrorBoundary } from "@/components/base";
 import { NoticeManager } from "@/components/layout/notice-manager";
 import { WindowControls } from "@/components/layout/window-controller";
+import { GeoDataUpdater } from "@/components/xboard/geodata-updater";
+import { XBoardNoticeWatcher } from "@/components/xboard/notice-watcher";
 import { useI18n } from "@/hooks/use-i18n";
 import { useVerge } from "@/hooks/use-verge";
 import { useWindowDecorations } from "@/hooks/use-window";
 import { useThemeMode } from "@/services/states";
-import getSystem from "@/utils/get-system";
-
 import {
   XBoardSessionProvider,
   XBoardUserInfoProvider,
   useXBoardSession,
 } from "@/services/xboard/store";
-import { XBoardNoticeWatcher } from "@/components/xboard/notice-watcher";
-import { GeoDataUpdater } from "@/components/xboard/geodata-updater";
+import getSystem from "@/utils/get-system";
 
 import {
   useAppInitialization,
@@ -35,6 +33,11 @@ import {
   useLayoutEvents,
   useLoadingOverlay,
 } from "./_layout/hooks";
+import { handleNoticeMessage } from "./_layout/utils";
+import { bottomNavItems } from "./_routers";
+
+import "dayjs/locale/ru";
+import "dayjs/locale/zh-cn";
 
 // 受保护的 Outlet：未登录时直接渲染 Navigate，不渲染目标页（无闪屏）
 function ProtectedOutlet() {
@@ -47,11 +50,6 @@ function ProtectedOutlet() {
   }
   return <Outlet />;
 }
-import { handleNoticeMessage } from "./_layout/utils";
-import { bottomNavItems } from "./_routers";
-
-import "dayjs/locale/ru";
-import "dayjs/locale/zh-cn";
 
 export const portableFlag = false;
 
@@ -188,8 +186,7 @@ const Layout = () => {
                 sx={{
                   position: "relative",
                   zIndex: 10,
-                  borderTop: ({ palette }) =>
-                    `1px solid ${palette.divider}`,
+                  borderTop: ({ palette }) => `1px solid ${palette.divider}`,
                   bgcolor: "background.paper",
                 }}
               >

@@ -59,9 +59,7 @@ export async function syncXBoardSubscription(
 ): Promise<SyncResult> {
   // 1. 检查是否已有匹配的 Profile
   const profiles = await getProfiles();
-  const existing = profiles.items?.find(
-    (p) => p.url === subscribeUrl && p.uid,
-  );
+  const existing = profiles.items?.find((p) => p.url === subscribeUrl && p.uid);
 
   let uid: string;
   let isNew: boolean;

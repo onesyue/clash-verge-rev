@@ -42,7 +42,9 @@ export function PlanCard({ plan, onBuy }: Props) {
     ({ key }) => plan[key as keyof Plan] != null,
   );
 
-  const [trafficVal, trafficUnit] = parseTraffic(plan.transferGb * 1024 * 1024 * 1024);
+  const [trafficVal, trafficUnit] = parseTraffic(
+    plan.transferGb * 1024 * 1024 * 1024,
+  );
   const isUnlimited = plan.transferGb === 0;
 
   return (
@@ -71,7 +73,11 @@ export function PlanCard({ plan, onBuy }: Props) {
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
           <Typography variant="h6" fontWeight="bold">
             {plan.name}
           </Typography>
@@ -97,7 +103,11 @@ export function PlanCard({ plan, onBuy }: Props) {
       <Box sx={{ px: 2, py: 1.5 }}>
         <Stack spacing={1}>
           {availablePeriods.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" textAlign="center">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+            >
               —
             </Typography>
           ) : (
@@ -110,7 +120,11 @@ export function PlanCard({ plan, onBuy }: Props) {
                   size="small"
                   fullWidth
                   onClick={() => onBuy(plan, key)}
-                  sx={{ justifyContent: "space-between", borderRadius: 1.5, px: 2 }}
+                  sx={{
+                    justifyContent: "space-between",
+                    borderRadius: 1.5,
+                    px: 2,
+                  }}
                 >
                   <Typography variant="body2" fontWeight="medium">
                     {t(`account.shop.plan.period.${key}`)}

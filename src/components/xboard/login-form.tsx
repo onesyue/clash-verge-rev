@@ -112,7 +112,11 @@ function LoginTab({
   });
 
   return (
-    <Box component="form" onSubmit={onSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+    <Box
+      component="form"
+      onSubmit={onSubmit}
+      sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+    >
       <TextField
         label={t("account.login.form.email")}
         type="email"
@@ -146,7 +150,11 @@ function LoginTab({
                   onClick={() => setShowPwd((v) => !v)}
                   edge="end"
                 >
-                  {showPwd ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                  {showPwd ? (
+                    <VisibilityOff fontSize="small" />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
                 </IconButton>
               </InputAdornment>
             ),
@@ -165,7 +173,9 @@ function LoginTab({
         variant="contained"
         fullWidth
         disabled={loading}
-        startIcon={loading ? <CircularProgress size={16} color="inherit" /> : undefined}
+        startIcon={
+          loading ? <CircularProgress size={16} color="inherit" /> : undefined
+        }
       >
         {t("account.login.form.submit")}
       </Button>
@@ -195,40 +205,42 @@ function RegisterTab({
 
   const passwordValue = watch("password");
 
-  const onSubmit = handleSubmit(
-    async ({ email, password, inviteCode }) => {
-      setLoading(true);
-      try {
-        const result = await register(
-          email.trim(),
-          password,
-          inviteCode || undefined,
-        );
-        const session = persistAuthResult(result);
-        showNotice.success(t("account.register.feedback.success"));
-        onSuccess(session);
-        // 后台同步订阅，完成后通知用户
-        syncXBoardSubscription(result.subscribeUrl)
-          .then(() => {
-            showNotice.success(t("account.sync.feedback.success"));
-          })
-          .catch((err) => {
-            console.warn("[XBoard] 注册后订阅同步失败:", err);
-            showNotice.error(t("account.sync.feedback.failed"));
-          });
-      } catch (err: any) {
-        showNotice.error(
-          t("account.register.feedback.failed"),
-          err instanceof Error ? err : new Error(String(err)),
-        );
-      } finally {
-        setLoading(false);
-      }
-    },
-  );
+  const onSubmit = handleSubmit(async ({ email, password, inviteCode }) => {
+    setLoading(true);
+    try {
+      const result = await register(
+        email.trim(),
+        password,
+        inviteCode || undefined,
+      );
+      const session = persistAuthResult(result);
+      showNotice.success(t("account.register.feedback.success"));
+      onSuccess(session);
+      // 后台同步订阅，完成后通知用户
+      syncXBoardSubscription(result.subscribeUrl)
+        .then(() => {
+          showNotice.success(t("account.sync.feedback.success"));
+        })
+        .catch((err) => {
+          console.warn("[XBoard] 注册后订阅同步失败:", err);
+          showNotice.error(t("account.sync.feedback.failed"));
+        });
+    } catch (err: any) {
+      showNotice.error(
+        t("account.register.feedback.failed"),
+        err instanceof Error ? err : new Error(String(err)),
+      );
+    } finally {
+      setLoading(false);
+    }
+  });
 
   return (
-    <Box component="form" onSubmit={onSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+    <Box
+      component="form"
+      onSubmit={onSubmit}
+      sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+    >
       <TextField
         label={t("account.register.form.email")}
         type="email"
@@ -262,7 +274,11 @@ function RegisterTab({
                   onClick={() => setShowPwd((v) => !v)}
                   edge="end"
                 >
-                  {showPwd ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                  {showPwd ? (
+                    <VisibilityOff fontSize="small" />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
                 </IconButton>
               </InputAdornment>
             ),
@@ -287,7 +303,8 @@ function RegisterTab({
         {...reg("confirmPassword", {
           required: t("account.validation.confirmPasswordRequired"),
           validate: (val) =>
-            val === passwordValue || t("account.register.feedback.passwordMismatch"),
+            val === passwordValue ||
+            t("account.register.feedback.passwordMismatch"),
         })}
       />
       <TextField
@@ -301,7 +318,9 @@ function RegisterTab({
         variant="contained"
         fullWidth
         disabled={loading}
-        startIcon={loading ? <CircularProgress size={16} color="inherit" /> : undefined}
+        startIcon={
+          loading ? <CircularProgress size={16} color="inherit" /> : undefined
+        }
       >
         {t("account.register.form.submit")}
       </Button>
@@ -462,7 +481,12 @@ function ForgotTab() {
           bgcolor: "action.hover",
         }}
       >
-        <Typography variant="caption" color="text.secondary" noWrap sx={{ flex: 1 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          noWrap
+          sx={{ flex: 1 }}
+        >
           {t("account.forgot.emailHint", { email: confirmedEmail })}
         </Typography>
         <Button
@@ -493,8 +517,14 @@ function ForgotTab() {
           helperText={errors2.emailCode?.message}
           {...reg2("emailCode", {
             required: t("account.validation.emailCodeRequired"),
-            minLength: { value: 6, message: t("account.validation.emailCodeInvalid") },
-            maxLength: { value: 6, message: t("account.validation.emailCodeInvalid") },
+            minLength: {
+              value: 6,
+              message: t("account.validation.emailCodeInvalid"),
+            },
+            maxLength: {
+              value: 6,
+              message: t("account.validation.emailCodeInvalid"),
+            },
           })}
         />
         <TextField
@@ -628,12 +658,8 @@ export function LoginForm({ onSuccess }: Props) {
       </Tabs>
 
       {/* Tab 内容 */}
-      {tab === "login" && (
-        <LoginTab onSuccess={onSuccess} />
-      )}
-      {tab === "register" && (
-        <RegisterTab onSuccess={onSuccess} />
-      )}
+      {tab === "login" && <LoginTab onSuccess={onSuccess} />}
+      {tab === "register" && <RegisterTab onSuccess={onSuccess} />}
       {tab === "forgot" && <ForgotTab />}
     </Box>
   );

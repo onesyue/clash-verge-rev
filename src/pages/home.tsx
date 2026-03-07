@@ -40,6 +40,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useLockFn } from "ahooks";
+import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -59,13 +60,16 @@ import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
 import { syncXBoardSubscription } from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
-import dayjs from "dayjs";
 
 // ─── 计时器格式化 ────────────────────────────────────────────────────────────
 
 function formatElapsed(secs: number): string {
-  const h = Math.floor(secs / 3600).toString().padStart(2, "0");
-  const m = Math.floor((secs % 3600) / 60).toString().padStart(2, "0");
+  const h = Math.floor(secs / 3600)
+    .toString()
+    .padStart(2, "0");
+  const m = Math.floor((secs % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (secs % 60).toString().padStart(2, "0");
   return `${h}:${m}:${s}`;
 }
@@ -130,10 +134,17 @@ function AccountBar() {
             flexShrink: 0,
           }}
         >
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "white" }}>U</Typography>
+          <Typography variant="h6" fontWeight="bold" sx={{ color: "white" }}>
+            U
+          </Typography>
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" fontWeight="bold" color="primary.main" noWrap>
+          <Typography
+            variant="body2"
+            fontWeight="bold"
+            color="primary.main"
+            noWrap
+          >
             {t("account.login.tab")}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -185,7 +196,13 @@ function AccountBar() {
           {loading ? (
             <Skeleton width={140} height={18} />
           ) : (
-            <Typography variant="body2" fontWeight="bold" color="primary.dark" noWrap sx={{ color: "#1A237E" }}>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              color="primary.dark"
+              noWrap
+              sx={{ color: "#1A237E" }}
+            >
               {userInfo?.email ?? "—"}
             </Typography>
           )}
@@ -202,7 +219,10 @@ function AccountBar() {
           {/* 流量进度条 */}
           {!loading && session && (
             <Box sx={{ mt: 0.75 }}>
-              <Typography variant="caption" sx={{ color: "#5C7CAB", fontSize: "11px" }}>
+              <Typography
+                variant="caption"
+                sx={{ color: "#5C7CAB", fontSize: "11px" }}
+              >
                 {t("account.dashboard.traffic.title")} {formatPercent(pct)}
               </Typography>
               <LinearProgress
@@ -241,7 +261,12 @@ interface ConnectButtonProps {
   elapsed: number;
 }
 
-function ConnectButton({ connected, connecting, onToggle, elapsed }: ConnectButtonProps) {
+function ConnectButton({
+  connected,
+  connecting,
+  onToggle,
+  elapsed,
+}: ConnectButtonProps) {
   const theme = useTheme();
   const primaryColor = connected ? theme.palette.primary.main : "#8EAACB";
 
@@ -394,20 +419,43 @@ function SpeedCard() {
       }}
     >
       {/* 总流量（对齐安卓 forwarded 小字） */}
-      <Typography variant="caption" sx={{ color: "#8EAACB", display: "block", mb: 1 }}>
+      <Typography
+        variant="caption"
+        sx={{ color: "#8EAACB", display: "block", mb: 1 }}
+      >
         总流量：{fwdVal} {fwdUnit}
       </Typography>
 
       {/* 下载 | 上传 两列（对齐安卓 LinearLayout horizontal） */}
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {/* 下载 */}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <ArrowDownwardRounded sx={{ fontSize: 14, color: "#5C7CAB" }} />
-            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>下载</Typography>
+            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
+              下载
+            </Typography>
           </Box>
-          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.25 }}>
-            {downVal} <Typography component="span" variant="caption" sx={{ color: "#5C7CAB" }}>{downUnit}/s</Typography>
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            sx={{ color: "#1A237E", mt: 0.25 }}
+          >
+            {downVal}{" "}
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ color: "#5C7CAB" }}
+            >
+              {downUnit}/s
+            </Typography>
           </Typography>
         </Box>
 
@@ -415,13 +463,33 @@ function SpeedCard() {
         <Box sx={{ width: 1, height: 36, bgcolor: "#E0EAF8" }} />
 
         {/* 上传 */}
-        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <ArrowUpwardRounded sx={{ fontSize: 14, color: "#5C7CAB" }} />
-            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>上传</Typography>
+            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
+              上传
+            </Typography>
           </Box>
-          <Typography variant="body1" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.25 }}>
-            {upVal} <Typography component="span" variant="caption" sx={{ color: "#5C7CAB" }}>{upUnit}/s</Typography>
+          <Typography
+            variant="body1"
+            fontWeight="bold"
+            sx={{ color: "#1A237E", mt: 0.25 }}
+          >
+            {upVal}{" "}
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{ color: "#5C7CAB" }}
+            >
+              {upUnit}/s
+            </Typography>
           </Typography>
         </Box>
       </Box>
@@ -474,11 +542,19 @@ function ProxyCard() {
         }}
       >
         <AppsRounded sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }} />
-        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>代理</Typography>
-        <Typography variant="body2" fontWeight="bold" sx={{ color: "#1A237E", flex: 1 }}>
+        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+          代理
+        </Typography>
+        <Typography
+          variant="body2"
+          fontWeight="bold"
+          sx={{ color: "#1A237E", flex: 1 }}
+        >
           {modeLabel}
         </Typography>
-        <ChevronRightRounded sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }} />
+        <ChevronRightRounded
+          sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
+        />
       </Box>
 
       {/* 分隔线 */}
@@ -494,8 +570,12 @@ function ProxyCard() {
           gap: 1.25,
         }}
       >
-        <NotificationsNoneRounded sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }} />
-        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>节点选择</Typography>
+        <NotificationsNoneRounded
+          sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }}
+        />
+        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+          节点选择
+        </Typography>
         <Typography
           variant="body2"
           fontWeight="bold"
@@ -504,7 +584,9 @@ function ProxyCard() {
         >
           {nodeName}
         </Typography>
-        <ChevronRightRounded sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }} />
+        <ChevronRightRounded
+          sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
+        />
       </Box>
     </Paper>
   );
@@ -550,7 +632,9 @@ function SyncBanner() {
         border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
       }}
     >
-      <WorkspacePremiumRounded sx={{ fontSize: 20, color: "warning.main", flexShrink: 0 }} />
+      <WorkspacePremiumRounded
+        sx={{ fontSize: 20, color: "warning.main", flexShrink: 0 }}
+      />
       <Typography variant="body2" sx={{ flex: 1, color: "text.primary" }}>
         未检测到订阅配置，点击同步后才能连接
       </Typography>
@@ -585,7 +669,6 @@ function SyncBanner() {
 // ─── 首页主体 ─────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
-  const { t } = useTranslation();
   const { verge } = useVerge();
   const { isTunModeAvailable } = useSystemState();
   const { configState, toggleSystemProxy } = useSystemProxyState();
@@ -603,6 +686,7 @@ const HomePage = () => {
       connectedAtRef.current = Date.now();
     } else if (!isConnected) {
       connectedAtRef.current = null;
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
       setElapsed(0);
     }
   }, [isConnected]);

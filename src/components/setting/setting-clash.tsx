@@ -5,16 +5,15 @@ import { useLockFn } from "ahooks";
 import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { updateGeo } from "tauri-plugin-mihomo-api";
 
 import { DialogRef, Switch, TooltipIcon } from "@/components/base";
 import { useClash } from "@/hooks/use-clash";
+import { useClashLog } from "@/hooks/use-clash-log";
 import {
   GEO_INTERVAL_OPTIONS,
   type GeoIntervalHours,
   useGeoAutoUpdate,
 } from "@/hooks/use-geo-auto-update";
-import { useClashLog } from "@/hooks/use-clash-log";
 import { useVerge } from "@/hooks/use-verge";
 import { invoke_uwp_tool } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
@@ -312,7 +311,9 @@ const SettingClash = ({ onError }: Props) => {
             <Select
               size="small"
               value={geoInterval}
-              onChange={(e) => setGeoInterval(Number(e.target.value) as GeoIntervalHours)}
+              onChange={(e) =>
+                setGeoInterval(Number(e.target.value) as GeoIntervalHours)
+              }
               onClick={(e) => e.stopPropagation()}
               sx={{ ml: 1, height: 28, fontSize: 12 }}
             >

@@ -40,7 +40,12 @@ import {
   createOrder,
   getPaymentMethods,
 } from "@/services/xboard/api";
-import type { CouponInfo, PaymentMethod, Plan, PlanPeriod } from "@/services/xboard/types";
+import type {
+  CouponInfo,
+  PaymentMethod,
+  Plan,
+  PlanPeriod,
+} from "@/services/xboard/types";
 
 interface Props {
   open: boolean;
@@ -88,6 +93,7 @@ export function CheckoutDialog({
   // 加载支付方式
   useEffect(() => {
     if (!open || !authData) return;
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setLoadingMethods(true);
     getPaymentMethods(authData)
       .then((list) => {
@@ -134,7 +140,9 @@ export function CheckoutDialog({
         setCouponError("");
       } catch (err: any) {
         setCouponInfo(null);
-        setCouponError(err?.message ?? t("account.shop.checkout.couponInvalid"));
+        setCouponError(
+          err?.message ?? t("account.shop.checkout.couponInvalid"),
+        );
       } finally {
         setCheckingCoupon(false);
       }
@@ -233,7 +241,11 @@ export function CheckoutDialog({
           okBtn: t("account.shop.checkout.confirm"),
           cancelBtn: t("account.shop.checkout.cancel"),
           loading: submitting,
-          disableOk: loadingMethods || methods.length === 0 || submitting || checkingCoupon,
+          disableOk:
+            loadingMethods ||
+            methods.length === 0 ||
+            submitting ||
+            checkingCoupon,
           onOk: handleConfirm,
           onCancel: handleClose,
         }
@@ -266,8 +278,14 @@ export function CheckoutDialog({
             }}
           >
             <Stack spacing={0.5}>
-              <Row label={t("account.shop.checkout.plan")} value={plan?.name ?? "—"} />
-              <Row label={t("account.shop.checkout.period")} value={periodLabel} />
+              <Row
+                label={t("account.shop.checkout.plan")}
+                value={plan?.name ?? "—"}
+              />
+              <Row
+                label={t("account.shop.checkout.period")}
+                value={periodLabel}
+              />
               <Row
                 label={t("account.shop.checkout.amount")}
                 value={
@@ -275,12 +293,19 @@ export function CheckoutDialog({
                     {originalAmount && (
                       <Typography
                         variant="caption"
-                        sx={{ textDecoration: "line-through", color: "text.disabled" }}
+                        sx={{
+                          textDecoration: "line-through",
+                          color: "text.disabled",
+                        }}
                       >
                         {originalAmount}
                       </Typography>
                     )}
-                    <Typography variant="body2" fontWeight="bold" color="primary">
+                    <Typography
+                      variant="body2"
+                      fontWeight="bold"
+                      color="primary"
+                    >
                       {amount}
                     </Typography>
                   </Stack>
@@ -337,7 +362,12 @@ export function CheckoutDialog({
               {t("account.shop.checkout.paymentMethod")}
             </Typography>
             {loadingMethods ? (
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ py: 1 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ py: 1 }}
+              >
                 <CircularProgress size={16} />
                 <Typography variant="body2" color="text.secondary">
                   {t("account.shop.checkout.paymentMethodLoading")}
@@ -359,7 +389,9 @@ export function CheckoutDialog({
                     control={<Radio size="small" />}
                     label={
                       <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <PaymentRounded sx={{ fontSize: 16, color: "text.secondary" }} />
+                        <PaymentRounded
+                          sx={{ fontSize: 16, color: "text.secondary" }}
+                        />
                         <Typography variant="body2">{m.name}</Typography>
                       </Stack>
                     }
@@ -372,7 +404,9 @@ export function CheckoutDialog({
       ) : (
         // waiting 步骤
         <Stack spacing={2} sx={{ pt: 1, pb: 1 }} alignItems="center">
-          <OpenInNewRounded sx={{ fontSize: 48, color: "text.secondary", mt: 1 }} />
+          <OpenInNewRounded
+            sx={{ fontSize: 48, color: "text.secondary", mt: 1 }}
+          />
           <Typography variant="body1" textAlign="center" color="text.primary">
             {t("account.shop.checkout.waitingPayment")}
           </Typography>
@@ -392,13 +426,7 @@ export function CheckoutDialog({
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function Row({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <Stack direction="row" justifyContent="space-between" alignItems="center">
       <Typography variant="body2" color="text.secondary">

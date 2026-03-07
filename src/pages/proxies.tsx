@@ -43,7 +43,11 @@ const ProxyPage = () => {
   return (
     <BasePage
       full
-      contentStyle={{ height: "101.5%", display: "flex", flexDirection: "column" }}
+      contentStyle={{
+        height: "101.5%",
+        display: "flex",
+        flexDirection: "column",
+      }}
       title={t("proxies.page.title.default")}
       header={<ProviderButton />}
     >
@@ -76,7 +80,11 @@ const ProxyPage = () => {
           }}
         >
           {modeList.map((mode) => (
-            <Tab key={mode} label={t(`proxies.page.modes.${mode}`)} value={mode} />
+            <Tab
+              key={mode}
+              label={t(`proxies.page.modes.${mode}`)}
+              value={mode}
+            />
           ))}
         </Tabs>
       </Box>

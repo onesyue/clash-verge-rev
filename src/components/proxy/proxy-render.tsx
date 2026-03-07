@@ -3,12 +3,7 @@ import {
   ExpandMoreRounded,
   InboxRounded,
 } from "@mui/icons-material";
-import {
-  Box,
-  ListItemButton,
-  Typography,
-  styled,
-} from "@mui/material";
+import { Box, ListItemButton, Typography, styled } from "@mui/material";
 import { useMemo } from "react";
 
 import { useIconCache } from "@/hooks/use-icon-cache";
@@ -106,7 +101,9 @@ export const ProxyRender = (props: RenderProps) => {
         <Box sx={{ flex: 1, overflow: "hidden" }}>
           <StyledPrimary>{group.name}</StyledPrimary>
           {group.now && (
-            <StyledSubtitle sx={{ display: "block", color: "text.secondary", mt: 0.25 }}>
+            <StyledSubtitle
+              sx={{ display: "block", color: "text.secondary", mt: 0.25 }}
+            >
               {group.now}
             </StyledSubtitle>
           )}
@@ -203,4 +200,3 @@ const StyledSubtitle = styled("span")`
   text-overflow: ellipsis;
   white-space: nowrap;
 `;
-

@@ -169,10 +169,7 @@ export async function register(
   if (inviteCode?.trim()) body.invite_code = inviteCode.trim();
   if (emailCode?.trim()) body.email_code = emailCode.trim();
 
-  const authData = await fetchAuthData(
-    "/api/v1/passport/auth/register",
-    body,
-  );
+  const authData = await fetchAuthData("/api/v1/passport/auth/register", body);
   const subscribeUrl = await fetchSubscribeUrl(authData);
   return { subscribeUrl, authData };
 }
@@ -273,7 +270,9 @@ export async function getUserInfo(authData: string): Promise<UserInfo> {
 }
 
 /** 获取邀请信息 */
-export async function getInviteInfo(authData: string): Promise<InviteInfo | null> {
+export async function getInviteInfo(
+  authData: string,
+): Promise<InviteInfo | null> {
   try {
     // 正确路径：/api/v1/user/invite/fetch（非 /invite）
     const root = await httpGet("/api/v1/user/invite/fetch", authData);
@@ -282,9 +281,7 @@ export async function getInviteInfo(authData: string): Promise<InviteInfo | null
 
     const codes: any[] = data.codes ?? [];
     const code: string = codes[0]?.code ?? "";
-    const inviteUrl = code
-      ? `${BASE_URL}/#/register?code=${code}`
-      : "";
+    const inviteUrl = code ? `${BASE_URL}/#/register?code=${code}` : "";
     const stat: number[] = data.stat ?? [];
     return { inviteUrl, referralCount: stat[0] ?? 0 };
   } catch {
@@ -444,8 +441,7 @@ export async function checkoutOrder(
   );
   // checkout 直接返回 { type, data }，不经过 success() 包装
   const payload = root;
-  const rawType: number =
-    typeof payload?.type === "number" ? payload.type : 0;
+  const rawType: number = typeof payload?.type === "number" ? payload.type : 0;
   const type = rawType as -1 | 0 | 1;
   const rawData = payload?.data;
   const data =
@@ -478,7 +474,10 @@ export async function checkOrderStatus(
 }
 
 /** 取消订单（仅 status=0 待支付订单可取消） */
-export async function cancelOrder(authData: string, tradeNo: string): Promise<void> {
+export async function cancelOrder(
+  authData: string,
+  tradeNo: string,
+): Promise<void> {
   await httpPost("/api/v1/user/order/cancel", { trade_no: tradeNo }, authData);
 }
 

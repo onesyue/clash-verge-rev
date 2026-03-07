@@ -65,6 +65,7 @@ export function PayNowDialog({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
     setLoadingMethods(true);
     getPaymentMethods(authData)
       .then((list) => {
@@ -199,7 +200,9 @@ export function PayNowDialog({
                   control={<Radio size="small" />}
                   label={
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <PaymentRounded sx={{ fontSize: 16, color: "text.secondary" }} />
+                      <PaymentRounded
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
                       <Typography variant="body2">{m.name}</Typography>
                     </Stack>
                   }
@@ -211,7 +214,9 @@ export function PayNowDialog({
       ) : (
         // waiting 步骤
         <Stack spacing={2} sx={{ pt: 1, pb: 1 }} alignItems="center">
-          <OpenInNewRounded sx={{ fontSize: 48, color: "text.secondary", mt: 1 }} />
+          <OpenInNewRounded
+            sx={{ fontSize: 48, color: "text.secondary", mt: 1 }}
+          />
           <Typography variant="body1" textAlign="center" color="text.primary">
             {t("account.orders.payNow.waitingPayment")}
           </Typography>

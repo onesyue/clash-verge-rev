@@ -60,7 +60,11 @@ const NoticesPage = () => {
         session && (
           <Tooltip title={t("account.dashboard.refresh")}>
             <span>
-              <IconButton size="small" onClick={() => refresh()} disabled={loading}>
+              <IconButton
+                size="small"
+                onClick={() => refresh()}
+                disabled={loading}
+              >
                 <RefreshRounded
                   fontSize="small"
                   sx={{

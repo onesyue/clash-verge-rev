@@ -10,10 +10,7 @@ import { useTranslation } from "react-i18next";
 import { BasePage } from "@/components/base";
 import { LoginForm } from "@/components/xboard/login-form";
 import { UserDashboard } from "@/components/xboard/user-dashboard";
-import {
-  useSetXBoardSession,
-  useXBoardSession,
-} from "@/services/xboard/store";
+import { useSetXBoardSession, useXBoardSession } from "@/services/xboard/store";
 import type { XBoardSession } from "@/services/xboard/types";
 
 const AccountPage = () => {

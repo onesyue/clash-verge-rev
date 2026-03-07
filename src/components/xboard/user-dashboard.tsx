@@ -151,7 +151,11 @@ function ChangePasswordDialog({
           onClick={handleSubmit}
           variant="contained"
           disabled={submitting || !oldPwd || !newPwd}
-          startIcon={submitting ? <CircularProgress size={14} color="inherit" /> : undefined}
+          startIcon={
+            submitting ? (
+              <CircularProgress size={14} color="inherit" />
+            ) : undefined
+          }
         >
           确认修改
         </Button>
@@ -228,7 +232,8 @@ function ProfileHeader({
               <RefreshRounded
                 fontSize="small"
                 sx={{
-                  animation: loading || refreshing ? "spin 1s linear infinite" : "none",
+                  animation:
+                    loading || refreshing ? "spin 1s linear infinite" : "none",
                   "@keyframes spin": {
                     from: { transform: "rotate(0deg)" },
                     to: { transform: "rotate(360deg)" },
@@ -279,7 +284,10 @@ function ProfileHeader({
           {loading ? (
             <Skeleton width={120} height={16} sx={{ mt: 0.5 }} />
           ) : (
-            <Typography variant="body2" sx={{ color: "#3A6BBF", mt: 0.5, fontSize: "12px" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "#3A6BBF", mt: 0.5, fontSize: "12px" }}
+            >
               {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
           )}
@@ -290,6 +298,43 @@ function ProfileHeader({
 }
 
 // ─── 套餐信息卡（对齐安卓：套餐名 + 到期 + 流量% + 详情 + 进度条）──────────────
+
+function Row({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        mb: 1,
+      }}
+    >
+      <Box
+        sx={{
+          color: "#3A6BBF",
+          display: "flex",
+          alignItems: "center",
+          flexShrink: 0,
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography variant="caption" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+        {label}
+      </Typography>
+      <Box sx={{ flex: 1 }} />
+      {value}
+    </Box>
+  );
+}
 
 function SubscriptionCard({
   userInfo,
@@ -328,34 +373,6 @@ function SubscriptionCard({
       ? "暂未使用"
       : `${usedVal} ${usedUnit} / ${totalVal} ${totalUnit}`;
 
-  const Row = ({
-    icon,
-    label,
-    value,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    value: React.ReactNode;
-  }) => (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        mb: 1,
-      }}
-    >
-      <Box sx={{ color: "#3A6BBF", display: "flex", alignItems: "center", flexShrink: 0 }}>
-        {icon}
-      </Box>
-      <Typography variant="caption" sx={{ color: "#8EAACB", flexShrink: 0 }}>
-        {label}
-      </Typography>
-      <Box sx={{ flex: 1 }} />
-      {value}
-    </Box>
-  );
-
   return (
     <Paper
       elevation={4}
@@ -369,7 +386,11 @@ function SubscriptionCard({
           loading ? (
             <Skeleton width={100} />
           ) : (
-            <Typography variant="body2" fontWeight="bold" sx={{ color: "#1A237E" }}>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              sx={{ color: "#1A237E" }}
+            >
               {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
           )
@@ -384,7 +405,11 @@ function SubscriptionCard({
           loading ? (
             <Skeleton width={80} />
           ) : (
-            <Typography variant="body2" fontWeight="bold" sx={{ color: "#1A237E" }}>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              sx={{ color: "#1A237E" }}
+            >
               {expiryLabel}
             </Typography>
           )
@@ -465,20 +490,29 @@ function BalanceCard({
             px: 1,
           }}
         >
-          <Typography variant="caption" sx={{ color: "#8EAACB", fontSize: "11px" }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "#8EAACB", fontSize: "11px" }}
+          >
             {t("account.dashboard.wallet.balance")}
           </Typography>
           {loading ? (
             <Skeleton width={60} height={28} />
           ) : (
-            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.5 }}>
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{ color: "#1A237E", mt: 0.5 }}
+            >
               {formatBalance(userInfo?.balance ?? 0, unit)}
             </Typography>
           )}
         </Box>
 
         {/* 分隔线 */}
-        <Box sx={{ width: 1, bgcolor: "#E0EAF8", alignSelf: "center", height: 40 }} />
+        <Box
+          sx={{ width: 1, bgcolor: "#E0EAF8", alignSelf: "center", height: 40 }}
+        />
 
         {/* 返利余额 */}
         <Box
@@ -491,13 +525,20 @@ function BalanceCard({
             px: 1,
           }}
         >
-          <Typography variant="caption" sx={{ color: "#8EAACB", fontSize: "11px" }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "#8EAACB", fontSize: "11px" }}
+          >
             {t("account.dashboard.wallet.commission")}
           </Typography>
           {loading ? (
             <Skeleton width={60} height={28} />
           ) : (
-            <Typography variant="h6" fontWeight="bold" sx={{ color: "#1A237E", mt: 0.5 }}>
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              sx={{ color: "#1A237E", mt: 0.5 }}
+            >
               {formatBalance(userInfo?.commissionBalance ?? 0, unit)}
             </Typography>
           )}
