@@ -87,6 +87,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libxslt1.1 libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
+      - name: Install macOS build tools
+        if: runner.os == 'macOS'
+        run: brew install create-dmg
+
       - name: Install x86_64 OpenSSL (macOS Intel only)
         if: matrix.target == 'x86_64-apple-darwin'
         run: |
