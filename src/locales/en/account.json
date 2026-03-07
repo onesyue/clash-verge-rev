@@ -1,0 +1,235 @@
+{
+  "page": {
+    "title": "Account"
+  },
+  "login": {
+    "tab": "Sign In",
+    "form": {
+      "panelUrl": "Panel URL",
+      "panelUrlPlaceholder": "https://example.com",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign In"
+    },
+    "feedback": {
+      "success": "Signed in successfully",
+      "failed": "Sign in failed"
+    }
+  },
+  "register": {
+    "tab": "Sign Up",
+    "form": {
+      "panelUrl": "Panel URL",
+      "panelUrlPlaceholder": "https://example.com",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "inviteCode": "Invite Code (optional)",
+      "submit": "Sign Up"
+    },
+    "feedback": {
+      "success": "Account created successfully",
+      "failed": "Sign up failed",
+      "passwordMismatch": "Passwords do not match"
+    }
+  },
+  "forgot": {
+    "tab": "Forgot Password",
+    "form": {
+      "email": "Email",
+      "sendCode": "Send Verification Code",
+      "resendCode": "Resend ({{s}}s)",
+      "resendCodeAction": "Resend Code",
+      "emailCode": "Verification Code",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "back": "Back",
+      "submit": "Reset Password"
+    },
+    "emailHint": "Code sent to {{email}}",
+    "feedback": {
+      "codeSent": "Verification code sent, please check your email",
+      "sendFailed": "Failed to send verification code",
+      "success": "Password reset successfully, please sign in with your new password",
+      "failed": "Failed to reset password"
+    }
+  },
+  "session": {
+    "panelUrl": "Panel URL",
+    "loggedInAs": "Signed in as",
+    "logout": "Sign Out",
+    "feedback": {
+      "logoutSuccess": "Signed out successfully"
+    }
+  },
+  "dashboard": {
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "loadFailed": "Failed to load user info",
+    "account": {
+      "title": "Account",
+      "email": "Email",
+      "plan": "Plan",
+      "noPlan": "No plan",
+      "expiry": "Expiry",
+      "noExpiry": "Permanent",
+      "uuid": "UUID",
+      "subscribeUrl": "Subscribe URL",
+      "syncNow": "Sync now",
+      "syncing": "Syncing…",
+      "syncSuccess": "Subscription synced",
+      "syncFailed": "Sync failed"
+    },
+    "traffic": {
+      "title": "Traffic",
+      "used": "Used",
+      "remaining": "Remaining",
+      "total": "Total",
+      "unlimited": "Unlimited",
+      "upload": "Upload",
+      "download": "Download",
+      "usagePercent": "{{percent}}% used"
+    },
+    "wallet": {
+      "title": "Wallet",
+      "balance": "Balance",
+      "commission": "Commission",
+      "unit": "¥"
+    },
+    "invite": {
+      "title": "Invite",
+      "referrals": "Referred",
+      "people": "users",
+      "copyLink": "Copy invite link",
+      "linkCopied": "Invite link copied",
+      "noLink": "No invite link available"
+    }
+  },
+  "notices": {
+    "page": {
+      "title": "Notices"
+    },
+    "loginRequired": "Please sign in to view notices",
+    "loading": "Loading notices…",
+    "loadFailed": "Failed to load notices",
+    "noNotices": "No notices",
+    "retry": "Retry",
+    "new": "NEW",
+    "expand": "Show more",
+    "collapse": "Show less",
+    "newNoticeHint": "{{count}} new notice(s)"
+  },
+  "orders": {
+    "page": {
+      "title": "My Orders"
+    },
+    "loginRequired": "Please sign in to view your orders",
+    "loading": "Loading orders…",
+    "loadFailed": "Failed to load orders",
+    "noOrders": "No orders yet",
+    "retry": "Retry",
+    "status": {
+      "0": "Pending",
+      "1": "Processing",
+      "2": "Cancelled",
+      "3": "Completed",
+      "4": "Discounted"
+    },
+    "columns": {
+      "plan": "Plan",
+      "period": "Billing",
+      "amount": "Amount",
+      "status": "Status",
+      "time": "Date",
+      "tradeNo": "Order No."
+    },
+    "actions": {
+      "cancel": "Cancel Order",
+      "payNow": "Pay Now",
+      "cancelConfirm": "Are you sure you want to cancel this order?",
+      "cancelSuccess": "Order cancelled",
+      "cancelFailed": "Failed to cancel order"
+    },
+    "payNow": {
+      "title": "Pay Now",
+      "waitingTitle": "Waiting for Payment",
+      "paymentMethod": "Select payment method",
+      "noPaymentMethods": "No payment methods available",
+      "confirm": "Confirm Payment",
+      "cancel": "Cancel",
+      "close": "Close",
+      "verifyPayment": "I've Paid",
+      "waitingPayment": "Please complete payment in your browser",
+      "waitingPaymentHint": "After payment, click \"I've Paid\" to confirm",
+      "paymentPending": "Payment not confirmed yet. Please wait or contact support.",
+      "paymentVerified": "Payment confirmed, plan activated",
+      "loading": "Processing…",
+      "openingPayment": "Opening payment page…",
+      "failed": "Payment failed",
+      "freeSuccess": "Payment successful"
+    }
+  },
+  "shop": {
+    "page": {
+      "title": "Plans"
+    },
+    "loginRequired": "Please sign in to purchase a plan",
+    "loading": "Loading plans…",
+    "loadFailed": "Failed to load plans",
+    "noPlans": "No plans available",
+    "retry": "Retry",
+    "plan": {
+      "traffic": "Traffic",
+      "unlimited": "Unlimited",
+      "buy": "Subscribe",
+      "perMonth": "/mo",
+      "perQuarter": "/qtr",
+      "perHalfYear": "/6mo",
+      "perYear": "/yr",
+      "onetime": " one-time",
+      "period": {
+        "month_price": "Monthly",
+        "quarter_price": "Quarterly",
+        "half_year_price": "Semi-Annual",
+        "year_price": "Annual",
+        "onetime_price": "One-Time"
+      }
+    },
+    "checkout": {
+      "title": "Checkout",
+      "waitingTitle": "Waiting for Payment",
+      "plan": "Plan",
+      "period": "Billing",
+      "amount": "Amount",
+      "couponCode": "Coupon Code",
+      "couponCodePlaceholder": "Optional",
+      "paymentMethod": "Payment Method",
+      "noPaymentMethods": "No payment methods available",
+      "confirm": "Confirm Payment",
+      "cancel": "Cancel",
+      "close": "Close",
+      "verifyPayment": "I've Paid",
+      "waitingPayment": "Please complete payment in your browser",
+      "waitingPaymentHint": "After payment, click \"I've Paid\" to confirm",
+      "paymentPending": "Payment not confirmed yet. Please wait or contact support.",
+      "paymentVerified": "Payment confirmed, plan activated",
+      "loading": "Processing…",
+      "success": "Order created",
+      "failed": "Order failed",
+      "freeSuccess": "Plan activated successfully",
+      "openingPayment": "Opening payment page…",
+      "paymentMethodLoading": "Loading payment methods…"
+    }
+  },
+  "validation": {
+    "panelUrlRequired": "Panel URL is required",
+    "panelUrlInvalid": "Panel URL must start with http:// or https://",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email address",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "confirmPasswordRequired": "Please confirm your password",
+    "emailCodeRequired": "Verification code is required",
+    "emailCodeInvalid": "Verification code must be 6 digits"
+  }
+}

@@ -45,6 +45,13 @@ import { useThemeMode } from "@/services/states";
 import getSystem from "@/utils/get-system";
 
 import {
+  XBoardSessionProvider,
+  XBoardUserInfoProvider,
+} from "@/services/xboard/store";
+import { XBoardNoticeWatcher } from "@/components/xboard/notice-watcher";
+import { GeoDataUpdater } from "@/components/xboard/geodata-updater";
+
+import {
   useAppInitialization,
   useCustomTheme,
   useLayoutEvents,
@@ -254,7 +261,11 @@ const Layout = () => {
   }
 
   return (
-    <SWRConfig
+    <XBoardSessionProvider>
+      <XBoardUserInfoProvider>
+        <XBoardNoticeWatcher />
+        <GeoDataUpdater />
+        <SWRConfig
       value={{
         errorRetryCount: 3,
         // TODO remove the 5000ms
@@ -487,6 +498,8 @@ const Layout = () => {
         </Paper>
       </ThemeProvider>
     </SWRConfig>
+      </XBoardUserInfoProvider>
+    </XBoardSessionProvider>
   );
 };
 

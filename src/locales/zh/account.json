@@ -1,0 +1,235 @@
+{
+  "page": {
+    "title": "账 户"
+  },
+  "login": {
+    "tab": "登录",
+    "form": {
+      "panelUrl": "面板地址",
+      "panelUrlPlaceholder": "https://example.com",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录"
+    },
+    "feedback": {
+      "success": "登录成功",
+      "failed": "登录失败"
+    }
+  },
+  "register": {
+    "tab": "注册",
+    "form": {
+      "panelUrl": "面板地址",
+      "panelUrlPlaceholder": "https://example.com",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "inviteCode": "邀请码（选填）",
+      "submit": "注册"
+    },
+    "feedback": {
+      "success": "注册成功",
+      "failed": "注册失败",
+      "passwordMismatch": "两次密码输入不一致"
+    }
+  },
+  "forgot": {
+    "tab": "找回密码",
+    "form": {
+      "email": "邮箱",
+      "sendCode": "发送验证码",
+      "resendCode": "重新发送 ({{s}}s)",
+      "resendCodeAction": "重新发送",
+      "emailCode": "邮箱验证码",
+      "newPassword": "新密码",
+      "confirmNewPassword": "确认新密码",
+      "back": "返回",
+      "submit": "重置密码"
+    },
+    "emailHint": "验证码已发送至 {{email}}",
+    "feedback": {
+      "codeSent": "验证码已发送，请查收邮件",
+      "sendFailed": "验证码发送失败",
+      "success": "密码重置成功，请使用新密码登录",
+      "failed": "密码重置失败"
+    }
+  },
+  "session": {
+    "panelUrl": "面板地址",
+    "loggedInAs": "已登录",
+    "logout": "退出登录",
+    "feedback": {
+      "logoutSuccess": "已退出登录"
+    }
+  },
+  "dashboard": {
+    "refresh": "刷新",
+    "loading": "加载中…",
+    "loadFailed": "用户信息加载失败",
+    "account": {
+      "title": "账户信息",
+      "email": "邮箱",
+      "plan": "套餐",
+      "noPlan": "暂无套餐",
+      "expiry": "到期时间",
+      "noExpiry": "永久有效",
+      "uuid": "UUID",
+      "subscribeUrl": "订阅链接",
+      "syncNow": "立即同步",
+      "syncing": "同步中…",
+      "syncSuccess": "订阅已同步",
+      "syncFailed": "订阅同步失败"
+    },
+    "traffic": {
+      "title": "流量使用",
+      "used": "已用",
+      "remaining": "剩余",
+      "total": "总量",
+      "unlimited": "无限",
+      "upload": "上传",
+      "download": "下载",
+      "usagePercent": "已用 {{percent}}%"
+    },
+    "wallet": {
+      "title": "钱包",
+      "balance": "账户余额",
+      "commission": "佣金余额",
+      "unit": "元"
+    },
+    "invite": {
+      "title": "邀请",
+      "referrals": "已邀请",
+      "people": "人",
+      "copyLink": "复制邀请链接",
+      "linkCopied": "邀请链接已复制",
+      "noLink": "暂无邀请链接"
+    }
+  },
+  "notices": {
+    "page": {
+      "title": "公告"
+    },
+    "loginRequired": "请先登录后查看公告",
+    "loading": "加载公告中…",
+    "loadFailed": "公告加载失败",
+    "noNotices": "暂无公告",
+    "retry": "重试",
+    "new": "NEW",
+    "expand": "展开",
+    "collapse": "收起",
+    "newNoticeHint": "有 {{count}} 条新公告"
+  },
+  "orders": {
+    "page": {
+      "title": "我的订单"
+    },
+    "loginRequired": "请先登录后查看订单",
+    "loading": "加载订单中…",
+    "loadFailed": "订单加载失败",
+    "noOrders": "暂无订单记录",
+    "retry": "重试",
+    "status": {
+      "0": "待支付",
+      "1": "处理中",
+      "2": "已取消",
+      "3": "已完成",
+      "4": "已折扣"
+    },
+    "columns": {
+      "plan": "套餐",
+      "period": "周期",
+      "amount": "金额",
+      "status": "状态",
+      "time": "创建时间",
+      "tradeNo": "订单号"
+    },
+    "actions": {
+      "cancel": "取消订单",
+      "payNow": "立即支付",
+      "cancelConfirm": "确定要取消该订单吗？",
+      "cancelSuccess": "订单已取消",
+      "cancelFailed": "取消订单失败"
+    },
+    "payNow": {
+      "title": "立即支付",
+      "waitingTitle": "等待支付确认",
+      "paymentMethod": "请选择支付方式",
+      "noPaymentMethods": "暂无可用支付方式",
+      "confirm": "确认支付",
+      "cancel": "取消",
+      "close": "关闭",
+      "verifyPayment": "已完成支付",
+      "waitingPayment": "请在浏览器中完成支付",
+      "waitingPaymentHint": "完成支付后，点击下方"已完成支付"按钮确认",
+      "paymentPending": "支付尚未确认，请稍后重试或联系服务商",
+      "paymentVerified": "支付已确认，套餐已开通",
+      "loading": "处理中…",
+      "openingPayment": "正在打开支付页面…",
+      "failed": "支付失败",
+      "freeSuccess": "支付成功"
+    }
+  },
+  "shop": {
+    "page": {
+      "title": "套餐商店"
+    },
+    "loginRequired": "请先登录后再购买套餐",
+    "loading": "加载套餐中…",
+    "loadFailed": "套餐加载失败",
+    "noPlans": "暂无可用套餐",
+    "retry": "重试",
+    "plan": {
+      "traffic": "流量",
+      "unlimited": "不限流量",
+      "buy": "立即购买",
+      "perMonth": "元/月",
+      "perQuarter": "元/季",
+      "perHalfYear": "元/半年",
+      "perYear": "元/年",
+      "onetime": "元/一次性",
+      "period": {
+        "month_price": "月付",
+        "quarter_price": "季付",
+        "half_year_price": "半年付",
+        "year_price": "年付",
+        "onetime_price": "一次性"
+      }
+    },
+    "checkout": {
+      "title": "确认购买",
+      "waitingTitle": "等待支付确认",
+      "plan": "套餐",
+      "period": "周期",
+      "amount": "金额",
+      "couponCode": "优惠码",
+      "couponCodePlaceholder": "选填",
+      "paymentMethod": "支付方式",
+      "noPaymentMethods": "暂无可用支付方式",
+      "confirm": "确认支付",
+      "cancel": "取消",
+      "close": "关闭",
+      "verifyPayment": "已完成支付",
+      "waitingPayment": "请在浏览器中完成支付",
+      "waitingPaymentHint": "完成支付后，点击下方"已完成支付"按钮确认",
+      "paymentPending": "支付尚未确认，请稍后重试或联系服务商",
+      "paymentVerified": "支付已确认，套餐已开通",
+      "loading": "处理中…",
+      "success": "订单创建成功",
+      "failed": "订单创建失败",
+      "freeSuccess": "套餐开通成功",
+      "openingPayment": "正在打开支付页面…",
+      "paymentMethodLoading": "加载支付方式中…"
+    }
+  },
+  "validation": {
+    "panelUrlRequired": "请输入面板地址",
+    "panelUrlInvalid": "面板地址格式不正确，需以 http:// 或 https:// 开头",
+    "emailRequired": "请输入邮箱",
+    "emailInvalid": "邮箱格式不正确",
+    "passwordRequired": "请输入密码",
+    "passwordMinLength": "密码长度至少 6 位",
+    "confirmPasswordRequired": "请再次输入密码",
+    "emailCodeRequired": "请输入邮箱验证码",
+    "emailCodeInvalid": "验证码为 6 位数字"
+  }
+}

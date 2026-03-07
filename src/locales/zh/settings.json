@@ -104,6 +104,9 @@
           "clashCore": "Clash 内核",
           "openUwpTool": "UWP 工具",
           "updateGeoData": "更新 GeoData",
+          "autoUpdateGeoData": "启动时自动更新 GeoData",
+          "geoDataLastUpdated": "上次更新",
+          "geoDataNeverUpdated": "从未更新",
           "tunnels": {
             "title": "流量隧道管理",
             "localAddr": "本地监听地址",

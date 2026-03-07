@@ -2,12 +2,18 @@ import { LanRounded, SettingsRounded } from "@mui/icons-material";
 import { MenuItem, Select, TextField, Typography } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { useLockFn } from "ahooks";
+import dayjs from "dayjs";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { updateGeo } from "tauri-plugin-mihomo-api";
 
 import { DialogRef, Switch, TooltipIcon } from "@/components/base";
 import { useClash } from "@/hooks/use-clash";
+import {
+  GEO_INTERVAL_OPTIONS,
+  type GeoIntervalHours,
+  useGeoAutoUpdate,
+} from "@/hooks/use-geo-auto-update";
 import { useClashLog } from "@/hooks/use-clash-log";
 import { useVerge } from "@/hooks/use-verge";
 import { invoke_uwp_tool } from "@/services/cmds";
@@ -65,9 +71,18 @@ const SettingClash = ({ onError }: Props) => {
   const onChangeData = (patch: Partial<IConfigData>) => {
     mutateClash((old) => ({ ...old!, ...patch }), false);
   };
+  const {
+    enabled: geoAutoUpdate,
+    intervalHours: geoInterval,
+    lastUpdatedAt: geoLastUpdated,
+    setEnabled: setGeoAutoUpdate,
+    setIntervalHours: setGeoInterval,
+    triggerUpdate: triggerGeoUpdate,
+  } = useGeoAutoUpdate();
+
   const onUpdateGeo = async () => {
     try {
-      await updateGeo();
+      await triggerGeoUpdate();
       showNotice.success(
         "settings.feedback.notifications.clash.geoDataUpdated",
       );
@@ -283,7 +298,38 @@ const SettingClash = ({ onError }: Props) => {
       <SettingItem
         onClick={onUpdateGeo}
         label={t("settings.sections.clash.form.fields.updateGeoData")}
+        secondary={
+          geoLastUpdated > 0
+            ? `${t("settings.sections.clash.form.fields.geoDataLastUpdated")}: ${dayjs(geoLastUpdated).format("YYYY-MM-DD HH:mm")}`
+            : t("settings.sections.clash.form.fields.geoDataNeverUpdated")
+        }
       />
+
+      <SettingItem
+        label={t("settings.sections.clash.form.fields.autoUpdateGeoData")}
+        extra={
+          geoAutoUpdate ? (
+            <Select
+              size="small"
+              value={geoInterval}
+              onChange={(e) => setGeoInterval(Number(e.target.value) as GeoIntervalHours)}
+              onClick={(e) => e.stopPropagation()}
+              sx={{ ml: 1, height: 28, fontSize: 12 }}
+            >
+              {GEO_INTERVAL_OPTIONS.map((h) => (
+                <MenuItem key={h} value={h}>
+                  {h}h
+                </MenuItem>
+              ))}
+            </Select>
+          ) : null
+        }
+      >
+        <Switch
+          checked={geoAutoUpdate}
+          onChange={(_, v) => setGeoAutoUpdate(v)}
+        />
+      </SettingItem>
 
       <SettingItem
         label={t("settings.sections.clash.form.fields.tunnels.title")}

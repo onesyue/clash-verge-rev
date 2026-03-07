@@ -104,6 +104,9 @@
           "clashCore": "Clash Core",
           "openUwpTool": "Open UWP tool",
           "updateGeoData": "Update GeoData",
+          "autoUpdateGeoData": "Auto-update GeoData on startup",
+          "geoDataLastUpdated": "Last updated",
+          "geoDataNeverUpdated": "Never updated",
           "tunnels": {
             "title": "Tunnel Management",
             "localAddr": "Local Listen Address",

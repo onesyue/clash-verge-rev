@@ -9,6 +9,10 @@
         "rules": "Rules",
         "logs": "Logs",
         "unlock": "Test",
+        "account": "Account",
+        "shop": "Shop",
+        "orders": "Orders",
+        "notices": "Notices",
         "settings": "Settings"
       },
       "menu": {
