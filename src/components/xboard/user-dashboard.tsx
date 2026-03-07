@@ -62,7 +62,11 @@ import {
   useSetXBoardSession,
   useXBoardSession,
 } from "@/services/xboard/store";
-import { clearProfileUid, refreshXBoardProfile } from "@/services/xboard/sync";
+import {
+  clearProfileUid,
+  refreshXBoardProfile,
+  syncXBoardSubscription,
+} from "@/services/xboard/sync";
 import type { UserInfo } from "@/services/xboard/types";
 import parseTraffic from "@/utils/parse-traffic";
 
@@ -753,9 +757,25 @@ export function UserDashboard() {
       await refreshXBoardProfile();
       showNotice.success(t("account.dashboard.account.syncSuccess"));
     } catch (err: any) {
+      const msg: string = err instanceof Error ? err.message : String(err);
+      // uid 失效（新设备 / 手动删除了 Profile）→ 自动重新绑定
+      if (
+        msg.includes("未找到绑定的订阅") ||
+        msg.includes("绑定的订阅已被删除")
+      ) {
+        if (session?.subscribeUrl) {
+          try {
+            await syncXBoardSubscription(session.subscribeUrl);
+            showNotice.success(t("account.dashboard.account.syncSuccess"));
+            return;
+          } catch {
+            // fall through to generic error
+          }
+        }
+      }
       showNotice.error(
         t("account.dashboard.account.syncFailed"),
-        err instanceof Error ? err : new Error(String(err)),
+        err instanceof Error ? err : new Error(msg),
       );
     } finally {
       setSyncing(false);

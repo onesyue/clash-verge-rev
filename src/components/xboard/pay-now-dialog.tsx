@@ -56,6 +56,7 @@ export function PayNowDialog({
   // select 步骤状态
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loadingMethods, setLoadingMethods] = useState(false);
+  const [methodsError, setMethodsError] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,15 +71,20 @@ export function PayNowDialog({
     getPaymentMethods(authData)
       .then((list) => {
         setMethods(list);
+        setMethodsError(false);
         if (list.length > 0) setSelectedMethod(list[0].id);
       })
-      .catch(() => setMethods([]))
+      .catch(() => {
+        setMethods([]);
+        setMethodsError(true);
+      })
       .finally(() => setLoadingMethods(false));
   }, [open, authData]);
 
   const resetState = () => {
     setStep("select");
     setMethods([]);
+    setMethodsError(false);
     setSelectedMethod(null);
     setSubmitting(false);
     setVerifying(false);
@@ -151,7 +157,11 @@ export function PayNowDialog({
           okBtn: t("account.orders.payNow.confirm"),
           cancelBtn: t("account.orders.payNow.cancel"),
           loading: submitting,
-          disableOk: loadingMethods || methods.length === 0 || submitting,
+          disableOk:
+            loadingMethods ||
+            methodsError ||
+            methods.length === 0 ||
+            submitting,
           onOk: handleConfirm,
           onCancel: handleClose,
         }
@@ -184,6 +194,10 @@ export function PayNowDialog({
                 {t("account.shop.checkout.paymentMethodLoading")}
               </Typography>
             </Stack>
+          ) : methodsError ? (
+            <Typography variant="body2" color="error">
+              {t("account.shop.checkout.paymentMethodError")}
+            </Typography>
           ) : methods.length === 0 ? (
             <Typography variant="body2" color="text.secondary">
               {t("account.orders.payNow.noPaymentMethods")}

@@ -57,6 +57,10 @@ export async function syncXBoardSubscription(
   subscribeUrl: string,
   activate = true,
 ): Promise<SyncResult> {
+  if (!subscribeUrl?.trim()) {
+    throw new Error("订阅链接为空，请重新登录以获取订阅地址");
+  }
+
   // 1. 检查是否已有匹配的 Profile
   const profiles = await getProfiles();
   const existing = profiles.items?.find((p) => p.url === subscribeUrl && p.uid);

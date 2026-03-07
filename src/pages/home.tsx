@@ -76,14 +76,14 @@ function formatElapsed(secs: number): string {
 
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
-  return Math.min(Math.round((used / total) * 100), 100);
+  return Math.min((used / total) * 100, 100);
 }
 
 function formatPercent(pct: number): string {
   if (pct <= 0) return "0%";
   if (pct < 1) return "<1%";
   if (pct >= 100) return "100%";
-  return `${pct}%`;
+  return `${Math.round(pct)}%`;
 }
 
 // ─── 用户信息卡（对齐安卓 home tab 用户信息卡）────────────────────────────────
@@ -598,12 +598,15 @@ function SyncBanner() {
   const { t } = useTranslation();
   const theme = useTheme();
   const session = useXBoardSession();
-  const { profiles } = useProfiles();
+  const { profiles, isLoading: profilesLoading } = useProfiles();
   const [syncing, setSyncing] = useState(false);
   const [synced, setSynced] = useState(false);
 
-  // 已有激活配置或未登录则不显示
-  if (!session || profiles?.current || synced) return null;
+  // 未登录 / profiles 还在加载 / 已有激活配置 / 刚同步成功 → 不显示
+  if (!session || profilesLoading || profiles?.current || synced) return null;
+
+  // subscribeUrl 为空时无法同步（旧 session 兼容）
+  if (!session.subscribeUrl) return null;
 
   const handleSync = async () => {
     setSyncing(true);

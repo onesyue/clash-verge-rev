@@ -395,21 +395,17 @@ export async function checkCoupon(
 // 订单
 // ────────────────────────────────────────────────────────────────────────────
 
-/** 获取支付方式列表 */
+/** 获取支付方式列表（失败时抛出，由调用方区分"无支付方式"与"加载失败"） */
 export async function getPaymentMethods(
   authData: string,
 ): Promise<PaymentMethod[]> {
-  try {
-    const root = await httpGet("/api/v1/user/order/getPaymentMethod", authData);
-    const arr: any[] = root?.data ?? [];
-    return arr.map((item) => ({
-      id: item.id ?? 0,
-      name: item.name ?? "",
-      payment: item.payment ?? "",
-    }));
-  } catch {
-    return [];
-  }
+  const root = await httpGet("/api/v1/user/order/getPaymentMethod", authData);
+  const arr: any[] = root?.data ?? [];
+  return arr.map((item) => ({
+    id: item.id ?? 0,
+    name: item.name ?? "",
+    payment: item.payment ?? "",
+  }));
 }
 
 /**
@@ -491,20 +487,16 @@ export async function cancelOrder(
   await httpPost("/api/v1/user/order/cancel", { trade_no: tradeNo }, authData);
 }
 
-/** 获取订单列表 */
+/** 获取订单列表（失败时抛出，由调用方设置 error 状态） */
 export async function getOrders(authData: string): Promise<Order[]> {
-  try {
-    const root = await httpGet("/api/v1/user/order/fetch", authData);
-    const arr: any[] = root?.data ?? [];
-    return arr.map((item) => ({
-      tradeNo: item.trade_no ?? "",
-      planName: item.plan?.name ?? item.plan_name ?? "",
-      period: item.period ?? "",
-      totalAmount: item.total_amount ?? 0,
-      status: (item.status ?? 0) as Order["status"],
-      createdAt: item.created_at ?? 0,
-    }));
-  } catch {
-    return [];
-  }
+  const root = await httpGet("/api/v1/user/order/fetch", authData);
+  const arr: any[] = root?.data ?? [];
+  return arr.map((item) => ({
+    tradeNo: item.trade_no ?? "",
+    planName: item.plan?.name ?? item.plan_name ?? "",
+    period: item.period ?? "",
+    totalAmount: item.total_amount ?? 0,
+    status: (item.status ?? 0) as Order["status"],
+    createdAt: item.created_at ?? 0,
+  }));
 }

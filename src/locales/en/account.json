@@ -227,7 +227,8 @@
       "failed": "Order failed",
       "freeSuccess": "Plan activated successfully",
       "openingPayment": "Opening payment page…",
-      "paymentMethodLoading": "Loading payment methods…"
+      "paymentMethodLoading": "Loading payment methods…",
+      "paymentMethodError": "Failed to load payment methods, please close and retry"
     }
   },
   "validation": {

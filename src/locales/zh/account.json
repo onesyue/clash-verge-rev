@@ -227,7 +227,8 @@
       "failed": "订单创建失败",
       "freeSuccess": "套餐开通成功",
       "openingPayment": "正在打开支付页面…",
-      "paymentMethodLoading": "加载支付方式中…"
+      "paymentMethodLoading": "加载支付方式中…",
+      "paymentMethodError": "支付方式加载失败，请关闭重试"
     }
   },
   "validation": {

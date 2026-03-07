@@ -1,4 +1,8 @@
-import { GitHub, HelpOutlineRounded, Telegram } from "@mui/icons-material";
+import {
+  HelpOutlineRounded,
+  LanguageRounded,
+  Telegram,
+} from "@mui/icons-material";
 import { Box, ButtonGroup, IconButton, Grid } from "@mui/material";
 import { useLockFn } from "ahooks";
 import { useTranslation } from "react-i18next";
@@ -19,16 +23,16 @@ const SettingPage = () => {
     showNotice.error(err);
   };
 
-  const toGithubRepo = useLockFn(() => {
-    return openWebUrl("https://github.com/onesyue/clash-verge-rev");
+  const toWebsite = useLockFn(() => {
+    return openWebUrl("https://yue.to");
   });
 
-  const toGithubDoc = useLockFn(() => {
-    return openWebUrl("https://github.com/onesyue/clash-verge-rev");
+  const toDoc = useLockFn(() => {
+    return openWebUrl("https://yue.to");
   });
 
   const toTelegramChannel = useLockFn(() => {
-    return openWebUrl("https://github.com/onesyue/clash-verge-rev");
+    return openWebUrl("https://yue.to");
   });
 
   const mode = useThemeMode();
@@ -43,7 +47,7 @@ const SettingPage = () => {
             size="medium"
             color="inherit"
             title={t("settings.page.actions.manual")}
-            onClick={toGithubDoc}
+            onClick={toDoc}
           >
             <HelpOutlineRounded fontSize="inherit" />
           </IconButton>
@@ -55,14 +59,13 @@ const SettingPage = () => {
           >
             <Telegram fontSize="inherit" />
           </IconButton>
-
           <IconButton
             size="medium"
             color="inherit"
             title={t("settings.page.actions.github")}
-            onClick={toGithubRepo}
+            onClick={toWebsite}
           >
-            <GitHub fontSize="inherit" />
+            <LanguageRounded fontSize="inherit" />
           </IconButton>
         </ButtonGroup>
       }

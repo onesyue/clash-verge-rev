@@ -198,6 +198,7 @@ export interface TranslationResources {
           openingPayment: string;
           paymentMethod: string;
           paymentMethodLoading: string;
+          paymentMethodError: string;
           paymentPending: string;
           paymentVerified: string;
           period: string;

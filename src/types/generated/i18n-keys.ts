@@ -169,6 +169,7 @@ export const translationKeys = [
   "account.shop.checkout.freeSuccess",
   "account.shop.checkout.openingPayment",
   "account.shop.checkout.paymentMethodLoading",
+  "account.shop.checkout.paymentMethodError",
   "account.validation.panelUrlRequired",
   "account.validation.panelUrlInvalid",
   "account.validation.emailRequired",

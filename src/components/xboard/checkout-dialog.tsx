@@ -76,6 +76,7 @@ export function CheckoutDialog({
   // select 步骤状态
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loadingMethods, setLoadingMethods] = useState(false);
+  const [methodsError, setMethodsError] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<number | null>(null);
   const [couponCode, setCouponCode] = useState("");
   const [couponInfo, setCouponInfo] = useState<CouponInfo | null>(null);
@@ -98,9 +99,13 @@ export function CheckoutDialog({
     getPaymentMethods(authData)
       .then((list) => {
         setMethods(list);
+        setMethodsError(false);
         if (list.length > 0) setSelectedMethod(list[0].id);
       })
-      .catch(() => setMethods([]))
+      .catch(() => {
+        setMethods([]);
+        setMethodsError(true);
+      })
       .finally(() => setLoadingMethods(false));
   }, [open, authData]);
 
@@ -108,6 +113,7 @@ export function CheckoutDialog({
     setStep("select");
     setTradeNo("");
     setMethods([]);
+    setMethodsError(false);
     setSelectedMethod(null);
     setCouponCode("");
     setCouponInfo(null);
@@ -243,6 +249,7 @@ export function CheckoutDialog({
           loading: submitting,
           disableOk:
             loadingMethods ||
+            methodsError ||
             methods.length === 0 ||
             submitting ||
             checkingCoupon,
@@ -373,6 +380,10 @@ export function CheckoutDialog({
                   {t("account.shop.checkout.paymentMethodLoading")}
                 </Typography>
               </Stack>
+            ) : methodsError ? (
+              <Typography variant="body2" color="error">
+                {t("account.shop.checkout.paymentMethodError")}
+              </Typography>
             ) : methods.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
                 {t("account.shop.checkout.noPaymentMethods")}
