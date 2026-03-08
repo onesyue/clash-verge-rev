@@ -6,12 +6,13 @@ import { useAppData } from "@/providers/app-data-context";
 interface ProxyGroup {
   name: string;
   now: string;
+  type?: string;
 }
 
 // 获取当前代理节点信息的自定义Hook
 export const useCurrentProxy = () => {
   // 从AppDataProvider获取数据
-  const { proxies, clashConfig, refreshProxy } = useAppData();
+  const { proxies, clashConfig, rules, refreshProxy } = useAppData();
 
   // 获取当前模式
   const currentMode = clashConfig?.mode?.toLowerCase() || "rule";
@@ -26,22 +27,46 @@ export const useCurrentProxy = () => {
     let primaryGroupName = "GLOBAL";
     let currentName = global?.now;
 
-    // 在规则模式下，寻找主要代理组（通常是第一个或者名字包含特定关键词的组）
     if (currentMode === "rule" && groups.length > 0) {
-      // 查找主要的代理组（优先级：包含关键词 > 第一个非GLOBAL组）
+      // 1. 优先通过 MATCH 规则找到出口代理组（最准确）
+      let matchGroup: ProxyGroup | undefined;
+      if (Array.isArray(rules)) {
+        for (let i = rules.length - 1; i >= 0; i--) {
+          const rule = rules[i];
+          if (rule?.type?.toUpperCase() === "MATCH" && rule.proxy) {
+            const matchPolicy = rule.proxy.trim();
+            matchGroup = groups.find((g: ProxyGroup) => g.name === matchPolicy);
+            break;
+          }
+        }
+      }
+
+      // 2. 关键词匹配
       const primaryKeywords = [
-        "auto",
-        "select",
-        "proxy",
         "节点选择",
+        "proxy",
+        "select",
         "自动选择",
+        "auto",
       ];
-      const primaryGroup =
+      const keywordGroup =
+        !matchGroup &&
         groups.find((group: ProxyGroup) =>
           primaryKeywords.some((keyword) =>
             group.name.toLowerCase().includes(keyword.toLowerCase()),
           ),
-        ) || groups.filter((g: ProxyGroup) => g.name !== "GLOBAL")[0];
+        );
+
+      // 3. 回退到第一个 Selector 类型的组（而非任意第一个组）
+      const fallbackGroup =
+        !matchGroup &&
+        !keywordGroup &&
+        (groups.find(
+          (g: ProxyGroup) => g.name !== "GLOBAL" && g.type === "Selector",
+        ) ||
+          groups.filter((g: ProxyGroup) => g.name !== "GLOBAL")[0]);
+
+      const primaryGroup = matchGroup || keywordGroup || fallbackGroup;
 
       if (primaryGroup) {
         primaryGroupName = primaryGroup.name;
@@ -65,7 +90,7 @@ export const useCurrentProxy = () => {
     };
 
     return { currentProxy, primaryGroupName };
-  }, [proxies, currentMode]);
+  }, [proxies, currentMode, rules]);
 
   return {
     currentProxy: currentProxyInfo.currentProxy,

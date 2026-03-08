@@ -215,6 +215,7 @@ export const ProxyItem = (props: Props) => {
             justifyContent: "flex-end",
             color: "primary.main",
             display: isPreset ? "none" : "",
+            minWidth: "auto",
           }}
         >
           {delayValue === -2 && (
