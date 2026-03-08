@@ -14,24 +14,21 @@ fn main() {
             .map(|l| format!("{}:{}:{}", l.file(), l.line(), l.column()))
             .unwrap_or_else(|| "unknown location".to_string());
         let backtrace = std::backtrace::Backtrace::force_capture();
-        let crash_msg = format!(
-            "PANIC at {}\n{}\n\nBacktrace:\n{}",
-            location, payload, backtrace
-        );
+        let crash_msg = format!("PANIC at {}\n{}\n\nBacktrace:\n{}", location, payload, backtrace);
 
         // Write crash log next to the executable
-        if let Ok(exe) = std::env::current_exe() {
-            if let Some(dir) = exe.parent() {
-                let crash_path = dir.join("crash.log");
-                let _ = std::fs::write(&crash_path, &crash_msg);
-            }
+        if let Ok(exe) = std::env::current_exe()
+            && let Some(dir) = exe.parent()
+        {
+            let crash_path = dir.join("crash.log");
+            let _ = std::fs::write(&crash_path, &crash_msg);
         }
 
         // On Windows, also show a message box
         #[cfg(target_os = "windows")]
         {
-            use windows::core::HSTRING;
             use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MessageBoxW};
+            use windows::core::HSTRING;
             let msg = HSTRING::from(format!(
                 "YueTong crashed unexpectedly.\n\n{}\nat {}\n\nA crash log has been saved next to the executable.",
                 payload, location
