@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
-import { useCallback, useEffect, useMemo } from "react";
+import { Suspense, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { SWRConfig } from "swr";
@@ -22,10 +22,7 @@ import { useI18n } from "@/hooks/use-i18n";
 import { useVerge } from "@/hooks/use-verge";
 import { useWindowDecorations } from "@/hooks/use-window";
 import { useThemeMode } from "@/services/states";
-import {
-  XBoardSessionProvider,
-  useXBoardSession,
-} from "@/services/xboard/store";
+import { useXBoardSession } from "@/services/xboard/store";
 import getSystem from "@/utils/get-system";
 
 import {
@@ -40,19 +37,28 @@ import { sidebarNavItems, sidebarBottomItems } from "./_routers";
 import "dayjs/locale/ru";
 import "dayjs/locale/zh-cn";
 
-// Protected Outlet: redirect to account if not logged in
+/**
+ * When true, XBoard login is required to access the app.
+ * Set to false to use the app without XBoard authentication.
+ */
+export const xboardAuthRequired = true;
+
+export const portableFlag = false;
+
+// Protected Outlet: redirect to account if not logged in (when xboardAuthRequired)
 function ProtectedOutlet() {
   const session = useXBoardSession();
   const location = useLocation();
-  const isAccountPage = location.pathname === "/account";
 
-  if (!session && !isAccountPage) {
+  if (xboardAuthRequired && !session && location.pathname !== "/account") {
     return <Navigate to="/account" replace />;
   }
-  return <Outlet />;
+  return (
+    <Suspense fallback={null}>
+      <Outlet />
+    </Suspense>
+  );
 }
-
-export const portableFlag = false;
 
 const OS = getSystem();
 
@@ -186,7 +192,7 @@ const Layout = () => {
   }
 
   return (
-    <XBoardSessionProvider>
+    <>
       <XBoardNoticeWatcher />
       <GeoDataUpdater />
       <SWRConfig
@@ -327,7 +333,7 @@ const Layout = () => {
           </Paper>
         </ThemeProvider>
       </SWRConfig>
-    </XBoardSessionProvider>
+    </>
   );
 };
 

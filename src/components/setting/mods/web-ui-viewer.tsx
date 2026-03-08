@@ -91,8 +91,8 @@ export function WebUIViewer({ ref }: { ref?: Ref<DialogRef> }) {
       }
 
       await openWebUrl(url);
-    } catch (e: any) {
-      showNotice.error(e);
+    } catch (e: unknown) {
+      showNotice.error(e instanceof Error ? e.message : String(e));
     }
   });
 

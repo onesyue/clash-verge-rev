@@ -23,10 +23,16 @@ interface GeoState {
   lastUpdatedAt: number; // Unix ms, 0 = never
 }
 
+function parseIntervalHours(): GeoIntervalHours {
+  const raw = Number(localStorage.getItem(KEY_INTERVAL_HOURS));
+  return GEO_INTERVAL_OPTIONS.includes(raw as GeoIntervalHours)
+    ? (raw as GeoIntervalHours)
+    : 24;
+}
+
 let state: GeoState = {
   enabled: localStorage.getItem(KEY_AUTO_UPDATE) === "true",
-  intervalHours: (Number(localStorage.getItem(KEY_INTERVAL_HOURS)) ||
-    24) as GeoIntervalHours,
+  intervalHours: parseIntervalHours(),
   lastUpdatedAt: Number(localStorage.getItem(KEY_LAST_UPDATED) ?? 0),
 };
 

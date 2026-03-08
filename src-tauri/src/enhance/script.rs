@@ -16,7 +16,9 @@ const MAX_RECURSION_DEPTH: usize = 256;
 // TODO 使用引用改进上下相关处理，避免不必要 Clone
 pub fn use_script(script: String, config: &Mapping, name: &String) -> Result<(Mapping, Vec<(String, String)>)> {
     let mut context = Context::default();
-    context.runtime_limits_mut().set_loop_iteration_limit(MAX_LOOP_ITERATIONS);
+    context
+        .runtime_limits_mut()
+        .set_loop_iteration_limit(MAX_LOOP_ITERATIONS);
     context.runtime_limits_mut().set_recursion_limit(MAX_RECURSION_DEPTH);
 
     let outputs = Arc::new(Mutex::new(vec![]));

@@ -47,14 +47,14 @@ export class XBoardClient {
     };
   }
 
-  private async parseResponse(res: Response): Promise<any> {
+  private async parseResponse(res: Response): Promise<unknown> {
     const text = await res.text();
-    let json: any;
+    let json: unknown;
     try {
       json = JSON.parse(text);
     } catch {
       throw new XBoardError(
-        `响应不是有效的 JSON（${res.status}）`,
+        `Invalid JSON response (${res.status})`,
         XBoardErrorCode.INVALID_RESPONSE,
         res.status,
       );
@@ -63,8 +63,12 @@ export class XBoardClient {
       if (res.status === 401 || res.status === 403) {
         this.handleAuthExpired();
       }
+      const message =
+        json && typeof json === "object" && "message" in json
+          ? String((json as Record<string, unknown>).message)
+          : `Request failed (${res.status})`;
       throw new XBoardError(
-        json?.message ?? `请求失败（${res.status}）`,
+        message,
         res.status === 401 || res.status === 403
           ? XBoardErrorCode.AUTH_EXPIRED
           : XBoardErrorCode.NETWORK_ERROR,
@@ -74,7 +78,7 @@ export class XBoardClient {
     return json;
   }
 
-  async get(path: string, authData: string): Promise<any> {
+  async get(path: string, authData: string): Promise<unknown> {
     const res = await fetch(this.buildUrl(path), {
       method: "GET",
       headers: this.authHeaders(authData),
@@ -83,7 +87,7 @@ export class XBoardClient {
     return this.parseResponse(res);
   }
 
-  async getGuest(path: string): Promise<any> {
+  async getGuest(path: string): Promise<unknown> {
     const res = await fetch(this.buildUrl(path), {
       method: "GET",
       headers: { Accept: "application/json" },
@@ -96,7 +100,7 @@ export class XBoardClient {
     path: string,
     body: Record<string, unknown>,
     authData?: string,
-  ): Promise<any> {
+  ): Promise<unknown> {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",

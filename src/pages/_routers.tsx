@@ -10,18 +10,6 @@ import TextSnippetRounded from "@mui/icons-material/TextSnippetRounded";
 import { createBrowserRouter, RouteObject } from "react-router";
 
 import Layout from "./_layout";
-import AccountPage from "./account";
-import ConnectionsPage from "./connections";
-import HomePage from "./home";
-import LogsPage from "./logs";
-import NoticesPage from "./notices";
-import OrdersPage from "./orders";
-import ProfilesPage from "./profiles";
-import ProxiesPage from "./proxies";
-import RulesPage from "./rules";
-import SettingsPage from "./settings";
-import ShopPage from "./shop";
-import UnlockPage from "./unlock";
 
 // Sidebar navigation items — main section
 export const sidebarNavItems = [
@@ -92,20 +80,27 @@ export const navItems = [
   { label: "layout.components.navigation.tabs.settings", path: "/settings" },
 ];
 
-// All routes
+// Helper: react-router lazy() expects { Component }, pages use default export
+const lazyPage = (load: () => Promise<{ default: React.ComponentType }>) =>
+  load().then((m) => ({ Component: m.default }));
+
+// All routes — using react-router lazy() for code splitting
 const allRoutes: RouteObject[] = [
-  { path: "/", Component: HomePage },
-  { path: "/shop", Component: ShopPage },
-  { path: "/account", Component: AccountPage },
-  { path: "/proxies", Component: ProxiesPage },
-  { path: "/profile", Component: ProfilesPage },
-  { path: "/connections", Component: ConnectionsPage },
-  { path: "/rules", Component: RulesPage },
-  { path: "/logs", Component: LogsPage },
-  { path: "/unlock", Component: UnlockPage },
-  { path: "/orders", Component: OrdersPage },
-  { path: "/notices", Component: NoticesPage },
-  { path: "/settings", Component: SettingsPage },
+  { path: "/", lazy: () => lazyPage(() => import("./home")) },
+  { path: "/shop", lazy: () => lazyPage(() => import("./shop")) },
+  { path: "/account", lazy: () => lazyPage(() => import("./account")) },
+  { path: "/proxies", lazy: () => lazyPage(() => import("./proxies")) },
+  { path: "/profile", lazy: () => lazyPage(() => import("./profiles")) },
+  {
+    path: "/connections",
+    lazy: () => lazyPage(() => import("./connections")),
+  },
+  { path: "/rules", lazy: () => lazyPage(() => import("./rules")) },
+  { path: "/logs", lazy: () => lazyPage(() => import("./logs")) },
+  { path: "/unlock", lazy: () => lazyPage(() => import("./unlock")) },
+  { path: "/orders", lazy: () => lazyPage(() => import("./orders")) },
+  { path: "/notices", lazy: () => lazyPage(() => import("./notices")) },
+  { path: "/settings", lazy: () => lazyPage(() => import("./settings")) },
 ];
 
 export const router = createBrowserRouter([

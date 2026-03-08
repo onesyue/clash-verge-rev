@@ -100,7 +100,7 @@ export async function syncXBoardSubscription(
 ): Promise<SyncResult> {
   if (!subscribeUrl?.trim()) {
     throw new XBoardError(
-      "订阅链接为空，请重新登录以获取订阅地址",
+      "Subscribe URL is empty",
       XBoardErrorCode.SUBSCRIBE_URL_EMPTY,
     );
   }
@@ -153,7 +153,7 @@ export async function syncXBoardSubscription(
     );
     if (!newItem?.uid) {
       throw new XBoardError(
-        "导入订阅成功但找不到对应的 Profile，请刷新订阅页面",
+        "Profile import succeeded but could not find it",
         XBoardErrorCode.PROFILE_IMPORT_FAILED,
       );
     }
@@ -169,7 +169,7 @@ export async function syncXBoardSubscription(
     const activated = await activateProfile(uid);
     if (!activated) {
       throw new XBoardError(
-        "配置激活失败，请手动在订阅页面点击该配置以选中",
+        "Profile activation failed",
         XBoardErrorCode.ACTIVATE_FAILED,
       );
     }
@@ -197,7 +197,7 @@ export async function refreshXBoardProfile(): Promise<void> {
   const uid = loadProfileUid();
   if (!uid) {
     throw new XBoardError(
-      "未找到绑定的订阅，请重新登录",
+      "No bound profile found",
       XBoardErrorCode.PROFILE_NOT_FOUND,
     );
   }
@@ -206,7 +206,7 @@ export async function refreshXBoardProfile(): Promise<void> {
   const item = profiles.items?.find((p) => p.uid === uid);
   if (!item) {
     throw new XBoardError(
-      "绑定的订阅已被删除，请重新登录",
+      "Bound profile has been deleted",
       XBoardErrorCode.PROFILE_DELETED,
     );
   }
@@ -219,7 +219,7 @@ export async function refreshXBoardProfile(): Promise<void> {
     const activated = await activateProfile(uid);
     if (!activated) {
       throw new XBoardError(
-        "订阅内容已更新，但配置激活失败，请手动在订阅页面点击选中",
+        "Profile updated but activation failed",
         XBoardErrorCode.ACTIVATE_FAILED,
       );
     }

@@ -112,7 +112,7 @@ function ChangePasswordDialog({
       await changePassword(session.authData, oldPwd, newPwd);
       showNotice.success(t("account.dashboard.changePassword.success"));
       handleClose();
-    } catch (e: any) {
+    } catch (e: unknown) {
       showNotice.error(
         e instanceof Error
           ? e.message

@@ -103,6 +103,19 @@ function SurfaceCard({
   );
 }
 
+const BRAND_GRADIENT = "linear-gradient(135deg, #6366F1, #8B5CF6)";
+
+const avatarBoxSx = {
+  width: 44,
+  height: 44,
+  borderRadius: "12px",
+  background: BRAND_GRADIENT,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+} as const;
+
 // ─── Account Bar ──────────────────────────────────────────────────────────────
 
 function AccountBar() {
@@ -127,18 +140,7 @@ function AccountBar() {
     return (
       <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
+          <Box sx={avatarBoxSx}>
             <Typography
               variant="body1"
               fontWeight="bold"
@@ -169,18 +171,7 @@ function AccountBar() {
   return (
     <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Box
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: "12px",
-            background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
+        <Box sx={avatarBoxSx}>
           {loading ? (
             <CircularProgress size={16} sx={{ color: "white" }} />
           ) : (
@@ -270,19 +261,15 @@ function ConnectButton({
 }: ConnectButtonProps) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const [animating, setAnimating] = useState(false);
+  // Track connection changes to trigger CSS bounce animation via key
+  const animKeyRef = useRef(0);
   const prevConnectedRef = useRef(connected);
-  const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Trigger bounce animation on connection state change (in render, not effect)
   if (prevConnectedRef.current !== connected) {
     prevConnectedRef.current = connected;
-    if (!animating) setAnimating(true);
-    if (animTimerRef.current) clearTimeout(animTimerRef.current);
-    animTimerRef.current = setTimeout(() => setAnimating(false), 400);
+    animKeyRef.current += 1;
   }
 
-  const activeGradient = "linear-gradient(135deg, #6366F1, #8B5CF6)";
+  const activeGradient = BRAND_GRADIENT;
   const inactiveColor = theme.palette.text.disabled;
 
   return (
@@ -332,8 +319,9 @@ function ConnectButton({
             transition: "all 0.4s",
           }}
         />
-        {/* Inner button */}
+        {/* Inner button — key forces re-mount to replay CSS animation */}
         <Box
+          key={animKeyRef.current}
           onClick={connecting ? undefined : onToggle}
           sx={{
             position: "relative",
@@ -350,14 +338,15 @@ function ConnectButton({
               ? "0 8px 32px rgba(99, 102, 241, 0.4)"
               : "none",
             transition: "all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            ...(animating && {
-              animation: "connectBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
-              "@keyframes connectBounce": {
-                "0%": { transform: "scale(0.85)" },
-                "50%": { transform: "scale(1.1)" },
-                "100%": { transform: "scale(1)" },
-              },
-            }),
+            animation:
+              animKeyRef.current > 0
+                ? "connectBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)"
+                : "none",
+            "@keyframes connectBounce": {
+              "0%": { transform: "scale(0.85)" },
+              "50%": { transform: "scale(1.1)" },
+              "100%": { transform: "scale(1)" },
+            },
             "&:hover": connecting ? {} : { transform: "scale(1.05)" },
             "&:active": connecting ? {} : { transform: "scale(0.96)" },
           }}
@@ -874,7 +863,7 @@ const HomePage = () => {
       await mutateVerge();
       await mutate("getSystemProxy");
       await mutate("getAutotemProxy");
-    } catch (e: any) {
+    } catch (e: unknown) {
       await mutateVerge();
       showNotice.error(
         e instanceof Error ? e.message : String(e ?? "Operation failed"),

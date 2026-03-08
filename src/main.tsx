@@ -4,7 +4,6 @@ import "./assets/styles/index.scss";
 import "./utils/monaco";
 
 import { ResizeObserver } from "@juggle/resize-observer";
-import { ComposeContextProvider } from "foxact/compose-context-provider";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
@@ -20,11 +19,7 @@ import {
   resolveThemeMode,
   getPreloadConfig,
 } from "./services/preload";
-import {
-  LoadingCacheProvider,
-  ThemeModeProvider,
-  UpdateStateProvider,
-} from "./services/states";
+import { useThemeModeStore } from "./services/states";
 import { disableWebViewShortcuts } from "./utils/disable-webview-shortcuts";
 import {
   isIgnoredMonacoWorkerError,
@@ -47,24 +42,19 @@ if (!container) {
 disableWebViewShortcuts();
 
 const initializeApp = (initialThemeMode: "light" | "dark") => {
-  const contexts = [
-    <ThemeModeProvider key="theme" initialState={initialThemeMode} />,
-    <LoadingCacheProvider key="loading" />,
-    <UpdateStateProvider key="update" />,
-  ];
+  // Set initial theme mode in Zustand store
+  useThemeModeStore.getState().setThemeMode(initialThemeMode);
 
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <ComposeContextProvider contexts={contexts}>
-        <BaseErrorBoundary>
-          <WindowProvider>
-            <AppDataProvider>
-              <RouterProvider router={router} />
-            </AppDataProvider>
-          </WindowProvider>
-        </BaseErrorBoundary>
-      </ComposeContextProvider>
+      <BaseErrorBoundary>
+        <WindowProvider>
+          <AppDataProvider>
+            <RouterProvider router={router} />
+          </AppDataProvider>
+        </WindowProvider>
+      </BaseErrorBoundary>
     </React.StrictMode>,
   );
 };
@@ -112,12 +102,6 @@ window.addEventListener("unhandledrejection", (event) => {
 
 // Page close/refresh events
 window.addEventListener("beforeunload", () => {
-  // Clean up all WebSocket instances to prevent memory leaks
-  MihomoWebSocket.cleanupAll();
-});
-
-// Page loaded event
-window.addEventListener("DOMContentLoaded", () => {
   // Clean up all WebSocket instances to prevent memory leaks
   MihomoWebSocket.cleanupAll();
 });

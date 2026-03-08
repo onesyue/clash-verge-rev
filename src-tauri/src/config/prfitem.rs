@@ -592,8 +592,8 @@ fn parse_subscription_response(raw_data: &str) -> Result<std::string::String> {
         Ok(Some(converted)) => {
             log::info!("订阅内容已从 Base64/URI 格式转换为 Clash YAML");
             // 验证转换后的 YAML
-            let yaml = serde_yaml_ng::from_str::<Mapping>(&converted)
-                .context("the converted profile data is invalid yaml")?;
+            let yaml =
+                serde_yaml_ng::from_str::<Mapping>(&converted).context("the converted profile data is invalid yaml")?;
             if !yaml.contains_key("proxies") && !yaml.contains_key("proxy-providers") {
                 bail!("converted profile does not contain `proxies` or `proxy-providers`");
             }

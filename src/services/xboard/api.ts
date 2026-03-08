@@ -16,6 +16,20 @@
 
 import { XBoardClient } from "./client";
 import { XBoardError, XBoardErrorCode } from "./errors";
+import {
+  AuthResponseSchema,
+  CheckOrderStatusResponseSchema,
+  CheckoutResponseSchema,
+  CouponResponseSchema,
+  CreateOrderResponseSchema,
+  InviteResponseSchema,
+  NoticesResponseSchema,
+  OrdersResponseSchema,
+  PaymentMethodsResponseSchema,
+  PlansResponseSchema,
+  SubscribeResponseSchema,
+  UserInfoResponseSchema,
+} from "./schemas";
 import type {
   AuthResult,
   CheckoutResult,
@@ -46,22 +60,24 @@ async function fetchAuthData(
   path: string,
   body: Record<string, unknown>,
 ): Promise<string> {
-  const root = await client.post(path, body);
-  const authData: string | undefined = root?.data?.auth_data;
+  const raw = await client.post(path, body);
+  const root = AuthResponseSchema.parse(raw);
+  const authData = root.data.auth_data;
   if (!authData)
     throw new XBoardError(
-      "服务器未返回 auth_data",
+      "Server did not return auth_data",
       XBoardErrorCode.AUTH_MISSING,
     );
   return authData;
 }
 
 async function fetchSubscribeUrl(authData: string): Promise<string> {
-  const root = await client.get("/api/v1/user/getSubscribe", authData);
-  const url: string | undefined = root?.data?.subscribe_url?.trim();
+  const raw = await client.get("/api/v1/user/getSubscribe", authData);
+  const root = SubscribeResponseSchema.parse(raw);
+  const url = root.data.subscribe_url?.trim();
   if (!url)
     throw new XBoardError(
-      "服务器未返回订阅地址，请联系管理员",
+      "Server did not return subscribe URL",
       XBoardErrorCode.SUBSCRIBE_URL_MISSING,
     );
   return url;
@@ -163,23 +179,24 @@ export async function logout(_authData: string): Promise<void> {
  *
  * 流量数据唯一来源：/api/v1/user/getSubscribe（u、d、transfer_enable，单位字节）
  * 余额 / uuid：/api/v1/user/info（可选，失败不影响流量显示）
- *
- * 根据 cedar2025/Xboard 源码确认：
- *   - /api/v1/user/info 不含 u/d 字段
- *   - /api/v1/user/getSubscribe 是 u/d/transfer_enable 的唯一来源
- * 若 getSubscribe 失败，整体返回 null（由调用方判断 error 状态）。
  */
 export async function getUserInfo(authData: string): Promise<UserInfo | null> {
-  // ── 主调用：getSubscribe 必须成功，否则无法获取流量 ──────────────────────
-  const subRoot = await client.get("/api/v1/user/getSubscribe", authData);
-  const sub = subRoot?.data;
+  const subRaw = await client.get("/api/v1/user/getSubscribe", authData);
+  const subRoot = SubscribeResponseSchema.parse(subRaw);
+  const sub = subRoot.data;
   if (!sub) return null;
 
-  // ── 可选调用：info 仅补充 balance / commission_balance / uuid ────────────
-  let info: any = null;
+  // 可选调用：info 仅补充 balance / commission_balance / uuid
+  let info: {
+    email?: string;
+    balance?: number;
+    commission_balance?: number;
+    uuid?: string;
+  } | null = null;
   try {
-    const infoRoot = await client.get("/api/v1/user/info", authData);
-    info = infoRoot?.data ?? null;
+    const infoRaw = await client.get("/api/v1/user/info", authData);
+    const infoRoot = UserInfoResponseSchema.parse(infoRaw);
+    info = infoRoot.data ?? null;
   } catch {
     // 失败不影响流量数据，降级处理
   }
@@ -192,7 +209,6 @@ export async function getUserInfo(authData: string): Promise<UserInfo | null> {
       sub.expired_at == null || sub.expired_at === 0
         ? null
         : Number(sub.expired_at),
-    // u / d / transfer_enable 来自 getSubscribe，单位字节
     transferEnable: sub.transfer_enable ?? 0,
     usedDownload: sub.d ?? 0,
     usedUpload: sub.u ?? 0,
@@ -205,45 +221,45 @@ export async function getUserInfo(authData: string): Promise<UserInfo | null> {
 export async function getInviteInfo(
   authData: string,
 ): Promise<InviteInfo | null> {
-  // 正确路径：/api/v1/user/invite/fetch（非 /invite）
-  const root = await client.get("/api/v1/user/invite/fetch", authData);
-  const data = root?.data;
+  const raw = await client.get("/api/v1/user/invite/fetch", authData);
+  const root = InviteResponseSchema.parse(raw);
+  const data = root.data;
   if (!data) return null;
 
-  const codes: any[] = data.codes ?? [];
-  const code: string = codes[0]?.code ?? "";
+  const codes = data.codes ?? [];
+  const code = codes[0]?.code ?? "";
   const inviteUrl = code ? `${BASE_URL}/#/register?code=${code}` : "";
-  const stat: number[] = data.stat ?? [];
+  const stat = data.stat ?? [];
   return { inviteUrl, referralCount: stat[0] ?? 0 };
 }
 
 /**
  * 获取公告列表（自动翻页，获取全部）
- *
- * XBoard 每页固定返回 5 条，通过 current 参数翻页。
- * 响应结构：{ data: [...], total: N }（非 success 包装）
  */
 export async function getNotices(authData: string): Promise<Notice[]> {
-  const all: any[] = [];
+  const all: Notice[] = [];
   let current = 1;
   const MAX_PAGES = 50;
   while (current <= MAX_PAGES) {
-    const root = await client.get(
+    const raw = await client.get(
       `/api/v1/user/notice/fetch?current=${current}`,
       authData,
     );
-    const page: any[] = root?.data ?? [];
-    const total: number = root?.total ?? 0;
-    all.push(...page);
+    const root = NoticesResponseSchema.parse(raw);
+    const page = root.data ?? [];
+    const total = root.total ?? 0;
+    all.push(
+      ...page.map((item) => ({
+        id: item.id ?? 0,
+        title: item.title ?? "",
+        content: item.content ?? "",
+        createdAt: item.created_at ?? 0,
+      })),
+    );
     if (all.length >= total || page.length === 0) break;
     current++;
   }
-  return all.map((item) => ({
-    id: item.id ?? 0,
-    title: item.title ?? "",
-    content: item.content ?? "",
-    createdAt: item.created_at ?? 0,
-  }));
+  return all;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -252,10 +268,11 @@ export async function getNotices(authData: string): Promise<Notice[]> {
 
 /** 获取套餐列表（公开接口，无需认证） */
 export async function getPlans(): Promise<Plan[]> {
-  const root = await client.getGuest("/api/v1/guest/plan/fetch");
-  const arr: any[] = root?.data ?? [];
+  const raw = await client.getGuest("/api/v1/guest/plan/fetch");
+  const root = PlansResponseSchema.parse(raw);
+  const arr = root.data ?? [];
   return arr.map((item) => {
-    const transferBytes: number = item.transfer_enable ?? 0;
+    const transferBytes = item.transfer_enable ?? 0;
     return {
       id: item.id ?? 0,
       name: item.name ?? "",
@@ -279,9 +296,6 @@ export async function getPlans(): Promise<Plan[]> {
 
 /**
  * 验证优惠码
- *
- * 对应 POST /api/v1/user/coupon/check
- * 返回优惠信息（名称、折扣类型、折扣值），验证失败时抛出 XBoardError。
  */
 export async function checkCoupon(
   authData: string,
@@ -290,15 +304,15 @@ export async function checkCoupon(
 ): Promise<CouponInfo> {
   const body: Record<string, unknown> = { code: couponCode };
   if (planId != null) body.plan_id = planId;
-  const root = await client.post("/api/v1/user/coupon/check", body, authData);
-  const data = root?.data;
+  const raw = await client.post("/api/v1/user/coupon/check", body, authData);
+  const root = CouponResponseSchema.parse(raw);
+  const data = root.data;
   if (!data)
-    throw new XBoardError("优惠码无效", XBoardErrorCode.COUPON_INVALID);
+    throw new XBoardError("Invalid coupon", XBoardErrorCode.COUPON_INVALID);
   return {
     code: couponCode,
     name: data.name ?? "",
-    /** 1=按金额减免（分），2=按比例折扣（百分比） */
-    type: data.type ?? 1,
+    type: (data.type ?? 1) as 1 | 2,
     value: data.value ?? 0,
   };
 }
@@ -307,15 +321,13 @@ export async function checkCoupon(
 // 订单
 // ────────────────────────────────────────────────────────────────────────────
 
-/** 获取支付方式列表（失败时抛出，由调用方区分"无支付方式"与"加载失败"） */
+/** 获取支付方式列表 */
 export async function getPaymentMethods(
   authData: string,
 ): Promise<PaymentMethod[]> {
-  const root = await client.get(
-    "/api/v1/user/order/getPaymentMethod",
-    authData,
-  );
-  const arr: any[] = root?.data ?? [];
+  const raw = await client.get("/api/v1/user/order/getPaymentMethod", authData);
+  const root = PaymentMethodsResponseSchema.parse(raw);
+  const arr = root.data ?? [];
   return arr.map((item) => ({
     id: item.id ?? 0,
     name: item.name ?? "",
@@ -325,8 +337,6 @@ export async function getPaymentMethods(
 
 /**
  * 创建订单，返回 trade_no
- *
- * @param couponCode 可选优惠码
  */
 export async function createOrder(
   authData: string,
@@ -337,11 +347,12 @@ export async function createOrder(
   const body: Record<string, unknown> = { plan_id: planId, period };
   if (couponCode?.trim()) body.coupon_code = couponCode.trim();
 
-  const root = await client.post("/api/v1/user/order/save", body, authData);
-  const tradeNo: string | undefined = root?.data;
+  const raw = await client.post("/api/v1/user/order/save", body, authData);
+  const root = CreateOrderResponseSchema.parse(raw);
+  const tradeNo = root.data;
   if (!tradeNo)
     throw new XBoardError(
-      "创建订单失败：未返回 trade_no",
+      "Order creation failed: no trade_no returned",
       XBoardErrorCode.ORDER_CREATE_FAILED,
     );
   return tradeNo;
@@ -350,52 +361,45 @@ export async function createOrder(
 /**
  * 结算订单
  * 返回 CheckoutResult：type=-1 免费成功，type=0 跳转 URL，type=1 HTML 内嵌
- *
- * XBoard OrderController::checkout 使用 response() 直接返回，不经过 success() 包装。
- * 响应结构：{ type: -1|0|1, data: string|true }
  */
 export async function checkoutOrder(
   authData: string,
   tradeNo: string,
   methodId: number,
 ): Promise<CheckoutResult> {
-  const root = await client.post(
+  const raw = await client.post(
     "/api/v1/user/order/checkout",
     { trade_no: tradeNo, method: methodId },
     authData,
   );
-  // checkout 直接返回 { type, data }，不经过 success() 包装
-  const payload = root;
-  const rawType: number = typeof payload?.type === "number" ? payload.type : 0;
+  const payload = CheckoutResponseSchema.parse(raw);
+  const rawType = typeof payload.type === "number" ? payload.type : 0;
   const type = rawType as -1 | 0 | 1;
-  const rawData = payload?.data;
+  const rawData = payload.data;
   const data =
     typeof rawData === "string"
       ? rawData
       : typeof rawData === "boolean"
         ? ""
         : typeof rawData === "object" && rawData !== null
-          ? String(rawData.data ?? "")
+          ? String((rawData as Record<string, unknown>).data ?? "")
           : "";
   return { type, data };
 }
 
 /**
  * 查询订单支付状态
- *
- * 对应 GET /api/v1/user/order/check?trade_no=xxx
- * 用于外部支付后轮询确认结果。
- * 返回状态码：0=待支付 1=处理中 2=已取消 3=已完成 4=已折扣
  */
 export async function checkOrderStatus(
   authData: string,
   tradeNo: string,
 ): Promise<Order["status"]> {
-  const root = await client.get(
+  const raw = await client.get(
     `/api/v1/user/order/check?trade_no=${encodeURIComponent(tradeNo)}`,
     authData,
   );
-  return (root?.data ?? 0) as Order["status"];
+  const root = CheckOrderStatusResponseSchema.parse(raw);
+  return (root.data ?? 0) as Order["status"];
 }
 
 /** 取消订单（仅 status=0 待支付订单可取消） */
@@ -410,10 +414,11 @@ export async function cancelOrder(
   );
 }
 
-/** 获取订单列表（失败时抛出，由调用方设置 error 状态） */
+/** 获取订单列表 */
 export async function getOrders(authData: string): Promise<Order[]> {
-  const root = await client.get("/api/v1/user/order/fetch", authData);
-  const arr: any[] = root?.data ?? [];
+  const raw = await client.get("/api/v1/user/order/fetch", authData);
+  const root = OrdersResponseSchema.parse(raw);
+  const arr = root.data ?? [];
   return arr.map((item) => ({
     tradeNo: item.trade_no ?? "",
     planName: item.plan?.name ?? item.plan_name ?? "",
