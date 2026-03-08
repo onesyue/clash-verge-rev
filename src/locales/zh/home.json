@@ -108,7 +108,18 @@
         "directMode": "直连模式",
         "group": "代理组",
         "proxy": "节点",
-        "noActiveNode": "暂无激活的代理节点"
+        "noActiveNode": "暂无激活的代理节点",
+        "noProxy": "无代理节点"
+      },
+      "delay": {
+        "testing": "测试中",
+        "untested": "未测试",
+        "error": "错误",
+        "timeout": "超时",
+        "high": "延迟较高",
+        "medium": "延迟中等",
+        "good": "延迟良好",
+        "excellent": "延迟极佳"
       },
       "messages": {
         "syncSuccess": "订阅同步成功，代理节点已加载",

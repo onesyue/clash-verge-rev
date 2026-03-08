@@ -108,7 +108,18 @@
         "directMode": "Direct Mode",
         "group": "Group",
         "proxy": "Proxy",
-        "noActiveNode": "No active proxy node"
+        "noActiveNode": "No active proxy node",
+        "noProxy": "No proxy"
+      },
+      "delay": {
+        "testing": "Testing",
+        "untested": "Untested",
+        "error": "Error",
+        "timeout": "Timeout",
+        "high": "High delay",
+        "medium": "Medium delay",
+        "good": "Good delay",
+        "excellent": "Excellent"
       },
       "messages": {
         "syncSuccess": "Subscription synced, proxy nodes loaded",

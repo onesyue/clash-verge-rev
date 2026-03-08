@@ -43,7 +43,7 @@ import {
   refreshXBoardProfile,
   syncXBoardSubscription,
 } from "@/services/xboard/sync";
-import parseTraffic from "@/utils/parse-traffic";
+import parseTraffic, { formatPercent } from "@/utils/parse-traffic";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -61,13 +61,6 @@ function formatElapsed(secs: number): string {
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min((used / total) * 100, 100);
-}
-
-function formatPercent(pct: number): string {
-  if (pct <= 0) return "0%";
-  if (pct < 1) return "<1%";
-  if (pct >= 100) return "100%";
-  return `${Math.round(pct)}%`;
 }
 
 // ─── Surface card wrapper ─────────────────────────────────────────────────────

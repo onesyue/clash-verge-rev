@@ -5,8 +5,6 @@
   "login": {
     "tab": "Sign In",
     "form": {
-      "panelUrl": "Panel URL",
-      "panelUrlPlaceholder": "https://example.com",
       "email": "Email",
       "password": "Password",
       "submit": "Sign In"
@@ -19,8 +17,6 @@
   "register": {
     "tab": "Sign Up",
     "form": {
-      "panelUrl": "Panel URL",
-      "panelUrlPlaceholder": "https://example.com",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm Password",
@@ -61,7 +57,6 @@
     }
   },
   "session": {
-    "panelUrl": "Panel URL",
     "loggedInAs": "Signed in as",
     "logout": "Sign Out",
     "feedback": {
@@ -94,7 +89,8 @@
       "unlimited": "Unlimited",
       "upload": "Upload",
       "download": "Download",
-      "usagePercent": "{{percent}}% used"
+      "usagePercent": "{{percent}}% used",
+      "noUsage": "No usage yet"
     },
     "wallet": {
       "title": "Wallet",
@@ -105,10 +101,21 @@
     "invite": {
       "title": "Invite",
       "referrals": "Referred",
+      "referralCount": "Referred {{count}} users",
       "people": "users",
+      "copy": "Copy",
       "copyLink": "Copy invite link",
       "linkCopied": "Invite link copied",
+      "copyFailed": "Copy failed",
       "noLink": "No invite link available"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "oldPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirm": "Confirm",
+      "success": "Password changed successfully",
+      "failed": "Failed to change password"
     }
   },
   "notices": {
@@ -185,9 +192,6 @@
     "noPlans": "No plans available",
     "retry": "Retry",
     "plan": {
-      "traffic": "Traffic",
-      "unlimited": "Unlimited",
-      "buy": "Subscribe",
       "perMonth": "/mo",
       "perQuarter": "/qtr",
       "perHalfYear": "/6mo",
@@ -232,8 +236,6 @@
     }
   },
   "validation": {
-    "panelUrlRequired": "Panel URL is required",
-    "panelUrlInvalid": "Panel URL must start with http:// or https://",
     "emailRequired": "Email is required",
     "emailInvalid": "Invalid email address",
     "passwordRequired": "Password is required",

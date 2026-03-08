@@ -84,26 +84,61 @@ function convertDelayColor(
   }
 }
 
-function getSignalIcon(delay: number): {
+function getSignalIcon(
+  delay: number,
+  t: (key: string) => string,
+): {
   icon: React.ReactElement;
   text: string;
   color: string;
 } {
   if (delay === -2)
-    return { icon: <SignalNone />, text: "测试中", color: "text.secondary" };
+    return {
+      icon: <SignalNone />,
+      text: t("home.components.currentProxy.delay.testing"),
+      color: "text.secondary",
+    };
   if (delay === -1)
-    return { icon: <SignalNone />, text: "未测试", color: "text.secondary" };
+    return {
+      icon: <SignalNone />,
+      text: t("home.components.currentProxy.delay.untested"),
+      color: "text.secondary",
+    };
   if (delay > 1e5)
-    return { icon: <SignalError />, text: "错误", color: "error.main" };
+    return {
+      icon: <SignalError />,
+      text: t("home.components.currentProxy.delay.error"),
+      color: "error.main",
+    };
   if (delay === 0 || delay >= 10000)
-    return { icon: <SignalError />, text: "超时", color: "error.main" };
+    return {
+      icon: <SignalError />,
+      text: t("home.components.currentProxy.delay.timeout"),
+      color: "error.main",
+    };
   if (delay >= 500)
-    return { icon: <SignalWeak />, text: "延迟较高", color: "error.main" };
+    return {
+      icon: <SignalWeak />,
+      text: t("home.components.currentProxy.delay.high"),
+      color: "error.main",
+    };
   if (delay >= 300)
-    return { icon: <SignalMedium />, text: "延迟中等", color: "warning.main" };
+    return {
+      icon: <SignalMedium />,
+      text: t("home.components.currentProxy.delay.medium"),
+      color: "warning.main",
+    };
   if (delay >= 200)
-    return { icon: <SignalGood />, text: "延迟良好", color: "info.main" };
-  return { icon: <SignalStrong />, text: "延迟极佳", color: "success.main" };
+    return {
+      icon: <SignalGood />,
+      text: t("home.components.currentProxy.delay.good"),
+      color: "info.main",
+    };
+  return {
+    icon: <SignalStrong />,
+    text: t("home.components.currentProxy.delay.excellent"),
+    color: "success.main",
+  };
 }
 
 export const CurrentProxyCard = () => {
@@ -542,8 +577,12 @@ export const CurrentProxyCard = () => {
   // 信号图标（增加非空校验）
   const signalInfo =
     currentProxy && state.selection.group
-      ? getSignalIcon(currentDelay)
-      : { icon: <SignalNone />, text: "未初始化", color: "text.secondary" };
+      ? getSignalIcon(currentDelay, t)
+      : {
+          icon: <SignalNone />,
+          text: t("home.components.currentProxy.delay.untested"),
+          color: "text.secondary",
+        };
 
   const checkCurrentProxyDelay = useCallback(async () => {
     if (autoCheckInProgressRef.current) return;
@@ -868,7 +907,7 @@ export const CurrentProxyCard = () => {
           title={
             currentProxy
               ? `${signalInfo.text}: ${delayManager.formatDelay(currentDelay)}`
-              : "无代理节点"
+              : t("home.components.currentProxy.labels.noProxy")
           }
         >
           <Box sx={{ color: signalInfo.color }}>

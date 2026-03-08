@@ -39,12 +39,6 @@ $sidebar-collapsed-width: 64px;
     user-select: none;
     -webkit-app-region: drag;
 
-    .brand-logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-    }
-
     .brand-name {
       font-size: 16px;
       font-weight: 700;
@@ -60,11 +54,6 @@ $sidebar-collapsed-width: 64px;
     display: flex;
     flex-direction: column;
     gap: 2px;
-  }
-
-  .sidebar-footer {
-    padding: 12px;
-    flex-shrink: 0;
   }
 }
 

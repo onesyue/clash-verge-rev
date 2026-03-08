@@ -195,10 +195,6 @@ const Layout = () => {
             errorRetryCount: 3,
             errorRetryInterval: 5000,
             onError: (error, key) => {
-              if (key !== "getAutotemProxy") {
-                console.error(`SWR Error for ${key}:`, error);
-                return;
-              }
               const silentKeys = [
                 "getVersion",
                 "getClashConfig",
@@ -260,7 +256,7 @@ const Layout = () => {
                           lineHeight: 1,
                         }}
                       >
-                        Y
+                        悦
                       </Typography>
                     </Box>
                     <Typography
@@ -277,7 +273,7 @@ const Layout = () => {
                           palette.mode === "dark" ? "transparent" : "inherit",
                       })}
                     >
-                      YueTong
+                      悦通
                     </Typography>
                   </div>
 

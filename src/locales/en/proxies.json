@@ -25,7 +25,8 @@
     },
     "labels": {
       "proxyCount": "Proxy Count",
-      "delayCheckReset": "Delay check to cancel fixed"
+      "delayCheckReset": "Delay check to cancel fixed",
+      "noProxies": "No Proxies"
     },
     "tooltips": {
       "locate": "locate",

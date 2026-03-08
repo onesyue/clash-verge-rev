@@ -12,3 +12,11 @@ const parseTraffic = (num?: number) => {
 };
 
 export default parseTraffic;
+
+/** 格式化百分比，<1% 显示 "<1%"，避免误报 0% */
+export function formatPercent(pct: number): string {
+  if (pct <= 0) return "0%";
+  if (pct < 1) return "<1%";
+  if (pct >= 100) return "100%";
+  return `${Math.round(pct)}%`;
+}

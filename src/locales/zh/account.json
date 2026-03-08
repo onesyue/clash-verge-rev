@@ -5,8 +5,6 @@
   "login": {
     "tab": "登录",
     "form": {
-      "panelUrl": "面板地址",
-      "panelUrlPlaceholder": "https://example.com",
       "email": "邮箱",
       "password": "密码",
       "submit": "登录"
@@ -19,8 +17,6 @@
   "register": {
     "tab": "注册",
     "form": {
-      "panelUrl": "面板地址",
-      "panelUrlPlaceholder": "https://example.com",
       "email": "邮箱",
       "password": "密码",
       "confirmPassword": "确认密码",
@@ -61,7 +57,6 @@
     }
   },
   "session": {
-    "panelUrl": "面板地址",
     "loggedInAs": "已登录",
     "logout": "退出登录",
     "feedback": {
@@ -94,7 +89,8 @@
       "unlimited": "无限",
       "upload": "上传",
       "download": "下载",
-      "usagePercent": "已用 {{percent}}%"
+      "usagePercent": "已用 {{percent}}%",
+      "noUsage": "暂未使用"
     },
     "wallet": {
       "title": "钱包",
@@ -105,10 +101,21 @@
     "invite": {
       "title": "邀请",
       "referrals": "已邀请",
+      "referralCount": "已邀请 {{count}} 人",
       "people": "人",
+      "copy": "复制",
       "copyLink": "复制邀请链接",
       "linkCopied": "邀请链接已复制",
+      "copyFailed": "复制失败",
       "noLink": "暂无邀请链接"
+    },
+    "changePassword": {
+      "title": "修改密码",
+      "oldPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirm": "确认修改",
+      "success": "密码修改成功",
+      "failed": "修改失败"
     }
   },
   "notices": {
@@ -185,9 +192,6 @@
     "noPlans": "暂无可用套餐",
     "retry": "重试",
     "plan": {
-      "traffic": "流量",
-      "unlimited": "不限流量",
-      "buy": "立即购买",
       "perMonth": "元/月",
       "perQuarter": "元/季",
       "perHalfYear": "元/半年",
@@ -232,8 +236,6 @@
     }
   },
   "validation": {
-    "panelUrlRequired": "请输入面板地址",
-    "panelUrlInvalid": "面板地址格式不正确，需以 http:// 或 https:// 开头",
     "emailRequired": "请输入邮箱",
     "emailInvalid": "邮箱格式不正确",
     "passwordRequired": "请输入密码",

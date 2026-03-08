@@ -5,11 +5,9 @@
  * 点击价格按钮后触发 onBuy(plan, period)。
  */
 
-import { DataUsageRounded } from "@mui/icons-material";
 import {
   Box,
   Button,
-  Chip,
   Divider,
   Stack,
   Typography,
@@ -20,7 +18,6 @@ import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 
 import type { Plan, PlanPeriod } from "@/services/xboard/types";
-import parseTraffic from "@/utils/parse-traffic";
 
 /** 套餐周期定义：key = PlanPeriod（API 使用），field = Plan 对象中的 camelCase 字段 */
 const PERIODS: Array<{ key: PlanPeriod; field: keyof Plan; labelKey: string }> =
@@ -63,11 +60,6 @@ export function PlanCard({ plan, onBuy }: Props) {
 
   const availablePeriods = PERIODS.filter(({ field }) => plan[field] != null);
 
-  const [trafficVal, trafficUnit] = parseTraffic(
-    plan.transferGb * 1024 * 1024 * 1024,
-  );
-  const isUnlimited = plan.transferGb === 0;
-
   return (
     <Box
       sx={{
@@ -94,26 +86,9 @@ export function PlanCard({ plan, onBuy }: Props) {
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography variant="h6" fontWeight="bold">
-            {plan.name}
-          </Typography>
-          <Chip
-            icon={<DataUsageRounded sx={{ fontSize: 14 }} />}
-            label={
-              isUnlimited
-                ? t("account.shop.plan.unlimited")
-                : `${trafficVal} ${trafficUnit}`
-            }
-            size="small"
-            color={isUnlimited ? "success" : "primary"}
-            variant="outlined"
-          />
-        </Stack>
+        <Typography variant="h6" fontWeight="bold">
+          {plan.name}
+        </Typography>
       </Box>
 
       {/* Markdown 套餐描述 */}

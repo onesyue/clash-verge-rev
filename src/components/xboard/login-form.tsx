@@ -625,7 +625,7 @@ export function LoginForm({ onSuccess }: Props) {
         mt: 4,
         p: 3,
         borderRadius: 3,
-        backgroundColor: isDark ? "#282a36" : "#ffffff",
+        backgroundColor: isDark ? "#1E293B" : "#ffffff",
         boxShadow: isDark
           ? "0 4px 24px rgba(0,0,0,0.4)"
           : "0 4px 24px rgba(0,0,0,0.08)",
@@ -634,10 +634,17 @@ export function LoginForm({ onSuccess }: Props) {
       <Typography
         variant="h6"
         fontWeight="bold"
-        mb={2}
+        mb={0.5}
         sx={{ color: "text.primary" }}
       >
         悦通
+      </Typography>
+      <Typography
+        variant="body2"
+        mb={2}
+        sx={{ color: "text.secondary", fontSize: "13px" }}
+      >
+        专为 AI 与流媒体打造的全球加速网络
       </Typography>
 
       {/* Tab 切换 */}

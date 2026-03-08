@@ -68,7 +68,7 @@ import {
   syncXBoardSubscription,
 } from "@/services/xboard/sync";
 import type { UserInfo } from "@/services/xboard/types";
-import parseTraffic from "@/utils/parse-traffic";
+import parseTraffic, { formatPercent } from "@/utils/parse-traffic";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -80,13 +80,6 @@ function formatBalance(cents: number, unit: string): string {
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min((used / total) * 100, 100);
-}
-
-function formatPercent(pct: number): string {
-  if (pct <= 0) return "0%";
-  if (pct < 1) return "<1%"; // 避免整数截断后误报 0%
-  if (pct >= 100) return "100%";
-  return `${Math.round(pct)}%`;
 }
 
 // ─── 修改密码对话框 ───────────────────────────────────────────────────────────
@@ -116,10 +109,14 @@ function ChangePasswordDialog({
     setSubmitting(true);
     try {
       await changePassword(session.authData, oldPwd, newPwd);
-      showNotice.success("密码修改成功");
+      showNotice.success(t("account.dashboard.changePassword.success"));
       handleClose();
     } catch (e: any) {
-      showNotice.error(e instanceof Error ? e.message : "修改失败");
+      showNotice.error(
+        e instanceof Error
+          ? e.message
+          : t("account.dashboard.changePassword.failed"),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -127,11 +124,11 @@ function ChangePasswordDialog({
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
-      <DialogTitle>修改密码</DialogTitle>
+      <DialogTitle>{t("account.dashboard.changePassword.title")}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <TextField
-            label="当前密码"
+            label={t("account.dashboard.changePassword.oldPassword")}
             type="password"
             value={oldPwd}
             onChange={(e) => setOldPwd(e.target.value)}
@@ -139,7 +136,7 @@ function ChangePasswordDialog({
             size="small"
           />
           <TextField
-            label="新密码"
+            label={t("account.dashboard.changePassword.newPassword")}
             type="password"
             value={newPwd}
             onChange={(e) => setNewPwd(e.target.value)}
@@ -162,7 +159,7 @@ function ChangePasswordDialog({
             ) : undefined
           }
         >
-          确认修改
+          {t("account.dashboard.changePassword.confirm")}
         </Button>
       </DialogActions>
     </Dialog>
@@ -375,7 +372,7 @@ function SubscriptionCard({
   const trafficDetail = isUnlimited
     ? t("account.dashboard.traffic.unlimited")
     : usedBytes === 0
-      ? "暂未使用"
+      ? t("account.dashboard.traffic.noUsage")
       : `${usedVal} ${usedUnit} / ${totalVal} ${totalUnit}`;
 
   return (
@@ -572,7 +569,7 @@ function InviteCard({
       await writeText(inviteUrl);
       showNotice.success(t("account.dashboard.invite.linkCopied"));
     } catch {
-      showNotice.error("复制失败");
+      showNotice.error(t("account.dashboard.invite.copyFailed"));
     }
   };
 
@@ -589,7 +586,9 @@ function InviteCard({
           {t("account.dashboard.invite.title")}
         </Typography>
         <Typography variant="caption" sx={{ color: "#3A6BBF" }}>
-          已邀请 {referralCount} 人
+          {t("account.dashboard.invite.referralCount", {
+            count: referralCount,
+          })}
         </Typography>
       </Box>
 
@@ -631,7 +630,7 @@ function InviteCard({
             "&:hover": { bgcolor: "rgba(58,107,191,0.08)" },
           }}
         >
-          复制
+          {t("account.dashboard.invite.copy")}
         </Typography>
       </Box>
     </Paper>
@@ -654,7 +653,7 @@ function ActionButtons({
 
   const btns = [
     {
-      label: "修改密码",
+      label: t("account.dashboard.changePassword.title"),
       onClick: onChangePassword,
       color: "primary" as const,
     },

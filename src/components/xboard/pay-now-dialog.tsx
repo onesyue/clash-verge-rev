@@ -31,6 +31,7 @@ import {
   getPaymentMethods,
 } from "@/services/xboard/api";
 import type { PaymentMethod } from "@/services/xboard/types";
+import { extractUrlFromHtml } from "@/services/xboard/utils";
 
 interface Props {
   open: boolean;
@@ -246,9 +247,4 @@ export function PayNowDialog({
       )}
     </BaseDialog>
   );
-}
-
-function extractUrlFromHtml(html: string): string {
-  const match = html.match(/href=["']([^"']+)["']/i);
-  return match?.[1] ?? "";
 }

@@ -16,6 +16,7 @@
 
 import { fetch } from "@tauri-apps/plugin-http";
 
+import { clearSession } from "./store";
 import type {
   AuthResult,
   CheckoutResult,
@@ -49,6 +50,26 @@ export class XBoardError extends Error {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
+// Auth expiry handler
+// ────────────────────────────────────────────────────────────────────────────
+
+let authExpiredTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * 当服务器返回 401/403 时清除本地会话，触发 UI 回到登录页。
+ * 使用防抖避免多个并发请求同时触发多次清除。
+ */
+function handleAuthExpired() {
+  if (authExpiredTimer) return;
+  authExpiredTimer = setTimeout(() => {
+    authExpiredTimer = null;
+    clearSession();
+    // 强制刷新页面以重置 React context 状态
+    window.location.reload();
+  }, 100);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Internal HTTP helpers
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -74,6 +95,10 @@ async function parseResponse(res: Response): Promise<any> {
     throw new XBoardError(`响应不是有效的 JSON（${res.status}）`, res.status);
   }
   if (!res.ok) {
+    // 401/403 表示 token 过期或无效，自动清除本地会话
+    if (res.status === 401 || res.status === 403) {
+      handleAuthExpired();
+    }
     throw new XBoardError(
       json?.message ?? `请求失败（${res.status}）`,
       res.status,

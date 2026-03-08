@@ -5,6 +5,7 @@ import {
 } from "@mui/icons-material";
 import { Box, ListItemButton, Typography, styled } from "@mui/material";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useIconCache } from "@/hooks/use-icon-cache";
 import { useVerge } from "@/hooks/use-verge";
@@ -39,6 +40,7 @@ export const ProxyRender = (props: RenderProps) => {
     isChainMode: _ = false,
   } = props;
   const { type, group, headState, proxy, proxyCol } = item;
+  const { t } = useTranslation();
   const { verge } = useVerge();
   const enable_group_icon = verge?.enable_group_icon ?? true;
   const iconCachePath = useIconCache({
@@ -163,7 +165,9 @@ export const ProxyRender = (props: RenderProps) => {
         }}
       >
         <InboxRounded sx={{ fontSize: "2.5em", color: "inherit" }} />
-        <Typography sx={{ color: "inherit" }}>No Proxies</Typography>
+        <Typography sx={{ color: "inherit" }}>
+          {t("proxies.page.labels.noProxies")}
+        </Typography>
       </Box>
     );
   }

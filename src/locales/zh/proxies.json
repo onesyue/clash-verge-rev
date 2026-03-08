@@ -25,7 +25,8 @@
     },
     "labels": {
       "proxyCount": "节点数量",
-      "delayCheckReset": "进行延迟测试，以取消固定"
+      "delayCheckReset": "进行延迟测试，以取消固定",
+      "noProxies": "暂无代理"
     },
     "tooltips": {
       "locate": "当前节点",

@@ -19,11 +19,22 @@ export interface TranslationResources {
           title: string;
           uuid: string;
         };
+        changePassword: {
+          confirm: string;
+          failed: string;
+          newPassword: string;
+          oldPassword: string;
+          success: string;
+          title: string;
+        };
         invite: {
+          copy: string;
+          copyFailed: string;
           copyLink: string;
           linkCopied: string;
           noLink: string;
           people: string;
+          referralCount: string;
           referrals: string;
           title: string;
         };
@@ -32,6 +43,7 @@ export interface TranslationResources {
         refresh: string;
         traffic: {
           download: string;
+          noUsage: string;
           remaining: string;
           title: string;
           total: string;
@@ -75,8 +87,6 @@ export interface TranslationResources {
         };
         form: {
           email: string;
-          panelUrl: string;
-          panelUrlPlaceholder: string;
           password: string;
           submit: string;
         };
@@ -159,8 +169,6 @@ export interface TranslationResources {
           confirmPassword: string;
           email: string;
           inviteCode: string;
-          panelUrl: string;
-          panelUrlPlaceholder: string;
           password: string;
           submit: string;
         };
@@ -172,7 +180,6 @@ export interface TranslationResources {
         };
         loggedInAs: string;
         logout: string;
-        panelUrl: string;
       };
       shop: {
         checkout: {
@@ -212,7 +219,6 @@ export interface TranslationResources {
           title: string;
         };
         plan: {
-          buy: string;
           onetime: string;
           perHalfYear: string;
           period: {
@@ -225,8 +231,6 @@ export interface TranslationResources {
           perMonth: string;
           perQuarter: string;
           perYear: string;
-          traffic: string;
-          unlimited: string;
         };
         retry: string;
       };
@@ -242,8 +246,6 @@ export interface TranslationResources {
         emailCodeRequired: string;
         emailInvalid: string;
         emailRequired: string;
-        panelUrlInvalid: string;
-        panelUrlRequired: string;
         passwordMinLength: string;
         passwordRequired: string;
       };
@@ -322,11 +324,22 @@ export interface TranslationResources {
           actions: {
             refreshDelay: string;
           };
+          delay: {
+            error: string;
+            excellent: string;
+            good: string;
+            high: string;
+            medium: string;
+            testing: string;
+            timeout: string;
+            untested: string;
+          };
           labels: {
             directMode: string;
             globalMode: string;
             group: string;
             noActiveNode: string;
+            noProxy: string;
             proxy: string;
           };
           messages: {
@@ -707,6 +720,7 @@ export interface TranslationResources {
         };
         labels: {
           delayCheckReset: string;
+          noProxies: string;
           proxyCount: string;
         };
         messages: {
