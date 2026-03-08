@@ -166,12 +166,6 @@ export interface TranslationResources {
         };
         tab: string;
       };
-      sync: {
-        feedback: {
-          failed: string;
-          success: string;
-        };
-      };
       session: {
         feedback: {
           logoutSuccess: string;
@@ -197,8 +191,8 @@ export interface TranslationResources {
           noPaymentMethods: string;
           openingPayment: string;
           paymentMethod: string;
-          paymentMethodLoading: string;
           paymentMethodError: string;
+          paymentMethodLoading: string;
           paymentPending: string;
           paymentVerified: string;
           period: string;
@@ -235,6 +229,12 @@ export interface TranslationResources {
           unlimited: string;
         };
         retry: string;
+      };
+      sync: {
+        feedback: {
+          failed: string;
+          success: string;
+        };
       };
       validation: {
         confirmPasswordRequired: string;
@@ -308,6 +308,15 @@ export interface TranslationResources {
             global: string;
             rule: string;
           };
+          title: string;
+        };
+        connectButton: {
+          action: string;
+          status: {
+            connected: string;
+            connecting: string;
+            disconnected: string;
+          };
         };
         currentProxy: {
           actions: {
@@ -319,6 +328,12 @@ export interface TranslationResources {
             group: string;
             noActiveNode: string;
             proxy: string;
+          };
+          messages: {
+            noNodes: string;
+            syncFailed: string;
+            syncing: string;
+            syncSuccess: string;
           };
           title: string;
         };
@@ -350,6 +365,11 @@ export interface TranslationResources {
             systemProxy: string;
             tunMode: string;
           };
+        };
+        speedCard: {
+          download: string;
+          totalTraffic: string;
+          upload: string;
         };
         systemInfo: {
           actions: {

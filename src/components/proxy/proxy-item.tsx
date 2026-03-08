@@ -34,22 +34,48 @@ const Widget = styled(Box)(() => ({
 
 const TypeBox = styled("span")(({ theme }) => ({
   display: "inline-block",
-  border: "1px solid #ccc",
-  borderColor: alpha(theme.palette.text.secondary, 0.36),
-  color: alpha(theme.palette.text.secondary, 0.42),
-  borderRadius: 4,
+  border: "1px solid",
+  borderColor: alpha(theme.palette.text.secondary, 0.2),
+  color: alpha(theme.palette.text.secondary, 0.5),
+  borderRadius: 6,
   fontSize: 10,
   marginRight: "4px",
-  padding: "0 2px",
+  padding: "1px 4px",
   lineHeight: 1.25,
 }));
+
+// Colored dot based on latency
+function DelayDot({ delay, timeout }: { delay: number; timeout: number }) {
+  let color = "#94A3B8"; // default grey
+  if (delay > 0 && delay < timeout) {
+    if (delay < 200)
+      color = "#10B981"; // good - emerald
+    else if (delay < 500)
+      color = "#F59E0B"; // medium - amber
+    else color = "#EF4444"; // slow - red
+  } else if (delay >= timeout) {
+    color = "#EF4444";
+  }
+
+  return (
+    <Box
+      sx={{
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        bgcolor: color,
+        flexShrink: 0,
+        boxShadow: delay > 0 ? `0 0 6px ${alpha(color, 0.5)}` : "none",
+      }}
+    />
+  );
+}
 
 export const ProxyItem = (props: Props) => {
   const { group, proxy, selected, showType = true, sx, onClick } = props;
 
   const presetList = ["DIRECT", "REJECT", "REJECT-DROP", "PASS", "COMPATIBLE"];
   const isPreset = presetList.includes(proxy.name);
-  // -1/<=0 为不显示，-2 为 loading
   const [delayState, setDelayState] = useReducer(
     (_: DelayUpdate, next: DelayUpdate) => next,
     { delay: -1, updatedAt: 0 },
@@ -116,9 +142,9 @@ export const ProxyItem = (props: Props) => {
         selected={selected}
         onClick={() => onClick?.(proxy.name)}
         sx={[
-          { borderRadius: 1 },
+          { borderRadius: "12px" },
           ({ palette: { mode, primary } }) => {
-            const bgcolor = mode === "light" ? "#ffffff" : "#24252f";
+            const bgcolor = mode === "light" ? "#ffffff" : "#1E293B";
             const selectColor = mode === "light" ? primary.main : primary.light;
             const showDelay = delayValue > 0;
 
@@ -132,12 +158,18 @@ export const ProxyItem = (props: Props) => {
                 borderLeft: `3px solid ${selectColor}`,
                 bgcolor:
                   mode === "light"
-                    ? alpha(primary.main, 0.15)
-                    : alpha(primary.main, 0.35),
+                    ? alpha(primary.main, 0.1)
+                    : alpha(primary.main, 0.15),
+              },
+              "&:hover": {
+                bgcolor:
+                  mode === "light" ? alpha(primary.main, 0.04) : "#263548",
               },
               backgroundColor: bgcolor,
-              marginBottom: "8px",
-              height: "40px",
+              marginBottom: "6px",
+              height: "44px",
+              border: `1px solid ${mode === "dark" ? "rgba(148,163,184,0.06)" : "rgba(0,0,0,0.04)"}`,
+              transition: "all 0.15s ease",
             };
           },
         ]}
@@ -148,12 +180,18 @@ export const ProxyItem = (props: Props) => {
             <>
               <Box
                 sx={{
-                  display: "inline-block",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.75,
                   marginRight: "8px",
-                  fontSize: "14px",
+                  fontSize: "13px",
                   color: "text.primary",
                 }}
               >
+                {/* Delay dot */}
+                {!isPreset && delayValue > 0 && (
+                  <DelayDot delay={delayValue} timeout={timeout} />
+                )}
                 {proxy.name}
                 {showType && proxy.now && ` - ${proxy.now}`}
               </Box>
@@ -184,7 +222,6 @@ export const ProxyItem = (props: Props) => {
           )}
 
           {!proxy.provider && delayValue !== -2 && (
-            // provider 的节点不支持检测
             <Widget
               className="the-check"
               onClick={(e) => {
@@ -193,8 +230,9 @@ export const ProxyItem = (props: Props) => {
                 onDelay();
               }}
               sx={({ palette }) => ({
-                display: "none", // hover 时显示
-                ":hover": { bgcolor: alpha(palette.primary.main, 0.15) },
+                display: "none",
+                borderRadius: "8px",
+                ":hover": { bgcolor: alpha(palette.primary.main, 0.1) },
               })}
             >
               Check
@@ -202,7 +240,6 @@ export const ProxyItem = (props: Props) => {
           )}
 
           {delayValue > 0 && (
-            // 显示延迟
             <Widget
               className="the-delay"
               onClick={(e) => {
@@ -212,18 +249,24 @@ export const ProxyItem = (props: Props) => {
                 onDelay();
               }}
               color={delayManager.formatDelayColor(delayValue, timeout)}
-              sx={({ palette }) =>
-                !proxy.provider
-                  ? { ":hover": { bgcolor: alpha(palette.primary.main, 0.15) } }
-                  : {}
-              }
+              sx={({ palette }) => ({
+                fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+                fontSize: "12px",
+                ...(!proxy.provider
+                  ? {
+                      borderRadius: "8px",
+                      ":hover": {
+                        bgcolor: alpha(palette.primary.main, 0.1),
+                      },
+                    }
+                  : {}),
+              })}
             >
               {delayManager.formatDelay(delayValue, timeout)}
             </Widget>
           )}
 
           {delayValue !== -2 && delayValue <= 0 && selected && (
-            // 展示已选择的 icon
             <CheckCircleOutlineRounded
               className="the-icon"
               sx={{ fontSize: 16 }}

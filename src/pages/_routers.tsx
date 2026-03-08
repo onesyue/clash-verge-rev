@@ -1,6 +1,12 @@
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
+import CellTowerRounded from "@mui/icons-material/CellTowerRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import ListAltRounded from "@mui/icons-material/ListAltRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import ShoppingCartRounded from "@mui/icons-material/ShoppingCartRounded";
+import StorageRounded from "@mui/icons-material/StorageRounded";
+import SwapHorizRounded from "@mui/icons-material/SwapHorizRounded";
+import TextSnippetRounded from "@mui/icons-material/TextSnippetRounded";
 import { createBrowserRouter, RouteObject } from "react-router";
 
 import Layout from "./_layout";
@@ -17,31 +23,62 @@ import SettingsPage from "./settings";
 import ShopPage from "./shop";
 import UnlockPage from "./unlock";
 
-// 底部导航栏 — 仅显示 3 个主要入口
-// label 使用 i18n key，由 Layout 组件调用 t() 翻译
-export const bottomNavItems = [
+// Sidebar navigation items — main section
+export const sidebarNavItems = [
   {
     label: "layout.components.navigation.tabs.home",
     path: "/",
     icon: <HomeRoundedIcon />,
   },
   {
+    label: "layout.components.navigation.tabs.proxies",
+    path: "/proxies",
+    icon: <CellTowerRounded />,
+  },
+  {
+    label: "layout.components.navigation.tabs.profiles",
+    path: "/profile",
+    icon: <StorageRounded />,
+  },
+  {
+    label: "layout.components.navigation.tabs.connections",
+    path: "/connections",
+    icon: <SwapHorizRounded />,
+  },
+  {
+    label: "layout.components.navigation.tabs.rules",
+    path: "/rules",
+    icon: <ListAltRounded />,
+  },
+  {
+    label: "layout.components.navigation.tabs.logs",
+    path: "/logs",
+    icon: <TextSnippetRounded />,
+  },
+];
+
+// Sidebar bottom items
+export const sidebarBottomItems = [
+  {
     label: "layout.components.navigation.tabs.shop",
     path: "/shop",
-    icon: <ShoppingCartRoundedIcon />,
+    icon: <ShoppingCartRounded />,
   },
   {
     label: "layout.components.navigation.tabs.account",
     path: "/account",
     icon: <AccountCircleRoundedIcon />,
   },
+  {
+    label: "layout.components.navigation.tabs.settings",
+    path: "/settings",
+    icon: <SettingsRoundedIcon />,
+  },
 ];
 
-// navItems — 供设置页"启动页"下拉选用（带 i18n label key）
+// navItems — for settings "start page" dropdown (with i18n label key)
 export const navItems = [
   { label: "layout.components.navigation.tabs.home", path: "/" },
-  { label: "layout.components.navigation.tabs.shop", path: "/shop" },
-  { label: "layout.components.navigation.tabs.account", path: "/account" },
   { label: "layout.components.navigation.tabs.proxies", path: "/proxies" },
   { label: "layout.components.navigation.tabs.profiles", path: "/profile" },
   {
@@ -50,10 +87,12 @@ export const navItems = [
   },
   { label: "layout.components.navigation.tabs.rules", path: "/rules" },
   { label: "layout.components.navigation.tabs.logs", path: "/logs" },
+  { label: "layout.components.navigation.tabs.shop", path: "/shop" },
+  { label: "layout.components.navigation.tabs.account", path: "/account" },
   { label: "layout.components.navigation.tabs.settings", path: "/settings" },
 ];
 
-// 全部路由注册（含内部跳转页，不在底部导航显示）
+// All routes
 const allRoutes: RouteObject[] = [
   { path: "/", Component: HomePage },
   { path: "/shop", Component: ShopPage },

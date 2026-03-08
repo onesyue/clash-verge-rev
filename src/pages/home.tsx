@@ -1,21 +1,5 @@
 /**
- * 首页 — VPN 连接中心（对齐安卓版 悦通 design_main.xml）
- *
- * 布局：
- *  ┌──────────────────────────────────────────────────┐
- *  │  [M]  my@yue.to   到期: 永久   流量: <1% [====] │  ← 用户信息卡
- *  ├──────────────────────────────────────────────────┤
- *  │              ○○●  大圆形连接按钮  ●○○           │
- *  │                      已连接                      │
- *  │                    00:19:37                      │
- *  ├──────────────────────────────────────────────────┤  ← 仅连接时显示
- *  │  总流量: 1.84 MiB                                │
- *  │     下载: 0 B/s   │   上传: 33.0 KB/s           │
- *  ├──────────────────────────────────────────────────┤
- *  │  代理: 规则模式                          >       │
- *  │  ─────────────────────────────────────────────  │
- *  │  节点选择: 悦通                          >       │
- *  └──────────────────────────────────────────────────┘
+ * Home — VPN Dashboard (Bento Grid layout)
  */
 
 import {
@@ -61,7 +45,7 @@ import {
 } from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
 
-// ─── 计时器格式化 ────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatElapsed(secs: number): string {
   const h = Math.floor(secs / 3600)
@@ -86,7 +70,45 @@ function formatPercent(pct: number): string {
   return `${Math.round(pct)}%`;
 }
 
-// ─── 用户信息卡（对齐安卓 home tab 用户信息卡）────────────────────────────────
+// ─── Surface card wrapper ─────────────────────────────────────────────────────
+
+function SurfaceCard({
+  children,
+  onClick,
+  sx,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  sx?: object;
+}) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+
+  return (
+    <Paper
+      elevation={0}
+      onClick={onClick}
+      sx={{
+        borderRadius: "16px",
+        bgcolor: isDark ? "#1E293B" : "#FFFFFF",
+        border: `1px solid ${isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)"}`,
+        cursor: onClick ? "pointer" : "default",
+        transition: "all 0.2s ease",
+        ...(onClick && {
+          "&:hover": {
+            bgcolor: isDark ? "#263548" : "#F8FAFC",
+            borderColor: isDark ? "rgba(148,163,184,0.15)" : "rgba(0,0,0,0.1)",
+          },
+        }),
+        ...sx,
+      }}
+    >
+      {children}
+    </Paper>
+  );
+}
+
+// ─── Account Bar ──────────────────────────────────────────────────────────────
 
 function AccountBar() {
   const { t } = useTranslation();
@@ -108,74 +130,56 @@ function AccountBar() {
 
   if (!session) {
     return (
-      <Paper
-        elevation={4}
-        onClick={() => navigate("/account")}
-        sx={{
-          borderRadius: 2,
-          p: 2,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          bgcolor: "background.paper",
-          "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
-        }}
-      >
-        <Box
-          sx={{
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <Typography variant="h6" fontWeight="bold" sx={{ color: "white" }}>
-            U
-          </Typography>
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="body2"
-            fontWeight="bold"
-            color="primary.main"
-            noWrap
+      <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
           >
-            {t("account.login.tab")}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {t("account.page.title")}
-          </Typography>
+            <Typography
+              variant="body1"
+              fontWeight="bold"
+              sx={{ color: "white" }}
+            >
+              U
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="body2"
+              fontWeight={600}
+              color="primary.main"
+              noWrap
+            >
+              {t("account.login.tab")}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {t("account.page.title")}
+            </Typography>
+          </Box>
+          <ChevronRightRounded sx={{ color: "text.disabled" }} />
         </Box>
-        <ChevronRightRounded sx={{ color: "text.disabled" }} />
-      </Paper>
+      </SurfaceCard>
     );
   }
 
   return (
-    <Paper
-      elevation={4}
-      onClick={() => navigate("/account")}
-      sx={{
-        borderRadius: 2,
-        p: 2,
-        cursor: "pointer",
-        bgcolor: "background.paper",
-        "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
-      }}
-    >
+    <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        {/* 头像 */}
         <Box
           sx={{
-            width: 52,
-            height: 52,
-            borderRadius: "50%",
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+            width: 44,
+            height: 44,
+            borderRadius: "12px",
+            background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -185,23 +189,25 @@ function AccountBar() {
           {loading ? (
             <CircularProgress size={16} sx={{ color: "white" }} />
           ) : (
-            <Typography variant="h6" fontWeight="bold" sx={{ color: "white" }}>
+            <Typography
+              variant="body1"
+              fontWeight="bold"
+              sx={{ color: "white" }}
+            >
               {initial}
             </Typography>
           )}
         </Box>
 
-        {/* 文字信息 */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {loading ? (
             <Skeleton width={140} height={18} />
           ) : (
             <Typography
               variant="body2"
-              fontWeight="bold"
-              color="primary.dark"
+              fontWeight={600}
+              color="text.primary"
               noWrap
-              sx={{ color: "#1A237E" }}
             >
               {userInfo?.email ?? "—"}
             </Typography>
@@ -210,18 +216,18 @@ function AccountBar() {
             {loading ? (
               <Skeleton width={100} height={14} />
             ) : (
-              <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
-                {t("account.dashboard.account.expiry")}：{expiryLabel}
+              <Typography variant="caption" color="text.secondary">
+                {t("account.dashboard.account.expiry")}: {expiryLabel}
               </Typography>
             )}
           </Stack>
 
-          {/* 流量进度条 */}
           {!loading && session && (
             <Box sx={{ mt: 0.75 }}>
               <Typography
                 variant="caption"
-                sx={{ color: "#5C7CAB", fontSize: "11px" }}
+                color="text.secondary"
+                sx={{ fontSize: "11px" }}
               >
                 {t("account.dashboard.traffic.title")} {formatPercent(pct)}
               </Typography>
@@ -230,17 +236,17 @@ function AccountBar() {
                 value={totalBytes === 0 ? 100 : pct}
                 sx={{
                   mt: 0.5,
-                  height: 6,
-                  borderRadius: 3,
+                  height: 4,
+                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.primary.main, 0.12),
                   "& .MuiLinearProgress-bar": {
-                    borderRadius: 3,
+                    borderRadius: 2,
                     background:
                       pct >= 95
                         ? theme.palette.error.main
                         : pct >= 80
                           ? theme.palette.warning.main
-                          : `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                          : "linear-gradient(90deg, #6366F1, #8B5CF6)",
                   },
                 }}
               />
@@ -248,11 +254,11 @@ function AccountBar() {
           )}
         </Box>
       </Box>
-    </Paper>
+    </SurfaceCard>
   );
 }
 
-// ─── 大连接按钮（对齐安卓 180/152/128dp 三层圆）────────────────────────────────
+// ─── Connect Button ───────────────────────────────────────────────────────────
 
 interface ConnectButtonProps {
   connected: boolean;
@@ -267,118 +273,115 @@ function ConnectButton({
   onToggle,
   elapsed,
 }: ConnectButtonProps) {
+  const { t } = useTranslation();
   const theme = useTheme();
-  const primaryColor = connected ? theme.palette.primary.main : "#8EAACB";
+  const isDark = theme.palette.mode === "dark";
+
+  const activeGradient = "linear-gradient(135deg, #6366F1, #8B5CF6)";
+  const inactiveColor = isDark ? "#334155" : "#94A3B8";
 
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        borderRadius: 2,
-        py: 4,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 0,
-        bgcolor: "background.paper",
-      }}
-    >
-      {/* 三层圆（对齐安卓 bg_connect_button_ring 180/152/128dp） */}
+    <SurfaceCard sx={{ py: 4, textAlign: "center" }}>
+      {/* Circular button */}
       <Box
         sx={{
           position: "relative",
-          width: 180,
-          height: 180,
+          width: 160,
+          height: 160,
+          mx: "auto",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        {/* 外层光晕环 alpha 0.12 — pointerEvents:none 防止拦截点击 */}
+        {/* Outer glow ring */}
         <Box
           sx={{
             position: "absolute",
-            width: 180,
-            height: 180,
+            width: 160,
+            height: 160,
             borderRadius: "50%",
-            bgcolor: primaryColor,
-            opacity: 0.12,
+            background: connected ? activeGradient : inactiveColor,
+            opacity: 0.1,
             pointerEvents: "none",
             transition: "all 0.4s",
             ...(connected && {
               animation: "pulse 2.5s ease-in-out infinite",
               "@keyframes pulse": {
-                "0%, 100%": { transform: "scale(1)", opacity: 0.12 },
-                "50%": { transform: "scale(1.06)", opacity: 0.06 },
+                "0%, 100%": { transform: "scale(1)", opacity: 0.1 },
+                "50%": { transform: "scale(1.08)", opacity: 0.05 },
               },
             }),
           }}
         />
-        {/* 中层环 alpha 0.22 — pointerEvents:none 防止拦截点击 */}
+        {/* Middle ring */}
         <Box
           sx={{
             position: "absolute",
-            width: 152,
-            height: 152,
+            width: 130,
+            height: 130,
             borderRadius: "50%",
-            bgcolor: primaryColor,
-            opacity: 0.22,
+            background: connected ? activeGradient : inactiveColor,
+            opacity: 0.18,
             pointerEvents: "none",
             transition: "all 0.4s",
           }}
         />
-        {/* 内层按钮 128dp — position:relative + zIndex 确保在最上层 */}
+        {/* Inner button */}
         <Box
           onClick={connecting ? undefined : onToggle}
           sx={{
             position: "relative",
             zIndex: 1,
-            width: 128,
-            height: 128,
+            width: 100,
+            height: 100,
             borderRadius: "50%",
-            bgcolor: primaryColor,
+            background: connected ? activeGradient : inactiveColor,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: connecting ? "default" : "pointer",
             boxShadow: connected
-              ? `0 6px 24px ${alpha(theme.palette.primary.main, 0.5)}`
-              : "0 4px 16px rgba(0,0,0,0.15)",
+              ? "0 8px 32px rgba(99, 102, 241, 0.4)"
+              : "none",
             transition: "all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            "&:hover": connecting ? {} : { transform: "scale(1.04)" },
-            "&:active": connecting ? {} : { transform: "scale(0.97)" },
+            "&:hover": connecting ? {} : { transform: "scale(1.05)" },
+            "&:active": connecting ? {} : { transform: "scale(0.96)" },
           }}
         >
           {connecting ? (
-            <CircularProgress size={40} sx={{ color: "white" }} />
+            <CircularProgress size={36} sx={{ color: "white" }} />
           ) : (
-            <PowerSettingsNewRounded sx={{ fontSize: 52, color: "white" }} />
+            <PowerSettingsNewRounded sx={{ fontSize: 44, color: "white" }} />
           )}
         </Box>
       </Box>
 
-      {/* 状态文字（对齐安卓 18sp bold, colorConnected / colorDisconnected） */}
+      {/* Status text */}
       <Typography
-        variant="h6"
-        fontWeight="bold"
+        variant="body1"
+        fontWeight={600}
         sx={{
           mt: 2.5,
-          color: connected ? theme.palette.primary.main : "#8EAACB",
+          color: connected ? theme.palette.primary.main : "text.secondary",
           transition: "color 0.3s",
-          fontSize: "18px",
         }}
       >
-        {connecting ? "连接中…" : connected ? "已连接" : "未连接"}
+        {connecting
+          ? t("home.components.connectButton.status.connecting")
+          : connected
+            ? t("home.components.connectButton.status.connected")
+            : t("home.components.connectButton.status.disconnected")}
       </Typography>
 
-      {/* 连接时: 计时器（对齐安卓 monospace） */}
       {connected && (
         <Typography
           variant="body2"
           sx={{
             mt: 0.5,
-            color: "#5C7CAB",
-            fontFamily: "monospace",
+            color: "text.secondary",
+            fontFamily:
+              "'JetBrains Mono', 'Roboto Mono', 'Fira Code', monospace",
             fontSize: "13px",
             fontVariantNumeric: "tabular-nums",
           }}
@@ -387,19 +390,19 @@ function ConnectButton({
         </Typography>
       )}
 
-      {/* 未连接时: 提示文字 */}
       {!connected && !connecting && (
-        <Typography variant="caption" sx={{ mt: 0.5, color: "#8EAACB" }}>
-          点击连接
+        <Typography variant="caption" sx={{ mt: 0.5, color: "text.disabled" }}>
+          {t("home.components.connectButton.action")}
         </Typography>
       )}
-    </Paper>
+    </SurfaceCard>
   );
 }
 
-// ─── 速度卡（仅连接时显示，对齐安卓连接速度卡）────────────────────────────────
+// ─── Speed Card (only when connected) ─────────────────────────────────────────
 
 function SpeedCard() {
+  const { t } = useTranslation();
   const {
     response: { data: traffic },
   } = useTrafficData();
@@ -414,98 +417,122 @@ function SpeedCard() {
   );
 
   return (
-    <Paper
-      elevation={4}
-      sx={{
-        borderRadius: 2,
-        p: 2,
-        bgcolor: "background.paper",
-      }}
-    >
-      {/* 总流量（对齐安卓 forwarded 小字） */}
-      <Typography
-        variant="caption"
-        sx={{ color: "#8EAACB", display: "block", mb: 1 }}
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+      {/* Download card */}
+      <SurfaceCard sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "8px",
+              bgcolor: alpha("#6366F1", 0.12),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ArrowDownwardRounded sx={{ fontSize: 16, color: "#6366F1" }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            {t("home.components.speedCard.download")}
+          </Typography>
+        </Box>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{
+            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+            fontSize: "20px",
+            color: "text.primary",
+          }}
+        >
+          {downVal}
+          <Typography
+            component="span"
+            variant="caption"
+            sx={{ color: "text.secondary", ml: 0.5 }}
+          >
+            {downUnit}/s
+          </Typography>
+        </Typography>
+      </SurfaceCard>
+
+      {/* Upload card */}
+      <SurfaceCard sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
+          <Box
+            sx={{
+              width: 28,
+              height: 28,
+              borderRadius: "8px",
+              bgcolor: alpha("#8B5CF6", 0.12),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ArrowUpwardRounded sx={{ fontSize: 16, color: "#8B5CF6" }} />
+          </Box>
+          <Typography variant="caption" color="text.secondary">
+            {t("home.components.speedCard.upload")}
+          </Typography>
+        </Box>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{
+            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+            fontSize: "20px",
+            color: "text.primary",
+          }}
+        >
+          {upVal}
+          <Typography
+            component="span"
+            variant="caption"
+            sx={{ color: "text.secondary", ml: 0.5 }}
+          >
+            {upUnit}/s
+          </Typography>
+        </Typography>
+      </SurfaceCard>
+
+      {/* Total traffic - full width */}
+      <SurfaceCard
+        sx={{
+          gridColumn: "1 / -1",
+          p: 1.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1,
+        }}
       >
-        总流量：{fwdVal} {fwdUnit}
-      </Typography>
-
-      {/* 下载 | 上传 两列（对齐安卓 LinearLayout horizontal） */}
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        {/* 下载 */}
-        <Box
+        <Typography variant="caption" color="text.secondary">
+          {t("home.components.speedCard.totalTraffic")}
+        </Typography>
+        <Typography
+          variant="body2"
+          fontWeight={600}
           sx={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+            color: "text.primary",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <ArrowDownwardRounded sx={{ fontSize: 14, color: "#5C7CAB" }} />
-            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
-              下载
-            </Typography>
-          </Box>
-          <Typography
-            variant="body1"
-            fontWeight="bold"
-            sx={{ color: "#1A237E", mt: 0.25 }}
-          >
-            {downVal}{" "}
-            <Typography
-              component="span"
-              variant="caption"
-              sx={{ color: "#5C7CAB" }}
-            >
-              {downUnit}/s
-            </Typography>
-          </Typography>
-        </Box>
-
-        {/* 分隔线 */}
-        <Box sx={{ width: 1, height: 36, bgcolor: "#E0EAF8" }} />
-
-        {/* 上传 */}
-        <Box
-          sx={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <ArrowUpwardRounded sx={{ fontSize: 14, color: "#5C7CAB" }} />
-            <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
-              上传
-            </Typography>
-          </Box>
-          <Typography
-            variant="body1"
-            fontWeight="bold"
-            sx={{ color: "#1A237E", mt: 0.25 }}
-          >
-            {upVal}{" "}
-            <Typography
-              component="span"
-              variant="caption"
-              sx={{ color: "#5C7CAB" }}
-            >
-              {upUnit}/s
-            </Typography>
-          </Typography>
-        </Box>
-      </Box>
-    </Paper>
+          {fwdVal} {fwdUnit}
+        </Typography>
+      </SurfaceCard>
+    </Box>
   );
 }
 
-// ─── 代理模式 + 节点卡（对齐安卓单卡，点击跳节点页）────────────────────────────
+// ─── Proxy Card ───────────────────────────────────────────────────────────────
 
 function ProxyCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const theme = useTheme();
   const session = useXBoardSession();
   const { clashConfig, proxies, refreshProxy: appRefreshProxy } = useAppData();
   const { currentProxy, primaryGroupName } = useCurrentProxy();
@@ -523,7 +550,6 @@ function ProxyCard() {
     return m;
   })();
 
-  // 检查是否有真正的代理组（排除 GLOBAL 和 DIRECT）
   const hasRealGroups =
     (proxies?.groups?.filter(
       (g: { name: string }) => g.name !== "GLOBAL" && g.name !== "DIRECT",
@@ -535,30 +561,28 @@ function ProxyCard() {
 
   const handlePress = () => navigate("/proxies");
 
-  // 手动同步订阅
   const handleSync = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // 阻止跳转到代理页
+    e.stopPropagation();
     if (syncing) return;
     setSyncing(true);
     try {
       if (session?.subscribeUrl) {
-        console.log("[ProxyCard] 手动同步订阅:", session.subscribeUrl);
         await syncXBoardSubscription(session.subscribeUrl);
       } else {
-        // 尝试刷新已绑定的 profile
-        console.log("[ProxyCard] 尝试刷新已绑定的 profile");
         await refreshXBoardProfile();
       }
-      // 强制重新加载配置并刷新代理数据
       await enhanceProfiles();
       await appRefreshProxy();
       await mutate("getProxies");
       await mutate("getClashConfig");
-      showNotice.success("订阅同步成功，代理节点已加载");
+      showNotice.success(
+        t("home.components.currentProxy.messages.syncSuccess"),
+      );
     } catch (err) {
-      console.error("[ProxyCard] 同步失败:", err);
       showNotice.error(
-        "同步失败: " + (err instanceof Error ? err.message : String(err)),
+        t("home.components.currentProxy.messages.syncFailed") +
+          ": " +
+          (err instanceof Error ? err.message : String(err)),
       );
     } finally {
       setSyncing(false);
@@ -566,69 +590,75 @@ function ProxyCard() {
   };
 
   return (
-    <Paper
-      elevation={4}
-      onClick={handlePress}
-      sx={{
-        borderRadius: 2,
-        bgcolor: "background.paper",
-        cursor: "pointer",
-        overflow: "hidden",
-        "&:hover": { bgcolor: alpha("#3A6BBF", 0.03) },
-      }}
-    >
-      {/* 代理模式行 */}
+    <SurfaceCard onClick={handlePress} sx={{ overflow: "hidden" }}>
+      {/* Proxy mode row */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          height: 56,
+          height: 52,
           px: 2,
           gap: 1.25,
         }}
       >
-        <AppsRounded sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }} />
-        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
-          代理
+        <AppsRounded
+          sx={{
+            fontSize: 20,
+            color: theme.palette.primary.main,
+            flexShrink: 0,
+          }}
+        />
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ flexShrink: 0 }}
+        >
+          {t("home.components.clashMode.title")}
         </Typography>
         <Typography
           variant="body2"
-          fontWeight="bold"
-          sx={{ color: "#1A237E", flex: 1 }}
+          fontWeight={600}
+          color="text.primary"
+          sx={{ flex: 1 }}
         >
           {modeLabel}
         </Typography>
         <ChevronRightRounded
-          sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
+          sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }}
         />
       </Box>
 
-      <Divider sx={{ mx: 2, borderColor: "#E0EAF8" }} />
+      <Divider sx={{ mx: 2, borderColor: "divider" }} />
 
-      {/* 节点行 或 同步按钮 */}
+      {/* Node row or sync button */}
       {!hasRealGroups && session ? (
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            height: 52,
+            height: 48,
             px: 2,
           }}
         >
           <Typography
             variant="body2"
-            fontWeight="bold"
+            fontWeight={600}
             onClick={handleSync}
             sx={{
-              color: syncing ? "#8EAACB" : "#3A6BBF",
+              color: syncing ? "text.disabled" : "primary.main",
               cursor: syncing ? "default" : "pointer",
             }}
           >
-            {syncing ? "同步中…" : "未检测到节点，点击同步订阅"}
+            {syncing
+              ? t("home.components.currentProxy.messages.syncing")
+              : t("home.components.currentProxy.messages.noNodes")}
           </Typography>
           {syncing && (
-            <CircularProgress size={16} sx={{ ml: 1, color: "#8EAACB" }} />
+            <CircularProgress
+              size={16}
+              sx={{ ml: 1, color: "text.disabled" }}
+            />
           )}
         </Box>
       ) : (
@@ -636,37 +666,47 @@ function ProxyCard() {
           sx={{
             display: "flex",
             alignItems: "center",
-            height: 52,
+            height: 48,
             px: 2,
             gap: 1.25,
           }}
         >
           <NotificationsNoneRounded
-            sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }}
+            sx={{
+              fontSize: 20,
+              color: theme.palette.primary.main,
+              flexShrink: 0,
+            }}
           />
-          <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
-            节点选择
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ flexShrink: 0 }}
+          >
+            {t("home.components.currentProxy.title")}
           </Typography>
           <Typography
             variant="body2"
-            fontWeight="bold"
+            fontWeight={600}
             noWrap
-            sx={{ color: "#1A237E", flex: 1 }}
+            color="text.primary"
+            sx={{ flex: 1 }}
           >
             {nodeName}
           </Typography>
           <ChevronRightRounded
-            sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
+            sx={{ fontSize: 18, color: "text.disabled", flexShrink: 0 }}
           />
         </Box>
       )}
-    </Paper>
+    </SurfaceCard>
   );
 }
 
-// ─── 首页主体 ─────────────────────────────────────────────────────────────────
+// ─── Home Page ────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
+  const { t } = useTranslation();
   const { verge, mutateVerge } = useVerge();
   const { proxies } = useAppData();
   const session = useXBoardSession();
@@ -674,34 +714,33 @@ const HomePage = () => {
   const isConnected = configState;
   const [connecting, setConnecting] = useState(false);
 
-  // 自动同步：已登录 XBoard 但 mihomo 没有代理节点时，自动导入订阅
+  // Auto-sync subscription when logged in but no proxy nodes
   const autoSyncDoneRef = useRef(false);
   useEffect(() => {
     if (autoSyncDoneRef.current) return;
     if (!session?.subscribeUrl) return;
-    // 检查是否有真正的代理组（排除 GLOBAL 和 DIRECT）
     const realGroups =
       proxies?.groups?.filter(
         (g: { name: string }) => g.name !== "GLOBAL" && g.name !== "DIRECT",
       ) ?? [];
     if (realGroups.length > 0) return;
-    // 没有代理节点 → 自动同步订阅
     autoSyncDoneRef.current = true;
-    console.log("[HomePage] 检测到已登录但无代理节点，自动同步订阅...");
     syncXBoardSubscription(session.subscribeUrl)
       .then(() => {
-        console.log("[HomePage] 自动同步订阅成功");
-        showNotice.success("订阅同步成功，代理节点已加载");
+        showNotice.success(
+          t("home.components.currentProxy.messages.syncSuccess"),
+        );
       })
       .catch((err) => {
-        console.error("[HomePage] 自动同步订阅失败:", err);
         showNotice.error(
-          "订阅同步失败: " + (err instanceof Error ? err.message : String(err)),
+          t("home.components.currentProxy.messages.syncFailed") +
+            ": " +
+            (err instanceof Error ? err.message : String(err)),
         );
       });
-  }, [session, proxies]);
+  }, [session, proxies, t]);
 
-  // 连接计时器
+  // Connection timer
   const connectedAtRef = useRef<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
 
@@ -729,28 +768,18 @@ const HomePage = () => {
     if (connecting) return;
     setConnecting(true);
     const newState = !configState;
-    console.log(
-      "[HomePage] handleToggle called, current:",
-      configState,
-      "→",
-      newState,
-    );
     try {
       if (!newState) {
         await closeAllConnections();
-        console.log("[HomePage] closeAllConnections done");
       }
       await patchVergeConfig({ enable_system_proxy: newState });
-      console.log("[HomePage] patchVergeConfig done");
       await mutateVerge();
       await mutate("getSystemProxy");
       await mutate("getAutotemProxy");
-      console.log("[HomePage] all mutations done, newState:", newState);
     } catch (e: any) {
-      console.error("[HomePage] handleToggle error:", e);
       await mutateVerge();
       showNotice.error(
-        e instanceof Error ? e.message : String(e ?? "操作失败"),
+        e instanceof Error ? e.message : String(e ?? "Operation failed"),
       );
     } finally {
       setConnecting(false);
@@ -758,23 +787,16 @@ const HomePage = () => {
   };
 
   return (
-    <BasePage contentStyle={{ padding: "12px 16px" }}>
+    <BasePage contentStyle={{ padding: "16px 20px" }}>
       <Stack spacing={2}>
-        {/* 用户信息卡 */}
         <AccountBar />
-
-        {/* 连接按钮卡 */}
         <ConnectButton
           connected={isConnected}
           connecting={connecting}
           onToggle={handleToggle}
           elapsed={elapsed}
         />
-
-        {/* 速度卡（仅连接时显示，对齐安卓） */}
         {isConnected && <SpeedCard />}
-
-        {/* 代理模式 + 节点卡 */}
         <ProxyCard />
       </Stack>
     </BasePage>

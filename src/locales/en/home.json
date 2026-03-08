@@ -85,6 +85,19 @@
         "load": "Failed to get IP info"
       }
     },
+    "connectButton": {
+      "status": {
+        "connecting": "Connecting...",
+        "connected": "Connected",
+        "disconnected": "Disconnected"
+      },
+      "action": "Tap to connect"
+    },
+    "speedCard": {
+      "download": "Download",
+      "upload": "Upload",
+      "totalTraffic": "Total Traffic"
+    },
     "currentProxy": {
       "title": "Current Node",
       "actions": {
@@ -96,6 +109,12 @@
         "group": "Group",
         "proxy": "Proxy",
         "noActiveNode": "No active proxy node"
+      },
+      "messages": {
+        "syncSuccess": "Subscription synced, proxy nodes loaded",
+        "syncFailed": "Sync failed",
+        "syncing": "Syncing...",
+        "noNodes": "No nodes detected, tap to sync"
       }
     },
     "tests": {
@@ -117,6 +136,7 @@
       }
     },
     "clashMode": {
+      "title": "Proxy",
       "errors": {
         "communication": "Core communication error"
       },

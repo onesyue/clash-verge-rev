@@ -1,9 +1,10 @@
 import {
-  BottomNavigation,
-  BottomNavigationAction,
+  alpha,
   Box,
+  ButtonBase,
   Paper,
   ThemeProvider,
+  Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useMemo } from "react";
@@ -34,12 +35,12 @@ import {
   useLoadingOverlay,
 } from "./_layout/hooks";
 import { handleNoticeMessage } from "./_layout/utils";
-import { bottomNavItems } from "./_routers";
+import { sidebarNavItems, sidebarBottomItems } from "./_routers";
 
 import "dayjs/locale/ru";
 import "dayjs/locale/zh-cn";
 
-// 受保护的 Outlet：未登录时直接渲染 Navigate，不渲染目标页（无闪屏）
+// Protected Outlet: redirect to account if not logged in
 function ProtectedOutlet() {
   const session = useXBoardSession();
   const location = useLocation();
@@ -55,8 +56,60 @@ export const portableFlag = false;
 
 const OS = getSystem();
 
-// 底部导航栏高度（px）
-export const BOTTOM_NAV_HEIGHT = 56;
+// Sidebar nav item component
+function SidebarItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <ButtonBase
+      onClick={onClick}
+      sx={({ palette }) => ({
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: "10px 12px",
+        borderRadius: "12px",
+        textAlign: "left",
+        justifyContent: "flex-start",
+        transition: "all 0.15s ease",
+        color: active ? palette.primary.main : palette.text.secondary,
+        bgcolor: active ? alpha(palette.primary.main, 0.12) : "transparent",
+        ...(active && {
+          boxShadow: `0 0 12px ${alpha(palette.primary.main, 0.2)}`,
+        }),
+        "&:hover": {
+          bgcolor: active
+            ? alpha(palette.primary.main, 0.16)
+            : alpha(palette.text.secondary, 0.08),
+        },
+        "& .MuiSvgIcon-root": {
+          fontSize: 20,
+        },
+      })}
+    >
+      {icon}
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: active ? 600 : 400,
+          fontSize: "13px",
+          lineHeight: 1,
+        }}
+      >
+        {label}
+      </Typography>
+    </ButtonBase>
+  );
+}
 
 const Layout = () => {
   const mode = useThemeMode();
@@ -90,7 +143,7 @@ const Layout = () => {
       try {
         handleNoticeMessage(status, msg, t, navigate);
       } catch (error) {
-        console.error("[通知处理] 失败:", error);
+        console.error("[Notice] Failed:", error);
       }
     },
     [t, navigate],
@@ -105,11 +158,11 @@ const Layout = () => {
     }
   }, [language, switchLanguage]);
 
-  // 当前底部导航选中项（匹配最长前缀）
-  const currentNavValue = useMemo(() => {
+  // Current active nav path
+  const currentNavPath = useMemo(() => {
     const path = location.pathname;
-    // 精确匹配 "/" 防止所有路由都匹配到首页
-    const matched = bottomNavItems
+    const allItems = [...sidebarNavItems, ...sidebarBottomItems];
+    const matched = allItems
       .filter((item) =>
         item.path === "/" ? path === "/" : path.startsWith(item.path),
       )
@@ -123,7 +176,7 @@ const Layout = () => {
         style={{
           width: "100vw",
           height: "100vh",
-          background: mode === "light" ? "#fff" : "#181a1b",
+          background: mode === "light" ? "#F1F5F9" : "#0F172A",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -170,60 +223,99 @@ const Layout = () => {
                   : {},
               ]}
             >
-              {/* 自定义标题栏（仅 Win/Linux） */}
+              {/* Custom titlebar (Win/Linux) */}
               {customTitlebar}
 
-              {/* 主内容区 */}
-              <div className="layout-content">
-                <BaseErrorBoundary>
-                  <ProtectedOutlet />
-                </BaseErrorBoundary>
-              </div>
-
-              {/* 底部导航栏 */}
-              <Box
-                component="nav"
-                sx={{
-                  position: "relative",
-                  zIndex: 10,
-                  borderTop: ({ palette }) => `1px solid ${palette.divider}`,
-                  bgcolor: "background.paper",
-                }}
-              >
-                <BottomNavigation
-                  value={currentNavValue}
-                  onChange={(_, newValue) => navigate(newValue)}
-                  showLabels
-                  sx={{
-                    height: BOTTOM_NAV_HEIGHT,
-                    bgcolor: "transparent",
-                    "& .MuiBottomNavigationAction-root": {
-                      minWidth: 0,
-                      padding: "6px 0 8px",
-                      fontSize: "12px",
-                      color: "text.secondary",
-                      "&.Mui-selected": {
-                        color: "primary.main",
-                        fontSize: "12px",
-                      },
-                    },
-                    "& .MuiBottomNavigationAction-label": {
-                      fontSize: "11px",
-                      fontWeight: 500,
-                      "&.Mui-selected": { fontSize: "11px" },
-                    },
-                  }}
+              {/* Sidebar + Content */}
+              <div className="layout-body">
+                {/* Sidebar */}
+                <Box
+                  className="layout-sidebar"
+                  sx={({ palette }) => ({
+                    bgcolor:
+                      palette.mode === "dark"
+                        ? "rgba(15, 23, 42, 0.8)"
+                        : "rgba(255, 255, 255, 0.8)",
+                  })}
                 >
-                  {bottomNavItems.map((item) => (
-                    <BottomNavigationAction
-                      key={item.path}
-                      label={t(item.label)}
-                      value={item.path}
-                      icon={item.icon}
-                    />
-                  ))}
-                </BottomNavigation>
-              </Box>
+                  {/* Brand */}
+                  <div className="sidebar-brand" data-tauri-drag-region="true">
+                    <Box
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: "8px",
+                        background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          color: "white",
+                          fontSize: "14px",
+                          fontWeight: 800,
+                          lineHeight: 1,
+                        }}
+                      >
+                        Y
+                      </Typography>
+                    </Box>
+                    <Typography
+                      className="brand-name"
+                      sx={({ palette }) => ({
+                        color: palette.text.primary,
+                        background:
+                          palette.mode === "dark"
+                            ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
+                            : "none",
+                        WebkitBackgroundClip:
+                          palette.mode === "dark" ? "text" : "unset",
+                        WebkitTextFillColor:
+                          palette.mode === "dark" ? "transparent" : "inherit",
+                      })}
+                    >
+                      YueTong
+                    </Typography>
+                  </div>
+
+                  {/* Main nav items */}
+                  <nav className="sidebar-nav">
+                    {sidebarNavItems.map((item) => (
+                      <SidebarItem
+                        key={item.path}
+                        icon={item.icon}
+                        label={t(item.label)}
+                        active={currentNavPath === item.path}
+                        onClick={() => navigate(item.path)}
+                      />
+                    ))}
+
+                    {/* Spacer */}
+                    <Box sx={{ flex: 1 }} />
+
+                    {/* Bottom nav items */}
+                    {sidebarBottomItems.map((item) => (
+                      <SidebarItem
+                        key={item.path}
+                        icon={item.icon}
+                        label={t(item.label)}
+                        active={currentNavPath === item.path}
+                        onClick={() => navigate(item.path)}
+                      />
+                    ))}
+                  </nav>
+                </Box>
+
+                {/* Main content */}
+                <div className="layout-content">
+                  <BaseErrorBoundary>
+                    <ProtectedOutlet />
+                  </BaseErrorBoundary>
+                </div>
+              </div>
             </Paper>
           </ThemeProvider>
         </SWRConfig>

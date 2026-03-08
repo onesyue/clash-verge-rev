@@ -85,6 +85,19 @@
         "load": "获取 IP 信息失败"
       }
     },
+    "connectButton": {
+      "status": {
+        "connecting": "连接中…",
+        "connected": "已连接",
+        "disconnected": "未连接"
+      },
+      "action": "点击连接"
+    },
+    "speedCard": {
+      "download": "下载",
+      "upload": "上传",
+      "totalTraffic": "总流量"
+    },
     "currentProxy": {
       "title": "当前节点",
       "actions": {
@@ -96,6 +109,12 @@
         "group": "代理组",
         "proxy": "节点",
         "noActiveNode": "暂无激活的代理节点"
+      },
+      "messages": {
+        "syncSuccess": "订阅同步成功，代理节点已加载",
+        "syncFailed": "同步失败",
+        "syncing": "同步中…",
+        "noNodes": "未检测到节点，点击同步订阅"
       }
     },
     "tests": {
@@ -117,6 +136,7 @@
       }
     },
     "clashMode": {
+      "title": "代理",
       "errors": {
         "communication": "内核通信错误"
       },

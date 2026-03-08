@@ -68,18 +68,22 @@ export const ProxyRender = (props: RenderProps) => {
     return (
       <ListItemButton
         dense
-        sx={{
+        sx={({ palette }) => ({
           mx: 1,
           my: 0.5,
           px: 2,
           py: 1.5,
-          borderRadius: 2,
-          bgcolor: "background.paper",
-          boxShadow: 1,
+          borderRadius: "16px",
+          bgcolor: palette.mode === "dark" ? "#1E293B" : "#ffffff",
+          border: `1px solid ${palette.mode === "dark" ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)"}`,
           display: "flex",
           alignItems: "center",
           gap: 1.5,
-        }}
+          transition: "all 0.15s ease",
+          "&:hover": {
+            bgcolor: palette.mode === "dark" ? "#263548" : "#F8FAFC",
+          },
+        })}
         onClick={() => onHeadState(group.name, { open: !headState?.open })}
       >
         {/* 可选图标 */}
@@ -168,13 +172,13 @@ export const ProxyRender = (props: RenderProps) => {
     return (
       <Box
         sx={{
-          height: 56,
+          minHeight: 56,
           display: "grid",
           gap: 1,
           pl: 2,
           pr: 2,
           pb: 1,
-          gridTemplateColumns: `repeat(${item.col! || 2}, 1fr)`,
+          gridTemplateColumns: `repeat(auto-fill, minmax(160px, 1fr))`,
         }}
       >
         {proxyColItemsMemo}

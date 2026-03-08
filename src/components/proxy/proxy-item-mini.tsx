@@ -92,14 +92,15 @@ export const ProxyItemMini = (props: Props) => {
       sx={[
         {
           height: 56,
-          borderRadius: 1.5,
+          borderRadius: "12px",
           pl: 1.5,
           pr: 1,
           justifyContent: "space-between",
           alignItems: "center",
+          transition: "all 0.15s ease",
         },
         ({ palette: { mode, primary } }) => {
-          const bgcolor = mode === "light" ? "#ffffff" : "#24252f";
+          const bgcolor = mode === "light" ? "#ffffff" : "#1E293B";
           const showDelay = delayValue > 0;
           const selectColor = mode === "light" ? primary.main : primary.light;
 
@@ -107,6 +108,9 @@ export const ProxyItemMini = (props: Props) => {
             "&:hover .the-check": { display: !showDelay ? "block" : "none" },
             "&:hover .the-delay": { display: showDelay ? "block" : "none" },
             "&:hover .the-icon": { display: "none" },
+            "&:hover": {
+              bgcolor: mode === "light" ? alpha(primary.main, 0.04) : "#263548",
+            },
             "& .the-pin, & .the-unpin": {
               position: "absolute",
               fontSize: "12px",
@@ -120,17 +124,18 @@ export const ProxyItemMini = (props: Props) => {
               borderLeft: `3px solid ${selectColor}`,
               bgcolor:
                 mode === "light"
-                  ? alpha(primary.main, 0.15)
-                  : alpha(primary.main, 0.35),
+                  ? alpha(primary.main, 0.1)
+                  : alpha(primary.main, 0.15),
             },
             backgroundColor: bgcolor,
+            border: `1px solid ${mode === "dark" ? "rgba(148,163,184,0.06)" : "rgba(0,0,0,0.04)"}`,
           };
         },
       ]}
     >
       <Box
         title={`${proxy.name}\n${proxy.now ?? ""}`}
-        sx={{ overflow: "hidden" }}
+        sx={{ overflow: "hidden", minWidth: 0, flex: 1 }}
       >
         <Typography
           variant="body2"

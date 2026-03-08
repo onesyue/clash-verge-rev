@@ -52,7 +52,8 @@ export const EnhancedCard = forwardRef<HTMLElement, EnhancedCardProps>(
           display: "flex",
           flexDirection: "column",
           borderRadius: 2,
-          backgroundColor: isDark ? "#282a36" : "#ffffff",
+          backgroundColor: isDark ? "#1E293B" : "#ffffff",
+          border: `1px solid ${isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)"}`,
         }}
         ref={ref}
       >

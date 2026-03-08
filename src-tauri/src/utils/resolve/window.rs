@@ -9,10 +9,10 @@ use crate::{
 };
 use clash_verge_logging::{Type, logging_error};
 
-const DARK_BACKGROUND_COLOR: Color = Color(46, 48, 61, 255); // #2E303D
-const LIGHT_BACKGROUND_COLOR: Color = Color(245, 245, 245, 255); // #F5F5F5
-const DARK_BACKGROUND_HEX: &str = "#2E303D";
-const LIGHT_BACKGROUND_HEX: &str = "#F5F5F5";
+const DARK_BACKGROUND_COLOR: Color = Color(15, 23, 42, 255); // #0F172A
+const LIGHT_BACKGROUND_COLOR: Color = Color(241, 245, 249, 255); // #F1F5F9
+const DARK_BACKGROUND_HEX: &str = "#0F172A";
+const LIGHT_BACKGROUND_HEX: &str = "#F1F5F9";
 
 // 定义默认窗口尺寸常量
 const DEFAULT_WIDTH: f64 = 940.0;
@@ -64,7 +64,7 @@ pub async fn build_new_window() -> Result<WebviewWindow, String> {
         "main", /* the unique window label */
         tauri::WebviewUrl::App(start_page.into()),
     )
-    .title("悦通")
+    .title("YueTong")
     .center()
     .decorations(DEFAULT_DECORATIONS)
     .fullscreen(false)

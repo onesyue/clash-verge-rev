@@ -1,32 +1,34 @@
 import getSystem from "@/utils/get-system";
 const OS = getSystem();
 
-// default theme setting
+const baseFontFamily = `Inter, -apple-system, BlinkMacSystemFont, "Microsoft YaHei UI", "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji"${
+  OS === "windows" ? ", twemoji mozilla" : ""
+}`;
+
+// default theme setting (light)
 export const defaultTheme = {
-  primary_color: "#007AFF",
-  secondary_color: "#FC9B76",
-  primary_text: "#000000",
-  secondary_text: "#3C3C4399",
-  info_color: "#007AFF",
-  error_color: "#FF3B30",
-  warning_color: "#FF9500",
-  success_color: "#06943D",
-  background_color: "#F5F5F5",
-  font_family: `-apple-system, BlinkMacSystemFont,"Microsoft YaHei UI", "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji"${
-    OS === "windows" ? ", twemoji mozilla" : ""
-  }`,
+  primary_color: "#6366F1",
+  secondary_color: "#8B5CF6",
+  primary_text: "#1E293B",
+  secondary_text: "#64748B",
+  info_color: "#6366F1",
+  error_color: "#EF4444",
+  warning_color: "#F59E0B",
+  success_color: "#10B981",
+  background_color: "#F1F5F9",
+  font_family: baseFontFamily,
 };
 
-// dark mode
+// dark mode — Minimalist Cyberpunk palette
 export const defaultDarkTheme = {
   ...defaultTheme,
-  primary_color: "#0A84FF",
-  secondary_color: "#FF9F0A",
-  primary_text: "#FFFFFF",
-  background_color: "#2E303D",
-  secondary_text: "#EBEBF599",
-  info_color: "#0A84FF",
-  error_color: "#FF453A",
-  warning_color: "#FF9F0A",
-  success_color: "#30D158",
+  primary_color: "#6366F1",
+  secondary_color: "#8B5CF6",
+  primary_text: "#F1F5F9",
+  background_color: "#0F172A",
+  secondary_text: "#94A3B8",
+  info_color: "#6366F1",
+  error_color: "#EF4444",
+  warning_color: "#F59E0B",
+  success_color: "#10B981",
 };
