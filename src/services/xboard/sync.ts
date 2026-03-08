@@ -70,6 +70,24 @@ export interface SyncResult {
  * @param subscribeUrl  从 XBoard 获取的订阅链接
  * @param activate      是否将该 Profile 设为当前激活的配置（默认 true）
  */
+/**
+ * 确保订阅 URL 包含 flag=clash 参数，强制 XBoard 返回 Clash YAML 格式。
+ * XBoard 默认根据 User-Agent 判断格式，但不是所有面板都支持，
+ * 显式传 flag=clash 是最可靠的方式。
+ */
+function ensureClashFlag(url: string): string {
+  try {
+    const u = new URL(url);
+    if (!u.searchParams.has("flag")) {
+      u.searchParams.set("flag", "clash");
+    }
+    return u.toString();
+  } catch {
+    // URL 解析失败，直接拼接
+    return url + (url.includes("?") ? "&" : "?") + "flag=clash";
+  }
+}
+
 export async function syncXBoardSubscription(
   subscribeUrl: string,
   activate = true,
@@ -78,24 +96,26 @@ export async function syncXBoardSubscription(
     throw new Error("订阅链接为空，请重新登录以获取订阅地址");
   }
 
-  // 1. 检查是否已有匹配的 Profile
+  // 强制 Clash YAML 格式
+  const clashUrl = ensureClashFlag(subscribeUrl);
+
+  // 1. 检查是否已有匹配的 Profile（用原始 URL 或带 flag 的 URL 匹配）
   const profiles = await getProfiles();
-  const existing = profiles.items?.find((p) => p.url === subscribeUrl && p.uid);
+  const existing = profiles.items?.find(
+    (p) => (p.url === subscribeUrl || p.url === clashUrl) && p.uid,
+  );
 
   let uid: string;
   let isNew: boolean;
 
   if (existing?.uid) {
     // 2a. 已有 → 直接激活，跳过重新下载
-    // 参考 Android 端修复：URL 相同时无需重新拉取订阅（耗时 1-2 分钟），
-    // 直接激活现有配置即可。手动刷新订阅内容请用仪表盘"立即同步"按钮。
     uid = existing.uid;
     isNew = false;
   } else {
     // 2b. 没有 → 导入，并开启每 24h 自动更新
     // with_proxy: false — 订阅 URL 是直连 HTTPS，不需要也不能走代理
-    // （初次登录时没有激活的 Profile，走代理会直接失败）
-    await importProfile(subscribeUrl, {
+    await importProfile(clashUrl, {
       with_proxy: false,
       allow_auto_update: true,
       update_interval: AUTO_UPDATE_INTERVAL_MINUTES,
@@ -103,7 +123,9 @@ export async function syncXBoardSubscription(
 
     // 导入后重新获取列表，找到刚创建的 item（URL 匹配）
     const updated = await getProfiles();
-    const newItem = updated.items?.find((p) => p.url === subscribeUrl);
+    const newItem = updated.items?.find(
+      (p) => p.url === clashUrl || p.url === subscribeUrl,
+    );
     if (!newItem?.uid) {
       throw new Error("导入订阅成功但找不到对应的 Profile，请刷新订阅页面");
     }

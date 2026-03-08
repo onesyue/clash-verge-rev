@@ -132,7 +132,7 @@ impl NetworkManager {
         } else {
             headers.insert(
                 USER_AGENT,
-                HeaderValue::from_str(&format!("yuetong/v{}", env!("CARGO_PKG_VERSION")))?,
+                HeaderValue::from_str(&format!("clash-verge-rev/v{} (yuetong)", env!("CARGO_PKG_VERSION")))?,
             );
         }
 
