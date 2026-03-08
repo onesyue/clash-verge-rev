@@ -55,6 +55,7 @@ import { useAppData } from "@/providers/app-data-context";
 import { patchVergeConfig } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
+import { syncXBoardSubscription } from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
 
 // ─── 计时器格式化 ────────────────────────────────────────────────────────────
@@ -290,7 +291,7 @@ function ConnectButton({
           justifyContent: "center",
         }}
       >
-        {/* 外层光晕环 alpha 0.12 */}
+        {/* 外层光晕环 alpha 0.12 — pointerEvents:none 防止拦截点击 */}
         <Box
           sx={{
             position: "absolute",
@@ -299,6 +300,7 @@ function ConnectButton({
             borderRadius: "50%",
             bgcolor: primaryColor,
             opacity: 0.12,
+            pointerEvents: "none",
             transition: "all 0.4s",
             ...(connected && {
               animation: "pulse 2.5s ease-in-out infinite",
@@ -309,7 +311,7 @@ function ConnectButton({
             }),
           }}
         />
-        {/* 中层环 alpha 0.22 */}
+        {/* 中层环 alpha 0.22 — pointerEvents:none 防止拦截点击 */}
         <Box
           sx={{
             position: "absolute",
@@ -318,13 +320,16 @@ function ConnectButton({
             borderRadius: "50%",
             bgcolor: primaryColor,
             opacity: 0.22,
+            pointerEvents: "none",
             transition: "all 0.4s",
           }}
         />
-        {/* 内层按钮 128dp */}
+        {/* 内层按钮 128dp — position:relative + zIndex 确保在最上层 */}
         <Box
           onClick={connecting ? undefined : onToggle}
           sx={{
+            position: "relative",
+            zIndex: 1,
             width: 128,
             height: 128,
             borderRadius: "50%",
@@ -605,9 +610,38 @@ function ProxyCard() {
 
 const HomePage = () => {
   const { verge, mutateVerge } = useVerge();
+  const { proxies } = useAppData();
+  const session = useXBoardSession();
   const configState = verge?.enable_system_proxy ?? false;
   const isConnected = configState;
   const [connecting, setConnecting] = useState(false);
+
+  // 自动同步：已登录 XBoard 但 mihomo 没有代理节点时，自动导入订阅
+  const autoSyncDoneRef = useRef(false);
+  useEffect(() => {
+    if (autoSyncDoneRef.current) return;
+    if (!session?.subscribeUrl) return;
+    // 检查是否有真正的代理组（排除 GLOBAL 和 DIRECT）
+    const realGroups =
+      proxies?.groups?.filter(
+        (g: { name: string }) => g.name !== "GLOBAL" && g.name !== "DIRECT",
+      ) ?? [];
+    if (realGroups.length > 0) return;
+    // 没有代理节点 → 自动同步订阅
+    autoSyncDoneRef.current = true;
+    console.log("[HomePage] 检测到已登录但无代理节点，自动同步订阅...");
+    syncXBoardSubscription(session.subscribeUrl)
+      .then(() => {
+        console.log("[HomePage] 自动同步订阅成功");
+        showNotice.success("订阅同步成功，代理节点已加载");
+      })
+      .catch((err) => {
+        console.error("[HomePage] 自动同步订阅失败:", err);
+        showNotice.error(
+          "订阅同步失败: " + (err instanceof Error ? err.message : String(err)),
+        );
+      });
+  }, [session, proxies]);
 
   // 连接计时器
   const connectedAtRef = useRef<number | null>(null);
