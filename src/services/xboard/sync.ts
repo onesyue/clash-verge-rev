@@ -16,6 +16,7 @@ import { mutate } from "swr";
 import {
   getProfiles,
   importProfile,
+  patchProfile,
   patchProfilesConfig,
   patchVergeConfig,
   updateProfile,
@@ -71,20 +72,23 @@ export interface SyncResult {
  * @param activate      是否将该 Profile 设为当前激活的配置（默认 true）
  */
 /**
- * 确保订阅 URL 包含 flag=clash 参数，强制 XBoard 返回 Clash YAML 格式。
- * XBoard 默认根据 User-Agent 判断格式，但不是所有面板都支持，
- * 显式传 flag=clash 是最可靠的方式。
+ * 确保订阅 URL 包含 flag=meta 参数，强制 XBoard 返回 Clash Meta (mihomo) YAML 格式。
+ *
+ * 为什么用 meta 而不是 clash？
+ *  - flag=clash → XBoard 只转换原版 Clash 支持的协议 (ss/vmess/trojan)
+ *  - flag=meta  → XBoard 会输出 Clash Meta 支持的所有协议 (含 hysteria2/vless/tuic 等)
+ *  - mihomo 就是 Clash Meta，所以必须用 flag=meta 才能拿到完整节点列表
  */
-function ensureClashFlag(url: string): string {
+function ensureMetaFlag(url: string): string {
   try {
     const u = new URL(url);
-    if (!u.searchParams.has("flag")) {
-      u.searchParams.set("flag", "clash");
-    }
+    // 移除旧的 flag=clash，统一用 flag=meta
+    u.searchParams.set("flag", "meta");
     return u.toString();
   } catch {
     // URL 解析失败，直接拼接
-    return url + (url.includes("?") ? "&" : "?") + "flag=clash";
+    const base = url.replace(/([?&])flag=[^&]*/g, "");
+    return base + (base.includes("?") ? "&" : "?") + "flag=meta";
   }
 }
 
@@ -96,26 +100,42 @@ export async function syncXBoardSubscription(
     throw new Error("订阅链接为空，请重新登录以获取订阅地址");
   }
 
-  // 强制 Clash YAML 格式
-  const clashUrl = ensureClashFlag(subscribeUrl);
+  // 强制 Clash Meta (mihomo) YAML 格式
+  const metaUrl = ensureMetaFlag(subscribeUrl);
 
-  // 1. 检查是否已有匹配的 Profile（用原始 URL 或带 flag 的 URL 匹配）
+  // 1. 检查是否已有匹配的 Profile（用原始 URL 或任何 flag 变体匹配）
   const profiles = await getProfiles();
+  const baseUrl = subscribeUrl.replace(/([?&])flag=[^&]*/g, "");
   const existing = profiles.items?.find(
-    (p) => (p.url === subscribeUrl || p.url === clashUrl) && p.uid,
+    (p) =>
+      p.uid &&
+      (p.url === subscribeUrl ||
+        p.url === metaUrl ||
+        p.url?.replace(/([?&])flag=[^&]*/g, "") === baseUrl),
   );
 
   let uid: string;
   let isNew: boolean;
 
   if (existing?.uid) {
-    // 2a. 已有 → 直接激活，跳过重新下载
+    // 2a. 已有 → 确保 URL 带 flag=meta，然后强制重新下载
     uid = existing.uid;
     isNew = false;
+
+    // 更新 URL 为 flag=meta（旧的可能是 flag=clash 或无 flag）
+    if (existing.url !== metaUrl) {
+      await patchProfile(uid, { url: metaUrl });
+    }
+
+    // 强制重新下载内容（旧内容可能是 base64 或用 flag=clash 下载的空 proxies）
+    await updateProfile(uid, {
+      ...existing.option,
+      with_proxy: false,
+    });
   } else {
     // 2b. 没有 → 导入，并开启每 24h 自动更新
     // with_proxy: false — 订阅 URL 是直连 HTTPS，不需要也不能走代理
-    await importProfile(clashUrl, {
+    await importProfile(metaUrl, {
       with_proxy: false,
       allow_auto_update: true,
       update_interval: AUTO_UPDATE_INTERVAL_MINUTES,
@@ -124,7 +144,7 @@ export async function syncXBoardSubscription(
     // 导入后重新获取列表，找到刚创建的 item（URL 匹配）
     const updated = await getProfiles();
     const newItem = updated.items?.find(
-      (p) => p.url === clashUrl || p.url === subscribeUrl,
+      (p) => p.url === metaUrl || p.url === subscribeUrl,
     );
     if (!newItem?.uid) {
       throw new Error("导入订阅成功但找不到对应的 Profile，请刷新订阅页面");
