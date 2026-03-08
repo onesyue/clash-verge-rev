@@ -1,6 +1,6 @@
-name: 问题反馈 / Bug report
+name: Bug Report
 title: "[BUG] "
-description: 反馈你遇到的问题 / Report the issue you are experiencing
+description: Report a bug or unexpected behavior
 labels: ["bug"]
 type: "Bug"
 
@@ -8,64 +8,55 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## 在提交问题之前，请确认以下事项：
+        ## Before submitting, please confirm:
 
-        1. 请 **确保** 您已经查阅了 [悦通使用文档](https://github.com/onesyue/clash-verge-rev/wiki) 以及常见问题
-        2. 请 **确保** [已有的问题](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue) 中没有人提交过相似 issue，否则请在已有的 issue 下进行讨论
-        3. 请 **务必** 给 issue 填写一个简洁明了的标题，以便他人快速检索
-        4. 请 **务必** 尝试 [最新 Alpha 版本](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha)，确定问题是否仍然存在
-        5. 请 **务必** 按照模板规范详细描述问题，否则 issue 将会被直接关闭
-
-        ## Before submitting the issue, please make sure of the following checklist:
-
-        1. Please make sure you have read the [悦通 documentation](https://github.com/onesyue/clash-verge-rev/wiki) and FAQ
-        2. Please make sure there is no similar issue in the [existing issues](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue), otherwise please discuss under the existing issue
-        3. Please be sure to fill in a concise and clear title for the issue so that others can quickly search
-        4. Please be sure to try the [latest Alpha version](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha) to ensure that the problem still exists
-        5. Please describe the problem in detail according to the template specification, otherwise the issue will be closed
+        1. You have checked the [YueTong Wiki](https://github.com/onesyue/clash-verge-rev/wiki) and FAQ
+        2. No similar issue exists in the [issue tracker](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue) — if it does, comment on the existing issue instead
+        3. You have written a concise, searchable title
+        4. You have tested the [latest Alpha release](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha) to confirm the bug still exists
+        5. You have filled in all required fields below — incomplete reports may be closed
 
   - type: textarea
     id: description
     attributes:
-      label: 问题描述 / Describe the bug
-      description: 详细清晰地描述你遇到的问题，并配合截图 / Describe the problem you encountered in detail and clearly, and provide screenshots
+      label: Bug Description
+      description: Describe the issue clearly. Include screenshots if applicable.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: 软件版本 / App Version
-      description: 请提供悦通的具体版本号 / Please provide the specific version of 悦通
+      label: App Version
+      description: Provide the exact YueTong version number
       render: text
     validations:
       required: true
   - type: textarea
     attributes:
-      label: 复现步骤 / To Reproduce
-      description: 请提供复现问题的步骤 / Steps to reproduce the behavior
+      label: Steps to Reproduce
+      description: List the steps to reproduce the behavior
     validations:
       required: true
   - type: checkboxes
     attributes:
-      label: 操作系统 / OS
+      label: Operating System
       options:
         - label: Windows
         - label: Linux
-        - label: MacOS
+        - label: macOS
     validations:
       required: true
   - type: input
     attributes:
-      label: 操作系统版本 / OS Version
-      description: 请提供你的操作系统版本，Linux请额外提供桌面环境及窗口系统 / Please provide your OS version, for Linux, please also provide the desktop environment and window system
+      label: OS Version
+      description: Provide your OS version. For Linux, also include the desktop environment and window system.
     validations:
       required: true
   - type: textarea
     attributes:
-      label: 日志 / Log
-      description: 请提供完整或相关部分的 Debug 日志 / Please provide a complete or relevant part of the Debug log
+      label: Logs
+      description: Paste the relevant debug log output
       placeholder: |
-        日志目录一般位于悦通安装目录的 "logs/" 子目录中，请将日志内容粘贴到此处。
-        Log directory is usually located in the "logs/" subdirectory of the 悦通 installation directory.
+        Log files are located in the "logs/" subdirectory of the YueTong installation directory.
       render: log
     validations:
       required: true

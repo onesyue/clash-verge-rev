@@ -3,7 +3,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "bundle": {
     "active": true,
-    "longDescription": "YueTong - A Tauri-based proxy client",
+    "longDescription": "YueTong is a high-performance proxy client built with Tauri 2 and mihomo core, featuring native XBoard panel integration for seamless subscription management.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -15,8 +15,8 @@
     "publisher": "YueTong",
     "externalBin": ["sidecar/verge-mihomo", "sidecar/verge-mihomo-alpha"],
     "copyright": "GNU General Public License v3.0",
-    "category": "DeveloperTool",
-    "shortDescription": "YueTong Proxy Client",
+    "category": "Utility",
+    "shortDescription": "Proxy client with XBoard panel integration",
     "createUpdaterArtifacts": true
   },
   "build": {

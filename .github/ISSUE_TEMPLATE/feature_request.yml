@@ -1,6 +1,6 @@
-name: 功能请求 / Feature request
+name: Feature Request
 title: "[Feature] "
-description: 提出你的功能请求 / Propose your feature request
+description: Propose a new feature or enhancement
 labels: ["enhancement"]
 type: "Feature"
 
@@ -8,40 +8,35 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## 在提交问题之前，请确认以下事项：
-        1. 请 **确保** 您已经查阅了 [悦通使用文档](https://github.com/onesyue/clash-verge-rev/wiki) 确认软件不存在类似的功能
-        2. 请 **确保** [已有的问题](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue) 中没有人提交过相似 issue，否则请在已有的 issue 下进行讨论
-        3. 请 **务必** 给 issue 填写一个简洁明了的标题，以便他人快速检索
-        4. 请 **务必** 先下载 [最新 Alpha 版本](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha) 测试，确保该功能还未实现
-        5. 请 **务必** 按照模板规范详细描述功能需求，否则 issue 将会被关闭
-        ## Before submitting the issue, please make sure of the following checklist:
-        1. Please make sure you have read the [悦通 documentation](https://github.com/onesyue/clash-verge-rev/wiki) to confirm that the software does not have similar functions
-        2. Please make sure there is no similar issue in the [existing issues](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue), otherwise please discuss under the existing issue
-        3. Please be sure to fill in a concise and clear title for the issue so that others can quickly search
-        4. Please be sure to download the [latest Alpha version](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha) for testing to ensure that the function has not been implemented
-        5. Please describe the feature request in detail according to the template specification, otherwise the issue will be closed
+        ## Before submitting, please confirm:
+
+        1. You have checked the [YueTong Wiki](https://github.com/onesyue/clash-verge-rev/wiki) to confirm the feature does not already exist
+        2. No similar request exists in the [issue tracker](https://github.com/onesyue/clash-verge-rev/issues?q=is%3Aissue) — if it does, comment on the existing issue instead
+        3. You have written a concise, searchable title
+        4. You have tested the [latest Alpha release](https://github.com/onesyue/clash-verge-rev/releases/tag/Prerelease-alpha) to confirm the feature is not already implemented
+        5. You have filled in all required fields below — incomplete requests may be closed
 
   - type: textarea
     id: description
     attributes:
-      label: 功能描述 / Feature description
-      description: 详细清晰地描述你的功能请求 / A clear and concise description of what the feature is
+      label: Feature Description
+      description: A clear and concise description of the feature you are requesting
     validations:
       required: true
   - type: textarea
     attributes:
-      label: 使用场景 / Use case
-      description: 请描述你的功能请求的使用场景 / Please describe the use case of your feature request
+      label: Use Case
+      description: Describe the use case or problem this feature would solve
     validations:
       required: true
   - type: checkboxes
     id: os-labels
     attributes:
-      label: 适用系统 / Target OS
-      description: 请选择该功能适用的操作系统（至少选择一个） / Please select the operating system(s) for this feature request (select at least one)
+      label: Target OS
+      description: Select the operating system(s) this feature applies to (at least one)
       options:
-        - label: windows
-        - label: macos
-        - label: linux
+        - label: Windows
+        - label: macOS
+        - label: Linux
     validations:
       required: true
