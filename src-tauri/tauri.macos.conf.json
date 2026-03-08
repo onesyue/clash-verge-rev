@@ -4,6 +4,7 @@
   "bundle": {
     "targets": ["app", "dmg"],
     "macOS": {
+      "bundleName": "悦通",
       "frameworks": [],
       "minimumSystemVersion": "10.15",
       "exceptionDomain": "",

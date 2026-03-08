@@ -6,6 +6,8 @@
     <array>
         <string>io.yuetong.app.service</string>
     </array>
+    <key>CFBundleName</key>
+    <string>悦通</string>
     <key>CFBundleDisplayName</key>
     <string>悦通</string>
 </dict>
