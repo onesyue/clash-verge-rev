@@ -14,6 +14,7 @@ import { SWRConfig } from "swr";
 
 import { BaseErrorBoundary } from "@/components/base";
 import { NoticeManager } from "@/components/layout/notice-manager";
+import { OnboardingOverlay } from "@/components/layout/onboarding-overlay";
 import { WindowControls } from "@/components/layout/window-controller";
 import { GeoDataUpdater } from "@/components/xboard/geodata-updater";
 import { XBoardNoticeWatcher } from "@/components/xboard/notice-watcher";
@@ -23,7 +24,6 @@ import { useWindowDecorations } from "@/hooks/use-window";
 import { useThemeMode } from "@/services/states";
 import {
   XBoardSessionProvider,
-  XBoardUserInfoProvider,
   useXBoardSession,
 } from "@/services/xboard/store";
 import getSystem from "@/utils/get-system";
@@ -187,135 +187,146 @@ const Layout = () => {
 
   return (
     <XBoardSessionProvider>
-      <XBoardUserInfoProvider>
-        <XBoardNoticeWatcher />
-        <GeoDataUpdater />
-        <SWRConfig
-          value={{
-            errorRetryCount: 3,
-            errorRetryInterval: 5000,
-            onError: (error, key) => {
-              const silentKeys = [
-                "getVersion",
-                "getClashConfig",
-                "getAutotemProxy",
-              ];
-              if (silentKeys.includes(key)) return;
-              console.error(`[SWR Error] Key: ${key}, Error:`, error);
-            },
-            dedupingInterval: 2000,
-          }}
-        >
-          <ThemeProvider theme={theme}>
-            <NoticeManager position={verge?.notice_position} />
-            <Paper
-              square
-              elevation={0}
-              className={`${OS} layout`}
-              sx={[
-                ({ palette }) => ({ bgcolor: palette.background.paper }),
-                OS === "linux"
-                  ? { borderRadius: "8px", width: "100vw", height: "100vh" }
-                  : {},
-              ]}
-            >
-              {/* Custom titlebar (Win/Linux) */}
-              {customTitlebar}
+      <XBoardNoticeWatcher />
+      <GeoDataUpdater />
+      <SWRConfig
+        value={{
+          errorRetryCount: 3,
+          errorRetryInterval: 5000,
+          onError: (error, key) => {
+            // Silent keys: expected to fail sometimes during startup
+            const silentKeys = [
+              "getVersion",
+              "getClashConfig",
+              "getAutotemProxy",
+            ];
+            if (silentKeys.includes(key)) return;
 
-              {/* Sidebar + Content */}
-              <div className="layout-body">
-                {/* Sidebar */}
-                <Box
-                  className="layout-sidebar"
-                  sx={({ palette }) => ({
-                    bgcolor:
-                      palette.mode === "dark"
-                        ? "rgba(15, 23, 42, 0.8)"
-                        : "rgba(255, 255, 255, 0.8)",
-                  })}
-                >
-                  {/* Brand */}
-                  <div className="sidebar-brand" data-tauri-drag-region="true">
-                    <Box
+            // XBoard auth errors are handled by handleAuthExpired in api.ts
+            if (
+              error &&
+              typeof error === "object" &&
+              "code" in error &&
+              error.code === "AUTH_EXPIRED"
+            ) {
+              return;
+            }
+
+            console.error(`[SWR Error] Key: ${key}, Error:`, error);
+          },
+          dedupingInterval: 2000,
+        }}
+      >
+        <ThemeProvider theme={theme}>
+          <NoticeManager position={verge?.notice_position} />
+          <OnboardingOverlay />
+          <Paper
+            square
+            elevation={0}
+            className={`${OS} layout`}
+            sx={[
+              ({ palette }) => ({ bgcolor: palette.background.paper }),
+              OS === "linux"
+                ? { borderRadius: "8px", width: "100vw", height: "100vh" }
+                : {},
+            ]}
+          >
+            {/* Custom titlebar (Win/Linux) */}
+            {customTitlebar}
+
+            {/* Sidebar + Content */}
+            <div className="layout-body">
+              {/* Sidebar */}
+              <Box
+                className="layout-sidebar"
+                sx={({ palette }) => ({
+                  bgcolor:
+                    palette.mode === "dark"
+                      ? "rgba(15, 23, 42, 0.8)"
+                      : "rgba(255, 255, 255, 0.8)",
+                })}
+              >
+                {/* Brand */}
+                <div className="sidebar-brand" data-tauri-drag-region="true">
+                  <Box
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "8px",
+                      background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Typography
                       sx={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: "8px",
-                        background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
+                        color: "white",
+                        fontSize: "14px",
+                        fontWeight: 800,
+                        lineHeight: 1,
                       }}
                     >
-                      <Typography
-                        sx={{
-                          color: "white",
-                          fontSize: "14px",
-                          fontWeight: 800,
-                          lineHeight: 1,
-                        }}
-                      >
-                        悦
-                      </Typography>
-                    </Box>
-                    <Typography
-                      className="brand-name"
-                      sx={({ palette }) => ({
-                        color: palette.text.primary,
-                        background:
-                          palette.mode === "dark"
-                            ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
-                            : "none",
-                        WebkitBackgroundClip:
-                          palette.mode === "dark" ? "text" : "unset",
-                        WebkitTextFillColor:
-                          palette.mode === "dark" ? "transparent" : "inherit",
-                      })}
-                    >
-                      悦通
+                      悦
                     </Typography>
-                  </div>
-
-                  {/* Main nav items */}
-                  <nav className="sidebar-nav">
-                    {sidebarNavItems.map((item) => (
-                      <SidebarItem
-                        key={item.path}
-                        icon={item.icon}
-                        label={t(item.label)}
-                        active={currentNavPath === item.path}
-                        onClick={() => navigate(item.path)}
-                      />
-                    ))}
-
-                    {/* Spacer */}
-                    <Box sx={{ flex: 1 }} />
-
-                    {/* Bottom nav items */}
-                    {sidebarBottomItems.map((item) => (
-                      <SidebarItem
-                        key={item.path}
-                        icon={item.icon}
-                        label={t(item.label)}
-                        active={currentNavPath === item.path}
-                        onClick={() => navigate(item.path)}
-                      />
-                    ))}
-                  </nav>
-                </Box>
-
-                {/* Main content */}
-                <div className="layout-content">
-                  <BaseErrorBoundary>
-                    <ProtectedOutlet />
-                  </BaseErrorBoundary>
+                  </Box>
+                  <Typography
+                    className="brand-name"
+                    sx={({ palette }) => ({
+                      color: palette.text.primary,
+                      background:
+                        palette.mode === "dark"
+                          ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
+                          : "none",
+                      WebkitBackgroundClip:
+                        palette.mode === "dark" ? "text" : "unset",
+                      WebkitTextFillColor:
+                        palette.mode === "dark" ? "transparent" : "inherit",
+                    })}
+                  >
+                    悦通
+                  </Typography>
                 </div>
+
+                {/* Main nav items */}
+                <nav className="sidebar-nav">
+                  {sidebarNavItems.map((item) => (
+                    <SidebarItem
+                      key={item.path}
+                      icon={item.icon}
+                      label={t(item.label)}
+                      active={currentNavPath === item.path}
+                      onClick={() => navigate(item.path)}
+                    />
+                  ))}
+
+                  {/* Spacer */}
+                  <Box sx={{ flex: 1 }} />
+
+                  {/* Bottom nav items */}
+                  {sidebarBottomItems.map((item) => (
+                    <SidebarItem
+                      key={item.path}
+                      icon={item.icon}
+                      label={t(item.label)}
+                      active={currentNavPath === item.path}
+                      onClick={() => navigate(item.path)}
+                    />
+                  ))}
+                </nav>
+              </Box>
+
+              {/* Main content */}
+              <div className="layout-content">
+                <BaseErrorBoundary>
+                  <ProtectedOutlet />
+                </BaseErrorBoundary>
               </div>
-            </Paper>
-          </ThemeProvider>
-        </SWRConfig>
-      </XBoardUserInfoProvider>
+            </div>
+          </Paper>
+        </ThemeProvider>
+      </SWRConfig>
     </XBoardSessionProvider>
   );
 };

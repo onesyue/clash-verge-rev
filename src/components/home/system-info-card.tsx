@@ -159,10 +159,13 @@ export const SystemInfoCard = () => {
       const info = await triggerCheckUpdate();
       if (!info?.available) {
         showNotice.success(
-          "settings.components.verge.advanced.notifications.latestVersion",
+          t("settings.components.verge.advanced.notifications.latestVersion"),
         );
       } else {
-        showNotice.info("shared.feedback.notifications.updateAvailable", 2000);
+        showNotice.info(
+          t("shared.feedback.notifications.updateAvailable"),
+          2000,
+        );
         goToSettings();
       }
     } catch (err) {

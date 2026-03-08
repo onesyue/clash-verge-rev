@@ -354,6 +354,7 @@ export function CheckoutDialog({
                     })
                   : t("account.shop.checkout.couponPercent", {
                       value: couponInfo.value,
+                      off: 100 - couponInfo.value,
                     })
                 : undefined)
             }

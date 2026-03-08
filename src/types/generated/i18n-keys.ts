@@ -3,6 +3,8 @@
 
 export const translationKeys = [
   "account.page.title",
+  "account.brand.name",
+  "account.brand.tagline",
   "account.login.tab",
   "account.login.form.email",
   "account.login.form.password",
@@ -199,6 +201,11 @@ export const translationKeys = [
   "connections.components.actions.closeConnection",
   "connections.components.columnManager.title",
   "connections.components.columnManager.dragHandle",
+  "home.onboarding.step1",
+  "home.onboarding.step2",
+  "home.onboarding.step3",
+  "home.onboarding.getStarted",
+  "home.onboarding.skip",
   "home.page.tooltips.lightweightMode",
   "home.page.tooltips.manual",
   "home.page.tooltips.settings",

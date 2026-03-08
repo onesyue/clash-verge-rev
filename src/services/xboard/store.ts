@@ -9,7 +9,7 @@
 
 import { createContextState } from "foxact/create-context-state";
 
-import type { AuthResult, UserInfo, XBoardSession } from "./types";
+import type { AuthResult, XBoardSession } from "./types";
 
 // ────────────────────────────────────────────────────────────────────────────
 // localStorage 持久化
@@ -61,20 +61,7 @@ export function persistAuthResult(result: AuthResult): XBoardSession {
 const [XBoardSessionProvider, useXBoardSession, useSetXBoardSession] =
   createContextState<XBoardSession | null>(loadSession());
 
-/**
- * 缓存的用户信息，null 表示尚未加载或未登录
- */
-const [XBoardUserInfoProvider, useXBoardUserInfo, useSetXBoardUserInfo] =
-  createContextState<UserInfo | null>(null);
-
-export {
-  XBoardSessionProvider,
-  useXBoardSession,
-  useSetXBoardSession,
-  XBoardUserInfoProvider,
-  useXBoardUserInfo,
-  useSetXBoardUserInfo,
-};
+export { XBoardSessionProvider, useXBoardSession, useSetXBoardSession };
 
 // ────────────────────────────────────────────────────────────────────────────
 // Convenience helpers（在组件外也可直接调用）

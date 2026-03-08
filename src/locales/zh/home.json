@@ -1,4 +1,11 @@
 {
+  "onboarding": {
+    "step1": "登录或注册账户",
+    "step2": "订阅自动同步，无需手动操作",
+    "step3": "点击电源按钮一键连接",
+    "getStarted": "开始使用",
+    "skip": "跳过"
+  },
   "page": {
     "tooltips": {
       "lightweightMode": "轻量模式",

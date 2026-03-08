@@ -2,6 +2,10 @@
   "page": {
     "title": "Account"
   },
+  "brand": {
+    "name": "YueTong",
+    "tagline": "Global acceleration network for AI and streaming"
+  },
   "login": {
     "tab": "Sign In",
     "form": {
@@ -215,7 +219,7 @@
       "couponCodePlaceholder": "Optional",
       "couponInvalid": "Invalid coupon code or not applicable to this plan",
       "couponDiscount": "Discount {{value}} off",
-      "couponPercent": "{{value}}% off",
+      "couponPercent": "{{off}}% off",
       "paymentMethod": "Payment Method",
       "noPaymentMethods": "No payment methods available",
       "confirm": "Confirm Payment",

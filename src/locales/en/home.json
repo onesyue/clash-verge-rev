@@ -1,4 +1,11 @@
 {
+  "onboarding": {
+    "step1": "Sign in or create an account",
+    "step2": "Your subscription syncs automatically",
+    "step3": "Tap the power button to connect",
+    "getStarted": "Get Started",
+    "skip": "Skip"
+  },
   "page": {
     "tooltips": {
       "lightweightMode": "Lightweight Mode",

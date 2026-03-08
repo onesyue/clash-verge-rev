@@ -21,6 +21,7 @@ import {
   patchVergeConfig,
   updateProfile,
 } from "@/services/cmds";
+import { XBoardError, XBoardErrorCode } from "@/services/xboard/errors";
 
 // ── 常量 ──────────────────────────────────────────────────────────────────────
 
@@ -87,11 +88,9 @@ function ensureMetaFlag(url: string): string {
     return u.toString();
   } catch {
     // URL 解析失败，直接拼接
-    let base = url.replace(/([?&])flag=[^&]*/g, "");
-    // Fix malformed query string: &param should become ?param if ? was removed
-    base = base.replace(/\?&/, "?").replace(/([^?])&/, "$1?");
-    if (base.endsWith("?")) base = base.slice(0, -1);
-    return base + (base.includes("?") ? "&" : "?") + "flag=meta";
+    const base = url.replace(/([?&])flag=[^&]*/g, "");
+    const cleaned = base.replace(/\?$/, "");
+    return cleaned + (cleaned.includes("?") ? "&" : "?") + "flag=meta";
   }
 }
 
@@ -100,7 +99,10 @@ export async function syncXBoardSubscription(
   activate = true,
 ): Promise<SyncResult> {
   if (!subscribeUrl?.trim()) {
-    throw new Error("订阅链接为空，请重新登录以获取订阅地址");
+    throw new XBoardError(
+      "订阅链接为空，请重新登录以获取订阅地址",
+      XBoardErrorCode.SUBSCRIBE_URL_EMPTY,
+    );
   }
 
   // 强制 Clash Meta (mihomo) YAML 格式
@@ -150,7 +152,10 @@ export async function syncXBoardSubscription(
       (p) => p.url === metaUrl || p.url === subscribeUrl,
     );
     if (!newItem?.uid) {
-      throw new Error("导入订阅成功但找不到对应的 Profile，请刷新订阅页面");
+      throw new XBoardError(
+        "导入订阅成功但找不到对应的 Profile，请刷新订阅页面",
+        XBoardErrorCode.PROFILE_IMPORT_FAILED,
+      );
     }
     uid = newItem.uid;
     isNew = true;
@@ -163,12 +168,17 @@ export async function syncXBoardSubscription(
   if (activate) {
     const activated = await activateProfile(uid);
     if (!activated) {
-      throw new Error("配置激活失败，请手动在订阅页面点击该配置以选中");
+      throw new XBoardError(
+        "配置激活失败，请手动在订阅页面点击该配置以选中",
+        XBoardErrorCode.ACTIVATE_FAILED,
+      );
     }
-    // 5. 激活成功后自动开启系统代理（首次同步或代理未开启时）
-    await patchVergeConfig({ enable_system_proxy: true }).catch(() => {
-      /* 开启系统代理失败不影响订阅同步 */
-    });
+    // 5. 仅首次导入时自动开启系统代理，避免每次同步都强制覆盖用户设置
+    if (isNew) {
+      await patchVergeConfig({ enable_system_proxy: true }).catch(() => {
+        /* 开启系统代理失败不影响订阅同步 */
+      });
+    }
   }
 
   // 6. 通知 SWR 刷新 Profiles + 代理数据
@@ -186,13 +196,19 @@ export async function syncXBoardSubscription(
 export async function refreshXBoardProfile(): Promise<void> {
   const uid = loadProfileUid();
   if (!uid) {
-    throw new Error("未找到绑定的订阅，请重新登录");
+    throw new XBoardError(
+      "未找到绑定的订阅，请重新登录",
+      XBoardErrorCode.PROFILE_NOT_FOUND,
+    );
   }
 
   const profiles = await getProfiles();
   const item = profiles.items?.find((p) => p.uid === uid);
   if (!item) {
-    throw new Error("绑定的订阅已被删除，请重新登录");
+    throw new XBoardError(
+      "绑定的订阅已被删除，请重新登录",
+      XBoardErrorCode.PROFILE_DELETED,
+    );
   }
 
   // 刷新订阅内容（with_proxy: false — 直连，不走代理）
@@ -202,12 +218,11 @@ export async function refreshXBoardProfile(): Promise<void> {
   if (profiles.current !== uid) {
     const activated = await activateProfile(uid);
     if (!activated) {
-      throw new Error(
+      throw new XBoardError(
         "订阅内容已更新，但配置激活失败，请手动在订阅页面点击选中",
+        XBoardErrorCode.ACTIVATE_FAILED,
       );
     }
-    // 同时开启系统代理
-    await patchVergeConfig({ enable_system_proxy: true }).catch(() => {});
   }
 
   await mutate("getProfiles");

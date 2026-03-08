@@ -57,6 +57,7 @@ import { useNavigate } from "react-router";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { showNotice } from "@/services/notice-service";
 import { changePassword, logout } from "@/services/xboard/api";
+import { XBoardErrorCode } from "@/services/xboard/errors";
 import {
   clearSession,
   useSetXBoardSession,
@@ -278,7 +279,7 @@ function ProfileHeader({
               variant="body1"
               fontWeight="bold"
               noWrap
-              sx={{ color: "#1A237E", fontSize: "15px" }}
+              sx={{ color: "text.primary", fontSize: "15px" }}
             >
               {userInfo?.email ?? "—"}
             </Typography>
@@ -288,7 +289,7 @@ function ProfileHeader({
           ) : (
             <Typography
               variant="body2"
-              sx={{ color: "#3A6BBF", mt: 0.5, fontSize: "12px" }}
+              sx={{ color: "primary.main", mt: 0.5, fontSize: "12px" }}
             >
               {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
@@ -321,7 +322,7 @@ function Row({
     >
       <Box
         sx={{
-          color: "#3A6BBF",
+          color: "primary.main",
           display: "flex",
           alignItems: "center",
           flexShrink: 0,
@@ -329,7 +330,10 @@ function Row({
       >
         {icon}
       </Box>
-      <Typography variant="caption" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+      <Typography
+        variant="caption"
+        sx={{ color: "text.secondary", flexShrink: 0 }}
+      >
         {label}
       </Typography>
       <Box sx={{ flex: 1 }} />
@@ -391,7 +395,7 @@ function SubscriptionCard({
             <Typography
               variant="body2"
               fontWeight="bold"
-              sx={{ color: "#1A237E" }}
+              sx={{ color: "text.primary" }}
             >
               {userInfo?.planName ?? t("account.dashboard.account.noPlan")}
             </Typography>
@@ -410,7 +414,7 @@ function SubscriptionCard({
             <Typography
               variant="body2"
               fontWeight="bold"
-              sx={{ color: "#1A237E" }}
+              sx={{ color: "text.primary" }}
             >
               {expiryLabel}
             </Typography>
@@ -420,10 +424,10 @@ function SubscriptionCard({
 
       {/* 流量使用标签 + 详情 */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
-        <Typography variant="caption" sx={{ color: "#5C7CAB", flex: 1 }}>
+        <Typography variant="caption" sx={{ color: "text.secondary", flex: 1 }}>
           {t("account.dashboard.traffic.title")} {formatPercent(pct)}
         </Typography>
-        <Typography variant="caption" sx={{ color: "#5C7CAB" }}>
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
           {loading ? "" : trafficDetail}
         </Typography>
       </Box>
@@ -494,7 +498,7 @@ function BalanceCard({
         >
           <Typography
             variant="caption"
-            sx={{ color: "#8EAACB", fontSize: "11px" }}
+            sx={{ color: "text.secondary", fontSize: "11px" }}
           >
             {t("account.dashboard.wallet.balance")}
           </Typography>
@@ -504,7 +508,7 @@ function BalanceCard({
             <Typography
               variant="h6"
               fontWeight="bold"
-              sx={{ color: "#1A237E", mt: 0.5 }}
+              sx={{ color: "text.primary", mt: 0.5 }}
             >
               {formatBalance(userInfo?.balance ?? 0, unit)}
             </Typography>
@@ -513,7 +517,7 @@ function BalanceCard({
 
         {/* 分隔线 */}
         <Box
-          sx={{ width: 1, bgcolor: "#E0EAF8", alignSelf: "center", height: 40 }}
+          sx={{ width: 1, bgcolor: "divider", alignSelf: "center", height: 40 }}
         />
 
         {/* 返利余额 */}
@@ -529,7 +533,7 @@ function BalanceCard({
         >
           <Typography
             variant="caption"
-            sx={{ color: "#8EAACB", fontSize: "11px" }}
+            sx={{ color: "text.secondary", fontSize: "11px" }}
           >
             {t("account.dashboard.wallet.commission")}
           </Typography>
@@ -539,7 +543,7 @@ function BalanceCard({
             <Typography
               variant="h6"
               fontWeight="bold"
-              sx={{ color: "#1A237E", mt: 0.5 }}
+              sx={{ color: "text.primary", mt: 0.5 }}
             >
               {formatBalance(userInfo?.commissionBalance ?? 0, unit)}
             </Typography>
@@ -582,10 +586,10 @@ function InviteCard({
     >
       {/* 标题行 + 邀请人数 */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-        <Typography variant="caption" sx={{ color: "#8EAACB", flex: 1 }}>
+        <Typography variant="caption" sx={{ color: "text.secondary", flex: 1 }}>
           {t("account.dashboard.invite.title")}
         </Typography>
-        <Typography variant="caption" sx={{ color: "#3A6BBF" }}>
+        <Typography variant="caption" sx={{ color: "primary.main" }}>
           {t("account.dashboard.invite.referralCount", {
             count: referralCount,
           })}
@@ -597,7 +601,7 @@ function InviteCard({
         sx={{
           display: "flex",
           alignItems: "center",
-          bgcolor: "#F5F8FF",
+          bgcolor: "action.hover",
           borderRadius: 1,
           px: 1.25,
           py: 1,
@@ -610,7 +614,7 @@ function InviteCard({
           <Typography
             variant="caption"
             noWrap
-            sx={{ color: "#5C7CAB", flex: 1, fontSize: "12px" }}
+            sx={{ color: "text.secondary", flex: 1, fontSize: "12px" }}
           >
             {inviteUrl ?? "--"}
           </Typography>
@@ -618,8 +622,13 @@ function InviteCard({
         <Typography
           variant="caption"
           onClick={handleCopy}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleCopy();
+          }}
           sx={{
-            color: "#3A6BBF",
+            color: "primary.main",
             cursor: "pointer",
             flexShrink: 0,
             fontWeight: "bold",
@@ -627,7 +636,7 @@ function InviteCard({
             px: 0.75,
             py: 0.25,
             borderRadius: 0.5,
-            "&:hover": { bgcolor: "rgba(58,107,191,0.08)" },
+            "&:hover": { bgcolor: "action.hover" },
           }}
         >
           {t("account.dashboard.invite.copy")}
@@ -699,11 +708,11 @@ function ActionButtons({
           textTransform: "none",
           fontWeight: "medium",
           py: 1,
-          color: "#D32F2F",
-          borderColor: "#D32F2F",
+          color: "error.main",
+          borderColor: "error.main",
           "&:hover": {
-            borderColor: "#B71C1C",
-            bgcolor: "rgba(211,47,47,0.04)",
+            borderColor: "error.dark",
+            bgcolor: "action.hover",
           },
         }}
         startIcon={
@@ -756,11 +765,14 @@ export function UserDashboard() {
       await refreshXBoardProfile();
       showNotice.success(t("account.dashboard.account.syncSuccess"));
     } catch (err: any) {
-      const msg: string = err instanceof Error ? err.message : String(err);
       // uid 失效（新设备 / 手动删除了 Profile）→ 自动重新绑定
+      const code =
+        err && typeof err === "object" && "code" in err
+          ? (err as { code: string }).code
+          : null;
       if (
-        msg.includes("未找到绑定的订阅") ||
-        msg.includes("绑定的订阅已被删除")
+        code === XBoardErrorCode.PROFILE_NOT_FOUND ||
+        code === XBoardErrorCode.PROFILE_DELETED
       ) {
         if (session?.subscribeUrl) {
           try {
@@ -774,7 +786,7 @@ export function UserDashboard() {
       }
       showNotice.error(
         t("account.dashboard.account.syncFailed"),
-        err instanceof Error ? err : new Error(msg),
+        err instanceof Error ? err : new Error(String(err)),
       );
     } finally {
       setSyncing(false);

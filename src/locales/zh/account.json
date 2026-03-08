@@ -2,6 +2,10 @@
   "page": {
     "title": "账 户"
   },
+  "brand": {
+    "name": "悦通",
+    "tagline": "专为 AI 与流媒体打造的全球加速网络"
+  },
   "login": {
     "tab": "登录",
     "form": {
@@ -215,7 +219,7 @@
       "couponCodePlaceholder": "选填",
       "couponInvalid": "优惠码无效或不适用于此套餐",
       "couponDiscount": "立减 {{value}}",
-      "couponPercent": "折扣 {{value}}%",
+      "couponPercent": "{{off}}% 优惠",
       "paymentMethod": "支付方式",
       "noPaymentMethods": "暂无可用支付方式",
       "confirm": "确认支付",

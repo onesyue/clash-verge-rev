@@ -143,8 +143,8 @@ export const ProxyItem = (props: Props) => {
         onClick={() => onClick?.(proxy.name)}
         sx={[
           { borderRadius: "12px" },
-          ({ palette: { mode, primary } }) => {
-            const bgcolor = mode === "light" ? "#ffffff" : "#1E293B";
+          ({ palette }) => {
+            const { mode, primary, background, divider } = palette;
             const selectColor = mode === "light" ? primary.main : primary.light;
             const showDelay = delayValue > 0;
 
@@ -163,12 +163,14 @@ export const ProxyItem = (props: Props) => {
               },
               "&:hover": {
                 bgcolor:
-                  mode === "light" ? alpha(primary.main, 0.04) : "#263548",
+                  mode === "light"
+                    ? alpha(primary.main, 0.04)
+                    : alpha(primary.main, 0.08),
               },
-              backgroundColor: bgcolor,
+              backgroundColor: background.paper,
               marginBottom: "6px",
               height: "44px",
-              border: `1px solid ${mode === "dark" ? "rgba(148,163,184,0.06)" : "rgba(0,0,0,0.04)"}`,
+              border: `1px solid ${alpha(divider, 0.5)}`,
               transition: "all 0.15s ease",
             };
           },

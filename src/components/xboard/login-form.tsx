@@ -613,7 +613,6 @@ function ForgotTab() {
 export function LoginForm({ onSuccess }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
 
   const [tab, setTab] = useState<TabKey>("login");
 
@@ -625,10 +624,11 @@ export function LoginForm({ onSuccess }: Props) {
         mt: 4,
         p: 3,
         borderRadius: 3,
-        backgroundColor: isDark ? "#1E293B" : "#ffffff",
-        boxShadow: isDark
-          ? "0 4px 24px rgba(0,0,0,0.4)"
-          : "0 4px 24px rgba(0,0,0,0.08)",
+        backgroundColor: "background.paper",
+        boxShadow:
+          theme.palette.mode === "dark"
+            ? "0 4px 24px rgba(0,0,0,0.4)"
+            : "0 4px 24px rgba(0,0,0,0.08)",
       }}
     >
       <Typography
@@ -637,14 +637,14 @@ export function LoginForm({ onSuccess }: Props) {
         mb={0.5}
         sx={{ color: "text.primary" }}
       >
-        悦通
+        {t("account.brand.name")}
       </Typography>
       <Typography
         variant="body2"
         mb={2}
         sx={{ color: "text.secondary", fontSize: "13px" }}
       >
-        专为 AI 与流媒体打造的全球加速网络
+        {t("account.brand.tagline")}
       </Typography>
 
       {/* Tab 切换 */}

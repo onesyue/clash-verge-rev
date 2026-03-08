@@ -3,7 +3,7 @@ import {
   ExpandMoreRounded,
   InboxRounded,
 } from "@mui/icons-material";
-import { Box, ListItemButton, Typography, styled } from "@mui/material";
+import { Box, ListItemButton, Typography, alpha, styled } from "@mui/material";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -76,14 +76,17 @@ export const ProxyRender = (props: RenderProps) => {
           px: 2,
           py: 1.5,
           borderRadius: "16px",
-          bgcolor: palette.mode === "dark" ? "#1E293B" : "#ffffff",
-          border: `1px solid ${palette.mode === "dark" ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)"}`,
+          bgcolor: palette.background.paper,
+          border: `1px solid ${alpha(palette.divider, 0.5)}`,
           display: "flex",
           alignItems: "center",
           gap: 1.5,
           transition: "all 0.15s ease",
           "&:hover": {
-            bgcolor: palette.mode === "dark" ? "#263548" : "#F8FAFC",
+            bgcolor:
+              palette.mode === "dark"
+                ? alpha(palette.primary.main, 0.08)
+                : alpha(palette.primary.main, 0.04),
           },
         })}
         onClick={() => onHeadState(group.name, { open: !headState?.open })}

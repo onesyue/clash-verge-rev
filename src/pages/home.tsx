@@ -9,6 +9,7 @@ import {
   AppsRounded,
   NotificationsNoneRounded,
   ChevronRightRounded,
+  FiberManualRecordRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -74,27 +75,28 @@ function SurfaceCard({
   onClick?: () => void;
   sx?: object;
 }) {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-
   return (
     <Paper
       elevation={0}
       onClick={onClick}
-      sx={{
+      sx={({ palette }) => ({
         borderRadius: "16px",
-        bgcolor: isDark ? "#1E293B" : "#FFFFFF",
-        border: `1px solid ${isDark ? "rgba(148,163,184,0.08)" : "rgba(0,0,0,0.06)"}`,
+        bgcolor: "background.paper",
+        border: `1px solid`,
+        borderColor: "divider",
         cursor: onClick ? "pointer" : "default",
         transition: "all 0.2s ease",
         ...(onClick && {
           "&:hover": {
-            bgcolor: isDark ? "#263548" : "#F8FAFC",
-            borderColor: isDark ? "rgba(148,163,184,0.15)" : "rgba(0,0,0,0.1)",
+            bgcolor: alpha(
+              palette.text.primary,
+              palette.mode === "dark" ? 0.08 : 0.04,
+            ),
+            borderColor: alpha(palette.divider, 1.5),
           },
         }),
         ...sx,
-      }}
+      })}
     >
       {children}
     </Paper>
@@ -268,10 +270,20 @@ function ConnectButton({
 }: ConnectButtonProps) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
+  const [animating, setAnimating] = useState(false);
+  const prevConnectedRef = useRef(connected);
+  const animTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Trigger bounce animation on connection state change (in render, not effect)
+  if (prevConnectedRef.current !== connected) {
+    prevConnectedRef.current = connected;
+    if (!animating) setAnimating(true);
+    if (animTimerRef.current) clearTimeout(animTimerRef.current);
+    animTimerRef.current = setTimeout(() => setAnimating(false), 400);
+  }
 
   const activeGradient = "linear-gradient(135deg, #6366F1, #8B5CF6)";
-  const inactiveColor = isDark ? "#334155" : "#94A3B8";
+  const inactiveColor = theme.palette.text.disabled;
 
   return (
     <SurfaceCard sx={{ py: 4, textAlign: "center" }}>
@@ -338,6 +350,14 @@ function ConnectButton({
               ? "0 8px 32px rgba(99, 102, 241, 0.4)"
               : "none",
             transition: "all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            ...(animating && {
+              animation: "connectBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              "@keyframes connectBounce": {
+                "0%": { transform: "scale(0.85)" },
+                "50%": { transform: "scale(1.1)" },
+                "100%": { transform: "scale(1)" },
+              },
+            }),
             "&:hover": connecting ? {} : { transform: "scale(1.05)" },
             "&:active": connecting ? {} : { transform: "scale(0.96)" },
           }}
@@ -696,6 +716,91 @@ function ProxyCard() {
   );
 }
 
+// ─── Status Bar (global connection indicator) ────────────────────────────────
+
+function StatusBar({
+  connected,
+  connecting,
+  elapsed,
+}: {
+  connected: boolean;
+  connecting: boolean;
+  elapsed: number;
+}) {
+  const { t } = useTranslation();
+  const { currentProxy, primaryGroupName } = useCurrentProxy();
+
+  const statusColor = connecting
+    ? "warning.main"
+    : connected
+      ? "success.main"
+      : "text.disabled";
+
+  const statusText = connecting
+    ? t("home.components.connectButton.status.connecting")
+    : connected
+      ? t("home.components.connectButton.status.connected")
+      : t("home.components.connectButton.status.disconnected");
+
+  const nodeName =
+    connected && currentProxy
+      ? `${primaryGroupName ? primaryGroupName + " · " : ""}${currentProxy.name}`
+      : null;
+
+  return (
+    <SurfaceCard
+      sx={{
+        px: 2,
+        py: 1.25,
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        overflow: "hidden",
+      }}
+    >
+      <FiberManualRecordRounded
+        sx={{
+          fontSize: 10,
+          color: statusColor,
+          flexShrink: 0,
+          animation: connecting ? "blink 1s ease-in-out infinite" : "none",
+          "@keyframes blink": {
+            "0%, 100%": { opacity: 1 },
+            "50%": { opacity: 0.3 },
+          },
+        }}
+      />
+      <Typography
+        variant="caption"
+        fontWeight={600}
+        sx={{ color: statusColor, flexShrink: 0 }}
+      >
+        {statusText}
+      </Typography>
+      {nodeName && (
+        <Typography variant="caption" color="text.secondary" noWrap>
+          · {nodeName}
+        </Typography>
+      )}
+      <Box sx={{ flex: 1 }} />
+      {connected && (
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.disabled",
+            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+            fontSize: "11px",
+            fontVariantNumeric: "tabular-nums",
+            flexShrink: 0,
+          }}
+        >
+          {formatElapsed(elapsed)}
+        </Typography>
+      )}
+    </SurfaceCard>
+  );
+}
+
 // ─── Home Page ────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
@@ -782,6 +887,11 @@ const HomePage = () => {
   return (
     <BasePage contentStyle={{ padding: "16px 20px" }}>
       <Stack spacing={2}>
+        <StatusBar
+          connected={isConnected}
+          connecting={connecting}
+          elapsed={elapsed}
+        />
         <AccountBar />
         <ConnectButton
           connected={isConnected}

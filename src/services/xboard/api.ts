@@ -14,9 +14,8 @@
  *   优惠:  POST /api/v1/user/coupon/check
  */
 
-import { fetch } from "@tauri-apps/plugin-http";
-
-import { clearSession } from "./store";
+import { XBoardClient } from "./client";
+import { XBoardError, XBoardErrorCode } from "./errors";
 import type {
   AuthResult,
   CheckoutResult,
@@ -29,121 +28,15 @@ import type {
   UserInfo,
 } from "./types";
 
+export { XBoardError, XBoardErrorCode };
+
 // ────────────────────────────────────────────────────────────────────────────
-// 服务器地址（单一官方服务）
+// 默认客户端实例
 // ────────────────────────────────────────────────────────────────────────────
 
 export const BASE_URL = "https://d7ccm19ki90mg.cloudfront.net";
 
-// ────────────────────────────────────────────────────────────────────────────
-// Error
-// ────────────────────────────────────────────────────────────────────────────
-
-export class XBoardError extends Error {
-  constructor(
-    message: string,
-    public readonly status?: number,
-  ) {
-    super(message);
-    this.name = "XBoardError";
-  }
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Auth expiry handler
-// ────────────────────────────────────────────────────────────────────────────
-
-let authExpiredTimer: ReturnType<typeof setTimeout> | null = null;
-
-/**
- * 当服务器返回 401/403 时清除本地会话，触发 UI 回到登录页。
- * 使用防抖避免多个并发请求同时触发多次清除。
- */
-function handleAuthExpired() {
-  if (authExpiredTimer) return;
-  authExpiredTimer = setTimeout(() => {
-    authExpiredTimer = null;
-    clearSession();
-    // 强制刷新页面以重置 React context 状态
-    window.location.reload();
-  }, 100);
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Internal HTTP helpers
-// ────────────────────────────────────────────────────────────────────────────
-
-const TIMEOUT_MS = 15_000;
-
-function buildUrl(path: string): string {
-  return `${BASE_URL}${path}`;
-}
-
-function authHeaders(authData: string): Record<string, string> {
-  return {
-    authorization: authData,
-    Accept: "application/json",
-  };
-}
-
-async function parseResponse(res: Response): Promise<any> {
-  const text = await res.text();
-  let json: any;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    throw new XBoardError(`响应不是有效的 JSON（${res.status}）`, res.status);
-  }
-  if (!res.ok) {
-    // 401/403 表示 token 过期或无效，自动清除本地会话
-    if (res.status === 401 || res.status === 403) {
-      handleAuthExpired();
-    }
-    throw new XBoardError(
-      json?.message ?? `请求失败（${res.status}）`,
-      res.status,
-    );
-  }
-  return json;
-}
-
-async function httpGet(path: string, authData: string): Promise<any> {
-  const res = await fetch(buildUrl(path), {
-    method: "GET",
-    headers: authHeaders(authData),
-    connectTimeout: TIMEOUT_MS,
-  });
-  return parseResponse(res);
-}
-
-async function httpGetGuest(path: string): Promise<any> {
-  const res = await fetch(buildUrl(path), {
-    method: "GET",
-    headers: { Accept: "application/json" },
-    connectTimeout: TIMEOUT_MS,
-  });
-  return parseResponse(res);
-}
-
-async function httpPost(
-  path: string,
-  body: Record<string, unknown>,
-  authData?: string,
-): Promise<any> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
-  if (authData) headers.authorization = authData;
-
-  const res = await fetch(buildUrl(path), {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-    connectTimeout: TIMEOUT_MS,
-  });
-  return parseResponse(res);
-}
+const client = new XBoardClient(BASE_URL);
 
 // ────────────────────────────────────────────────────────────────────────────
 // Private helpers
@@ -153,16 +46,24 @@ async function fetchAuthData(
   path: string,
   body: Record<string, unknown>,
 ): Promise<string> {
-  const root = await httpPost(path, body);
+  const root = await client.post(path, body);
   const authData: string | undefined = root?.data?.auth_data;
-  if (!authData) throw new XBoardError("服务器未返回 auth_data");
+  if (!authData)
+    throw new XBoardError(
+      "服务器未返回 auth_data",
+      XBoardErrorCode.AUTH_MISSING,
+    );
   return authData;
 }
 
 async function fetchSubscribeUrl(authData: string): Promise<string> {
-  const root = await httpGet("/api/v1/user/getSubscribe", authData);
+  const root = await client.get("/api/v1/user/getSubscribe", authData);
   const url: string | undefined = root?.data?.subscribe_url?.trim();
-  if (!url) throw new XBoardError("服务器未返回订阅地址，请联系管理员");
+  if (!url)
+    throw new XBoardError(
+      "服务器未返回订阅地址，请联系管理员",
+      XBoardErrorCode.SUBSCRIBE_URL_MISSING,
+    );
   return url;
 }
 
@@ -206,7 +107,7 @@ export async function register(
  * 服务端有 60 秒发送频率限制。
  */
 export async function sendEmailVerify(email: string): Promise<void> {
-  await httpPost("/api/v1/passport/comm/sendEmailVerify", { email });
+  await client.post("/api/v1/passport/comm/sendEmailVerify", { email });
 }
 
 /**
@@ -220,7 +121,7 @@ export async function forgotPassword(
   emailCode: string,
   password: string,
 ): Promise<void> {
-  await httpPost("/api/v1/passport/auth/forget", {
+  await client.post("/api/v1/passport/auth/forget", {
     email,
     email_code: emailCode,
     password,
@@ -233,7 +134,7 @@ export async function changePassword(
   oldPassword: string,
   newPassword: string,
 ): Promise<void> {
-  await httpPost(
+  await client.post(
     "/api/v1/user/changePassword",
     { old_password: oldPassword, new_password: newPassword },
     authData,
@@ -270,14 +171,14 @@ export async function logout(_authData: string): Promise<void> {
  */
 export async function getUserInfo(authData: string): Promise<UserInfo | null> {
   // ── 主调用：getSubscribe 必须成功，否则无法获取流量 ──────────────────────
-  const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
+  const subRoot = await client.get("/api/v1/user/getSubscribe", authData);
   const sub = subRoot?.data;
   if (!sub) return null;
 
   // ── 可选调用：info 仅补充 balance / commission_balance / uuid ────────────
   let info: any = null;
   try {
-    const infoRoot = await httpGet("/api/v1/user/info", authData);
+    const infoRoot = await client.get("/api/v1/user/info", authData);
     info = infoRoot?.data ?? null;
   } catch {
     // 失败不影响流量数据，降级处理
@@ -305,7 +206,7 @@ export async function getInviteInfo(
   authData: string,
 ): Promise<InviteInfo | null> {
   // 正确路径：/api/v1/user/invite/fetch（非 /invite）
-  const root = await httpGet("/api/v1/user/invite/fetch", authData);
+  const root = await client.get("/api/v1/user/invite/fetch", authData);
   const data = root?.data;
   if (!data) return null;
 
@@ -327,7 +228,7 @@ export async function getNotices(authData: string): Promise<Notice[]> {
   let current = 1;
   const MAX_PAGES = 50;
   while (current <= MAX_PAGES) {
-    const root = await httpGet(
+    const root = await client.get(
       `/api/v1/user/notice/fetch?current=${current}`,
       authData,
     );
@@ -351,7 +252,7 @@ export async function getNotices(authData: string): Promise<Notice[]> {
 
 /** 获取套餐列表（公开接口，无需认证） */
 export async function getPlans(): Promise<Plan[]> {
-  const root = await httpGetGuest("/api/v1/guest/plan/fetch");
+  const root = await client.getGuest("/api/v1/guest/plan/fetch");
   const arr: any[] = root?.data ?? [];
   return arr.map((item) => {
     const transferBytes: number = item.transfer_enable ?? 0;
@@ -389,9 +290,10 @@ export async function checkCoupon(
 ): Promise<CouponInfo> {
   const body: Record<string, unknown> = { code: couponCode };
   if (planId != null) body.plan_id = planId;
-  const root = await httpPost("/api/v1/user/coupon/check", body, authData);
+  const root = await client.post("/api/v1/user/coupon/check", body, authData);
   const data = root?.data;
-  if (!data) throw new XBoardError("优惠码无效");
+  if (!data)
+    throw new XBoardError("优惠码无效", XBoardErrorCode.COUPON_INVALID);
   return {
     code: couponCode,
     name: data.name ?? "",
@@ -409,7 +311,10 @@ export async function checkCoupon(
 export async function getPaymentMethods(
   authData: string,
 ): Promise<PaymentMethod[]> {
-  const root = await httpGet("/api/v1/user/order/getPaymentMethod", authData);
+  const root = await client.get(
+    "/api/v1/user/order/getPaymentMethod",
+    authData,
+  );
   const arr: any[] = root?.data ?? [];
   return arr.map((item) => ({
     id: item.id ?? 0,
@@ -432,9 +337,13 @@ export async function createOrder(
   const body: Record<string, unknown> = { plan_id: planId, period };
   if (couponCode?.trim()) body.coupon_code = couponCode.trim();
 
-  const root = await httpPost("/api/v1/user/order/save", body, authData);
+  const root = await client.post("/api/v1/user/order/save", body, authData);
   const tradeNo: string | undefined = root?.data;
-  if (!tradeNo) throw new XBoardError("创建订单失败：未返回 trade_no");
+  if (!tradeNo)
+    throw new XBoardError(
+      "创建订单失败：未返回 trade_no",
+      XBoardErrorCode.ORDER_CREATE_FAILED,
+    );
   return tradeNo;
 }
 
@@ -450,7 +359,7 @@ export async function checkoutOrder(
   tradeNo: string,
   methodId: number,
 ): Promise<CheckoutResult> {
-  const root = await httpPost(
+  const root = await client.post(
     "/api/v1/user/order/checkout",
     { trade_no: tradeNo, method: methodId },
     authData,
@@ -482,7 +391,7 @@ export async function checkOrderStatus(
   authData: string,
   tradeNo: string,
 ): Promise<Order["status"]> {
-  const root = await httpGet(
+  const root = await client.get(
     `/api/v1/user/order/check?trade_no=${encodeURIComponent(tradeNo)}`,
     authData,
   );
@@ -494,12 +403,16 @@ export async function cancelOrder(
   authData: string,
   tradeNo: string,
 ): Promise<void> {
-  await httpPost("/api/v1/user/order/cancel", { trade_no: tradeNo }, authData);
+  await client.post(
+    "/api/v1/user/order/cancel",
+    { trade_no: tradeNo },
+    authData,
+  );
 }
 
 /** 获取订单列表（失败时抛出，由调用方设置 error 状态） */
 export async function getOrders(authData: string): Promise<Order[]> {
-  const root = await httpGet("/api/v1/user/order/fetch", authData);
+  const root = await client.get("/api/v1/user/order/fetch", authData);
   const arr: any[] = root?.data ?? [];
   return arr.map((item) => ({
     tradeNo: item.trade_no ?? "",

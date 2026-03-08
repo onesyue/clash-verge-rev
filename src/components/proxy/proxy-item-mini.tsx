@@ -99,8 +99,8 @@ export const ProxyItemMini = (props: Props) => {
           alignItems: "center",
           transition: "all 0.15s ease",
         },
-        ({ palette: { mode, primary } }) => {
-          const bgcolor = mode === "light" ? "#ffffff" : "#1E293B";
+        ({ palette }) => {
+          const { mode, primary, background, divider } = palette;
           const showDelay = delayValue > 0;
           const selectColor = mode === "light" ? primary.main : primary.light;
 
@@ -109,7 +109,10 @@ export const ProxyItemMini = (props: Props) => {
             "&:hover .the-delay": { display: showDelay ? "block" : "none" },
             "&:hover .the-icon": { display: "none" },
             "&:hover": {
-              bgcolor: mode === "light" ? alpha(primary.main, 0.04) : "#263548",
+              bgcolor:
+                mode === "light"
+                  ? alpha(primary.main, 0.04)
+                  : alpha(primary.main, 0.08),
             },
             "& .the-pin, & .the-unpin": {
               position: "absolute",
@@ -127,8 +130,8 @@ export const ProxyItemMini = (props: Props) => {
                   ? alpha(primary.main, 0.1)
                   : alpha(primary.main, 0.15),
             },
-            backgroundColor: bgcolor,
-            border: `1px solid ${mode === "dark" ? "rgba(148,163,184,0.06)" : "rgba(0,0,0,0.04)"}`,
+            backgroundColor: background.paper,
+            border: `1px solid ${alpha(divider, 0.5)}`,
           };
         },
       ]}
@@ -299,7 +302,7 @@ const TypeBox = styled(Box, {
   shouldForwardProp: (prop) => prop !== "component",
 })<{ component?: React.ElementType }>(({ theme: { typography } }) => ({
   display: "inline-block",
-  border: "1px solid #ccc",
+  border: "1px solid",
   borderColor: "text.secondary",
   color: "text.secondary",
   borderRadius: 4,

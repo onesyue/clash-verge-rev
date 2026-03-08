@@ -4,6 +4,10 @@
 export interface TranslationResources {
   translation: {
     account: {
+      brand: {
+        name: string;
+        tagline: string;
+      };
       dashboard: {
         account: {
           email: string;
@@ -421,6 +425,13 @@ export interface TranslationResources {
             minutes: string;
           };
         };
+      };
+      onboarding: {
+        getStarted: string;
+        skip: string;
+        step1: string;
+        step2: string;
+        step3: string;
       };
       page: {
         cards: {

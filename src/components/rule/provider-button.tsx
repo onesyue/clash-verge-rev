@@ -27,7 +27,7 @@ import { showNotice } from "@/services/notice-service";
 // 辅助组件 - 类型框
 const TypeBox = styled(Box)<{ component?: React.ElementType }>(({ theme }) => ({
   display: "inline-block",
-  border: "1px solid #ccc",
+  border: "1px solid",
   borderColor: alpha(theme.palette.secondary.main, 0.5),
   color: alpha(theme.palette.secondary.main, 0.8),
   borderRadius: 4,
@@ -179,9 +179,9 @@ export const ProviderButton = () => {
                         overflow: "hidden",
                         transition: "all 0.2s",
                       },
-                      ({ palette: { mode, primary } }) => {
-                        const bgcolor =
-                          mode === "light" ? "#ffffff" : "#24252f";
+                      ({ palette }) => {
+                        const { mode, primary, background } = palette;
+                        const bgcolor = background.paper;
                         const hoverColor =
                           mode === "light"
                             ? alpha(primary.main, 0.1)

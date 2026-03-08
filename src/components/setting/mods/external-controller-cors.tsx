@@ -50,20 +50,20 @@ const buttonStyle = {
 // 添加按钮样式
 const addButtonStyle = {
   ...buttonStyle,
-  backgroundColor: "#4CAF50",
+  backgroundColor: "success.main",
   color: "white",
   "&:hover": {
-    backgroundColor: "#388E3C",
+    backgroundColor: "success.dark",
   },
 };
 
 // 删除按钮样式
 const deleteButtonStyle = {
   ...buttonStyle,
-  backgroundColor: "#FF5252",
+  backgroundColor: "error.main",
   color: "white",
   "&:hover": {
-    backgroundColor: "#D32F2F",
+    backgroundColor: "error.dark",
   },
 };
 
@@ -265,22 +265,26 @@ export const HeaderConfiguration = forwardRef<ClashHeaderConfigingRef>(
                 {t("settings.sections.externalCors.actions.add")}
               </Button>
 
-              <div
-                style={{
-                  marginTop: 12,
-                  padding: 8,
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 4,
+              <Box
+                sx={{
+                  marginTop: 1.5,
+                  padding: 1,
+                  backgroundColor: "action.hover",
+                  borderRadius: 1,
                 }}
               >
-                <div
-                  style={{ color: "#666", fontSize: 12, fontStyle: "italic" }}
+                <Box
+                  sx={{
+                    color: "text.secondary",
+                    fontSize: 12,
+                    fontStyle: "italic",
+                  }}
                 >
                   {t("settings.sections.externalCors.messages.alwaysIncluded", {
                     urls: DEV_URLS.join(", "),
                   })}
-                </div>
-              </div>
+                </Box>
+              </Box>
             </div>
           </ListItem>
         </List>

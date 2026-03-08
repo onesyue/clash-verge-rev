@@ -16,8 +16,6 @@ export const BasePage: React.FC<Props> = (props) => {
   const { title, header, contentStyle, full, children } = props;
   const theme = useTheme();
 
-  const isDark = theme.palette.mode === "dark";
-
   return (
     <BaseErrorBoundary>
       <div className="base-page">
@@ -36,11 +34,11 @@ export const BasePage: React.FC<Props> = (props) => {
 
         <div
           className={full ? "base-container no-padding" : "base-container"}
-          style={{ backgroundColor: isDark ? "#0F172A" : "#ffffff" }}
+          style={{ backgroundColor: theme.palette.background.default }}
         >
           <section
             style={{
-              backgroundColor: isDark ? "#0F172A" : "var(--background-color)",
+              backgroundColor: theme.palette.background.default,
             }}
           >
             <div className="base-content" style={contentStyle}>
