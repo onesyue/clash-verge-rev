@@ -8,11 +8,11 @@ use std::process::{Command, Output};
 use windows::Win32::Globalization::{GetACP, GetOEMCP, MULTI_BYTE_TO_WIDE_CHAR_FLAGS, MultiByteToWideChar};
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
-const TASK_NAME_USER: &str = "悦通";
-const TASK_NAME_ADMIN: &str = "悦通 (Admin)";
+const TASK_NAME_USER: &str = "YueTong";
+const TASK_NAME_ADMIN: &str = "YueTong (Admin)";
 const TASK_XML_DIR: &str = "tasks";
-const TASK_XML_USER: &str = "clash-verge-task-user.xml";
-const TASK_XML_ADMIN: &str = "clash-verge-task-admin.xml";
+const TASK_XML_USER: &str = "yuetong-task-user.xml";
+const TASK_XML_ADMIN: &str = "yuetong-task-admin.xml";
 
 #[derive(Clone, Copy)]
 pub enum TaskMode {
@@ -100,7 +100,7 @@ async fn cleanup_legacy_shortcuts() -> Result<()> {
     // 清理历史遗留快捷方式
     let legacy1 = startup_dir.join("Clash-Verge.lnk");
     let legacy2 = startup_dir.join("Clash Verge.lnk");
-    let current = startup_dir.join("悦通.lnk");
+    let current = startup_dir.join("YueTong.lnk");
 
     legacy1.remove_if_exists().await?;
     legacy2.remove_if_exists().await?;

@@ -11,14 +11,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "resources"
-    ],
+    "resources": ["resources"],
     "publisher": "onesyue",
-    "externalBin": [
-      "sidecar/verge-mihomo",
-      "sidecar/verge-mihomo-alpha"
-    ],
+    "externalBin": ["sidecar/verge-mihomo", "sidecar/verge-mihomo-alpha"],
     "copyright": "GNU General Public License v3.0",
     "category": "DeveloperTool",
     "shortDescription": "悦通代理客户端",
@@ -31,7 +26,7 @@
     "devUrl": "http://localhost:3000/",
     "removeUnusedCommands": true
   },
-  "productName": "悦通",
+  "productName": "YueTong",
   "identifier": "io.github.onesyue.yuetong",
   "plugins": {
     "updater": {
@@ -43,24 +38,17 @@
     },
     "deep-link": {
       "desktop": {
-        "schemes": [
-          "clash"
-        ]
+        "schemes": ["clash"]
       }
     }
   },
   "app": {
     "security": {
-      "capabilities": [
-        "desktop-capability",
-        "migrated"
-      ],
+      "capabilities": ["desktop-capability", "migrated"],
       "assetProtocol": {
         "enable": true,
         "scope": {
-          "allow": [
-            "**"
-          ],
+          "allow": ["**"],
           "requireLiteralLeadingDot": false
         }
       },

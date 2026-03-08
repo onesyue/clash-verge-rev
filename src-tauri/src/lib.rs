@@ -211,7 +211,20 @@ mod app_init {
 }
 
 pub fn run() {
-    if app_init::init_singleton_check().is_err() {
+    if let Err(_e) = app_init::init_singleton_check() {
+        #[cfg(target_os = "windows")]
+        {
+            use windows::core::HSTRING;
+            use windows::Win32::UI::WindowsAndMessaging::{MB_ICONINFORMATION, MessageBoxW};
+            let msg = HSTRING::from(format!(
+                "YueTong is already running or failed to start.\n\n{}",
+                _e
+            ));
+            let title = HSTRING::from("YueTong");
+            unsafe {
+                MessageBoxW(None, &msg, &title, MB_ICONINFORMATION);
+            }
+        }
         return;
     }
 
@@ -366,6 +379,19 @@ pub fn run() {
     #[cfg(not(feature = "clippy"))]
     let app = builder.build(tauri::generate_context!()).unwrap_or_else(|e| {
         logging!(error, Type::Setup, "Failed to build Tauri application: {}", e);
+        #[cfg(target_os = "windows")]
+        {
+            use windows::core::HSTRING;
+            use windows::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MessageBoxW};
+            let msg = HSTRING::from(format!(
+                "Failed to start YueTong.\n\nPlease restart your computer and try again.\n\nError: {}",
+                e
+            ));
+            let title = HSTRING::from("YueTong");
+            unsafe {
+                MessageBoxW(None, &msg, &title, MB_ICONERROR);
+            }
+        }
         std::process::exit(1);
     });
 

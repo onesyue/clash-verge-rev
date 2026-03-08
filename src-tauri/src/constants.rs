@@ -13,7 +13,7 @@ pub mod network {
         pub const DEFAULT_HTTP: u16 = 7899;
 
         #[cfg(not(feature = "verge-dev"))]
-        pub const SINGLETON_SERVER: u16 = 39421; // 悦通专用，避免与 CVR(33331) 冲突
+        pub const SINGLETON_SERVER: u16 = 39527; // YueTong 专用，避免与 CVR(33331) 冲突
         #[cfg(feature = "verge-dev")]
         pub const SINGLETON_SERVER: u16 = 11421;
     }
