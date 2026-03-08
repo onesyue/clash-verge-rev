@@ -1,13 +1,3 @@
-const SWR_NOT_SMART = {
-  revalidateOnFocus: false,
-  revalidateOnReconnect: false,
-  revalidateIfStale: false,
-  suspense: false,
-  errorRetryCount: 2,
-  dedupingInterval: 1500,
-  errorRetryInterval: 3000,
-} as const;
-
 export const SWR_DEFAULTS = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
@@ -21,15 +11,23 @@ export const SWR_SLOW_POLL = {
   refreshInterval: 60000,
 } as const;
 
+// Mihomo API data: keep retrying until core is ready, re-fetch stale data
 export const SWR_MIHOMO = {
-  ...SWR_NOT_SMART,
-  errorRetryInterval: 500,
-  errorRetryCount: 15,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: true,
+  revalidateIfStale: true,
+  suspense: false,
+  dedupingInterval: 1500,
+  errorRetryInterval: 1000,
 };
 
 export const SWR_EXTERNAL_API = {
-  ...SWR_NOT_SMART,
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  revalidateIfStale: false,
+  suspense: false,
   shouldRetryOnError: true,
   errorRetryCount: 1,
   errorRetryInterval: 30_000,
+  dedupingInterval: 1500,
 } as const;
