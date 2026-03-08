@@ -79,30 +79,19 @@ pub async fn import_profile(url: std::string::String, option: Option<PrfOption>)
         }
     };
 
-    match profiles_append_item_safe(item).await {
-        Ok(_) => match profiles_save_file_safe().await {
-            Ok(_) => {
-                logging!(info, Type::Cmd, "[导入订阅] 配置文件保存成功");
-            }
-            Err(e) => {
-                logging!(error, Type::Cmd, "[导入订阅] 保存配置文件失败: {}", e);
-            }
-        },
-        Err(e) => {
-            logging!(error, Type::Cmd, "[导入订阅] 保存配置失败: {}", e);
-            return Err(format!("导入订阅失败: {}", e).into());
-        }
-    }
+    profiles_append_item_safe(item).await.map_err(|e| {
+        logging!(error, Type::Cmd, "[导入订阅] 保存配置失败: {}", e);
+        format!("导入订阅失败: {e}")
+    })?;
+
+    profiles_save_file_safe().await.map_err(|e| {
+        logging!(error, Type::Cmd, "[导入订阅] 保存配置文件失败: {}", e);
+        format!("导入订阅失败: {e}")
+    })?;
+
+    logging!(info, Type::Cmd, "[导入订阅] 配置文件保存成功");
 
     if let Some(uid) = &item.uid {
-        logging!(info, Type::Cmd, "[导入订阅] 发送配置变更通知: {}", uid);
-        handle::Handle::notify_profile_changed(uid);
-    }
-
-    // 异步保存配置文件并发送全局通知
-    if let Some(uid) = &item.uid {
-        // 延迟发送，确保文件已完全写入
-        tokio::time::sleep(Duration::from_millis(100)).await;
         logging!(info, Type::Cmd, "[导入订阅] 发送配置变更通知: {}", uid);
         handle::Handle::notify_profile_changed(uid);
     }
