@@ -32,7 +32,6 @@ jobs:
           git push origin Prerelease-alpha --force
           gh release delete Prerelease-alpha --yes || true
           gh release create Prerelease-alpha \
-            --draft \
             --prerelease \
             --title "Prerelease-alpha" \
             --notes "Latest dev branch build — may be unstable. Use for testing only."
@@ -136,6 +135,6 @@ jobs:
           tauriScript: pnpm
           tagName: Prerelease-alpha
           releaseName: "Prerelease-alpha"
-          releaseDraft: true
+          releaseDraft: false
           prerelease: true
           args: --target ${{ matrix.target }} -b ${{ matrix.bundle }} --config '{"bundle":{"createUpdaterArtifacts":false,"macOS":{"signingIdentity":null}}}'
