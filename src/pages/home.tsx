@@ -52,10 +52,13 @@ import { useTrafficData } from "@/hooks/use-traffic-data";
 import { useVerge } from "@/hooks/use-verge";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { useAppData } from "@/providers/app-data-context";
-import { patchVergeConfig } from "@/services/cmds";
+import { enhanceProfiles, patchVergeConfig } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
-import { syncXBoardSubscription } from "@/services/xboard/sync";
+import {
+  refreshXBoardProfile,
+  syncXBoardSubscription,
+} from "@/services/xboard/sync";
 import parseTraffic from "@/utils/parse-traffic";
 
 // ─── 计时器格式化 ────────────────────────────────────────────────────────────
@@ -503,21 +506,14 @@ function SpeedCard() {
 function ProxyCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const session = useXBoardSession();
   const { clashConfig, proxies, refreshProxy: appRefreshProxy } = useAppData();
   const { currentProxy, primaryGroupName } = useCurrentProxy();
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     void appRefreshProxy();
   }, [appRefreshProxy]);
-
-  console.log(
-    "[ProxyCard] render, proxies:",
-    proxies ? "loaded" : "null",
-    "groups:",
-    proxies?.groups?.length ?? 0,
-    "currentProxy:",
-    currentProxy?.name ?? "none",
-  );
 
   const modeLabel = (() => {
     const m = clashConfig?.mode ?? "rule";
@@ -527,11 +523,47 @@ function ProxyCard() {
     return m;
   })();
 
+  // 检查是否有真正的代理组（排除 GLOBAL 和 DIRECT）
+  const hasRealGroups =
+    (proxies?.groups?.filter(
+      (g: { name: string }) => g.name !== "GLOBAL" && g.name !== "DIRECT",
+    )?.length ?? 0) > 0;
+
   const nodeName = currentProxy
     ? `${primaryGroupName ? primaryGroupName + " · " : ""}${currentProxy.name}`
     : t("home.components.currentProxy.labels.noActiveNode");
 
   const handlePress = () => navigate("/proxies");
+
+  // 手动同步订阅
+  const handleSync = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // 阻止跳转到代理页
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      if (session?.subscribeUrl) {
+        console.log("[ProxyCard] 手动同步订阅:", session.subscribeUrl);
+        await syncXBoardSubscription(session.subscribeUrl);
+      } else {
+        // 尝试刷新已绑定的 profile
+        console.log("[ProxyCard] 尝试刷新已绑定的 profile");
+        await refreshXBoardProfile();
+      }
+      // 强制重新加载配置并刷新代理数据
+      await enhanceProfiles();
+      await appRefreshProxy();
+      await mutate("getProxies");
+      await mutate("getClashConfig");
+      showNotice.success("订阅同步成功，代理节点已加载");
+    } catch (err) {
+      console.error("[ProxyCard] 同步失败:", err);
+      showNotice.error(
+        "同步失败: " + (err instanceof Error ? err.message : String(err)),
+      );
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <Paper
@@ -545,7 +577,7 @@ function ProxyCard() {
         "&:hover": { bgcolor: alpha("#3A6BBF", 0.03) },
       }}
     >
-      {/* 代理模式行（对齐安卓 56dp height） */}
+      {/* 代理模式行 */}
       <Box
         sx={{
           display: "flex",
@@ -571,37 +603,63 @@ function ProxyCard() {
         />
       </Box>
 
-      {/* 分隔线 */}
       <Divider sx={{ mx: 2, borderColor: "#E0EAF8" }} />
 
-      {/* 节点选择行（对齐安卓 52dp height） */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          height: 52,
-          px: 2,
-          gap: 1.25,
-        }}
-      >
-        <NotificationsNoneRounded
-          sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }}
-        />
-        <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
-          节点选择
-        </Typography>
-        <Typography
-          variant="body2"
-          fontWeight="bold"
-          noWrap
-          sx={{ color: "#1A237E", flex: 1 }}
+      {/* 节点行 或 同步按钮 */}
+      {!hasRealGroups && session ? (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: 52,
+            px: 2,
+          }}
         >
-          {nodeName}
-        </Typography>
-        <ChevronRightRounded
-          sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
-        />
-      </Box>
+          <Typography
+            variant="body2"
+            fontWeight="bold"
+            onClick={handleSync}
+            sx={{
+              color: syncing ? "#8EAACB" : "#3A6BBF",
+              cursor: syncing ? "default" : "pointer",
+            }}
+          >
+            {syncing ? "同步中…" : "未检测到节点，点击同步订阅"}
+          </Typography>
+          {syncing && (
+            <CircularProgress size={16} sx={{ ml: 1, color: "#8EAACB" }} />
+          )}
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            height: 52,
+            px: 2,
+            gap: 1.25,
+          }}
+        >
+          <NotificationsNoneRounded
+            sx={{ fontSize: 20, color: "#3A6BBF", flexShrink: 0 }}
+          />
+          <Typography variant="body2" sx={{ color: "#8EAACB", flexShrink: 0 }}>
+            节点选择
+          </Typography>
+          <Typography
+            variant="body2"
+            fontWeight="bold"
+            noWrap
+            sx={{ color: "#1A237E", flex: 1 }}
+          >
+            {nodeName}
+          </Typography>
+          <ChevronRightRounded
+            sx={{ fontSize: 18, color: "#8EAACB", flexShrink: 0 }}
+          />
+        </Box>
+      )}
     </Paper>
   );
 }
