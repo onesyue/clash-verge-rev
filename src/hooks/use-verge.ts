@@ -15,6 +15,9 @@ export const useVerge = () => {
     {
       fallbackData: initialVergeConfig ?? undefined,
       revalidateOnMount: !initialVergeConfig,
+      shouldRetryOnError: true,
+      errorRetryCount: 100000,
+      errorRetryInterval: 1000,
     },
   );
 

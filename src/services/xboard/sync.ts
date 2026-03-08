@@ -173,12 +173,10 @@ export async function syncXBoardSubscription(
         XBoardErrorCode.ACTIVATE_FAILED,
       );
     }
-    // 5. 仅首次导入时自动开启系统代理，避免每次同步都强制覆盖用户设置
-    if (isNew) {
-      await patchVergeConfig({ enable_system_proxy: true }).catch(() => {
-        /* 开启系统代理失败不影响订阅同步 */
-      });
-    }
+    // 5. 登录同步后强制开启系统代理，确保用户立即可用
+    await patchVergeConfig({ enable_system_proxy: true }).catch(() => {
+      /* 开启系统代理失败不影响订阅同步 */
+    });
   }
 
   // 6. 通知 SWR 刷新 Profiles + 代理数据
@@ -224,6 +222,9 @@ export async function refreshXBoardProfile(): Promise<void> {
       );
     }
   }
+
+  // 同步后强制开启系统代理
+  await patchVergeConfig({ enable_system_proxy: true }).catch(() => {});
 
   await mutate("getProfiles");
   await mutate("getProxies");

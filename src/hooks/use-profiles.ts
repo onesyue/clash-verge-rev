@@ -17,11 +17,13 @@ export const useProfiles = () => {
     isValidating,
   } = useSWR("getProfiles", getProfiles, {
     revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 500, // 减少去重时间，提高响应性
-    errorRetryCount: 3,
+    revalidateOnReconnect: true,
+    revalidateIfStale: true,
+    dedupingInterval: 500,
+    shouldRetryOnError: true,
+    errorRetryCount: 100000,
     errorRetryInterval: 1000,
-    refreshInterval: 0, // 完全由手动控制
+    refreshInterval: 0,
     onError: (error) => {
       console.error("[useProfiles] SWR错误:", error);
     },

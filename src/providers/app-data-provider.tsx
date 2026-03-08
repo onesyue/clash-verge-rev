@@ -227,7 +227,20 @@ export const AppDataProvider = ({
       }
     };
 
-    void initializeListeners();
+    // After listeners are registered, trigger a catch-up refresh.
+    // This handles the race condition where backend emits startup events
+    // (refresh_clash in cmd/app.rs) before frontend listeners are ready.
+    void initializeListeners().then(() => {
+      if (isUnmounted) return;
+      scheduleTimeout(async () => {
+        await Promise.all([
+          refreshProxy().catch(() => {}),
+          refreshClashConfig().catch(() => {}),
+          refreshRules().catch(() => {}),
+          refreshRuleProviders().catch(() => {}),
+        ]);
+      }, 300);
+    });
 
     return () => {
       isUnmounted = true;
