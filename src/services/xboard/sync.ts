@@ -87,7 +87,10 @@ function ensureMetaFlag(url: string): string {
     return u.toString();
   } catch {
     // URL 解析失败，直接拼接
-    const base = url.replace(/([?&])flag=[^&]*/g, "");
+    let base = url.replace(/([?&])flag=[^&]*/g, "");
+    // Fix malformed query string: &param should become ?param if ? was removed
+    base = base.replace(/\?&/, "?").replace(/([^?])&/, "$1?");
+    if (base.endsWith("?")) base = base.slice(0, -1);
     return base + (base.includes("?") ? "&" : "?") + "flag=meta";
   }
 }

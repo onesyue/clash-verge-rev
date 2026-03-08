@@ -111,6 +111,10 @@ export function CheckoutDialog({
   }, [open, authData]);
 
   const resetState = () => {
+    if (couponDebounceRef.current) {
+      clearTimeout(couponDebounceRef.current);
+      couponDebounceRef.current = null;
+    }
     setStep("select");
     setTradeNo("");
     setMethods([]);
@@ -223,8 +227,18 @@ export function CheckoutDialog({
   // ── 派生变量 ──────────────────────────────────────────────────────────────
 
   const periodLabel = period ? t(`account.shop.plan.period.${period}`) : "";
-  const priceField = period as keyof Plan;
-  const priceVal = plan ? (plan[priceField] as number | null) : null;
+
+  // Map snake_case PlanPeriod to camelCase Plan field
+  const periodToPriceKey: Record<string, keyof Plan> = {
+    month_price: "monthPrice",
+    quarter_price: "quarterPrice",
+    half_year_price: "halfYearPrice",
+    year_price: "yearPrice",
+    onetime_price: "onetimePrice",
+  };
+  const priceField = period ? periodToPriceKey[period] : undefined;
+  const priceVal =
+    plan && priceField ? (plan[priceField] as number | null) : null;
 
   // 计算折扣后价格
   let finalPrice = priceVal ?? 0;

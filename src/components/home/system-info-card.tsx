@@ -148,7 +148,7 @@ export const SystemInfoCard = () => {
 
   // 点击运行模式处理,Sidecar或纯管理员模式允许安装服务
   const handleRunningModeClick = useCallback(() => {
-    if (isSidecarMode || (isAdminMode && isSidecarMode)) {
+    if (isSidecarMode || isAdminMode) {
       installServiceAndRestartCore();
     }
   }, [isSidecarMode, isAdminMode, installServiceAndRestartCore]);
@@ -180,15 +180,13 @@ export const SystemInfoCard = () => {
   const runningModeStyle = useMemo(
     () => ({
       // Sidecar或纯管理员模式允许安装服务
-      cursor:
-        isSidecarMode || (isAdminMode && isSidecarMode) ? "pointer" : "default",
-      textDecoration:
-        isSidecarMode || (isAdminMode && isSidecarMode) ? "underline" : "none",
+      cursor: isSidecarMode || isAdminMode ? "pointer" : "default",
+      textDecoration: isSidecarMode || isAdminMode ? "underline" : "none",
       display: "flex",
       alignItems: "center",
       gap: 0.5,
       "&:hover": {
-        opacity: isSidecarMode || (isAdminMode && isSidecarMode) ? 0.7 : 1,
+        opacity: isSidecarMode || isAdminMode ? 0.7 : 1,
       },
     }),
     [isSidecarMode, isAdminMode],

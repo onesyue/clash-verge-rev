@@ -3,7 +3,7 @@ import { MenuItem, Select, TextField, Typography } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { useLockFn } from "ahooks";
 import dayjs from "dayjs";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DialogRef, Switch, TooltipIcon } from "@/components/base";
@@ -56,6 +56,14 @@ const SettingClash = ({ onError }: Props) => {
   const [dnsSettingsEnabled, setDnsSettingsEnabled] = useState(() => {
     return verge?.enable_dns_settings ?? false;
   });
+
+  // Sync local state when verge config loads asynchronously
+  useEffect(() => {
+    if (verge?.enable_dns_settings != null) {
+      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+      setDnsSettingsEnabled(verge.enable_dns_settings);
+    }
+  }, [verge?.enable_dns_settings]);
 
   const webRef = useRef<DialogRef>(null);
   const portRef = useRef<DialogRef>(null);

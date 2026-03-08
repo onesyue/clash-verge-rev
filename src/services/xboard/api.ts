@@ -334,7 +334,8 @@ export async function getNotices(authData: string): Promise<Notice[]> {
   try {
     const all: any[] = [];
     let current = 1;
-    while (true) {
+    const MAX_PAGES = 50;
+    while (current <= MAX_PAGES) {
       const root = await httpGet(
         `/api/v1/user/notice/fetch?current=${current}`,
         authData,

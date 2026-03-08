@@ -44,7 +44,7 @@ const COLLAPSE_THRESHOLD = 300;
 const NoticesPage = () => {
   const { t } = useTranslation();
   const session = useXBoardSession();
-  const { notices, loading, error, unreadCount, markAllRead, refresh } =
+  const { notices, loading, error, lastReadAt, markAllRead, refresh } =
     useXBoardNotices();
 
   // 进入页面后标记全部已读
@@ -148,11 +148,11 @@ const NoticesPage = () => {
         >
           {[...notices]
             .sort((a, b) => b.createdAt - a.createdAt)
-            .map((notice, idx) => (
+            .map((notice) => (
               <NoticeItem
                 key={notice.id}
                 notice={notice}
-                isUnread={idx < unreadCount}
+                isUnread={notice.createdAt > lastReadAt}
               />
             ))}
         </Stack>

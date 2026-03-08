@@ -70,6 +70,7 @@ export function useXBoardNotices() {
     loading: isLoading,
     error: error ?? null,
     unreadCount,
+    lastReadAt: currentLastReadAt,
     markAllRead,
     refresh: mutate,
   };
