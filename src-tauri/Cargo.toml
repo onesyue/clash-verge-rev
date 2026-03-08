@@ -24,7 +24,7 @@ clippy = ["tauri/test"]
 tracing = []
 
 [package.metadata.bundle]
-identifier = "io.github.onesyue.yuetong"
+identifier = "io.yuetong.app"
 
 [build-dependencies]
 tauri-build = { version = "2.5.5", features = [] }

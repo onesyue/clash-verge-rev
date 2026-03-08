@@ -9,12 +9,12 @@ use std::{fs, path::PathBuf};
 use tauri::Manager as _;
 
 #[cfg(not(feature = "verge-dev"))]
-pub static APP_ID: &str = "io.github.onesyue.yuetong";
+pub static APP_ID: &str = "io.yuetong.app";
 #[cfg(not(feature = "verge-dev"))]
 pub static BACKUP_DIR: &str = "yuetong-backup";
 
 #[cfg(feature = "verge-dev")]
-pub static APP_ID: &str = "io.github.onesyue.yuetong.dev";
+pub static APP_ID: &str = "io.yuetong.app.dev";
 #[cfg(feature = "verge-dev")]
 pub static BACKUP_DIR: &str = "yuetong-backup-dev";
 

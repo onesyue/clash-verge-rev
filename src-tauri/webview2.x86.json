@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "identifier": "io.github.onesyue.yuetong",
+  "identifier": "io.yuetong.app",
   "bundle": {
     "targets": ["nsis"],
     "windows": {
