@@ -1307,6 +1307,8 @@ export interface TranslationResources {
           };
           messages: {
             applied: string;
+            invalidRouteExcludeAddress: string;
+            routeExcludeAddressHint: string;
           };
           title: string;
           tooltips: {
