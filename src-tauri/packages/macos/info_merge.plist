@@ -6,5 +6,7 @@
     <array>
         <string>io.yuetong.app.service</string>
     </array>
+    <key>CFBundleDisplayName</key>
+    <string>悦通</string>
 </dict>
 </plist>

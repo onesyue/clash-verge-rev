@@ -26,7 +26,7 @@
     "devUrl": "http://localhost:3000/",
     "removeUnusedCommands": true
   },
-  "productName": "悦通",
+  "productName": "YueTong",
   "identifier": "io.yuetong.app",
   "plugins": {
     "updater": {
