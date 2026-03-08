@@ -269,59 +269,51 @@ export async function logout(_authData: string): Promise<void> {
  * 若 getSubscribe 失败，整体返回 null（由调用方判断 error 状态）。
  */
 export async function getUserInfo(authData: string): Promise<UserInfo | null> {
+  // ── 主调用：getSubscribe 必须成功，否则无法获取流量 ──────────────────────
+  const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
+  const sub = subRoot?.data;
+  if (!sub) return null;
+
+  // ── 可选调用：info 仅补充 balance / commission_balance / uuid ────────────
+  let info: any = null;
   try {
-    // ── 主调用：getSubscribe 必须成功，否则无法获取流量 ──────────────────────
-    const subRoot = await httpGet("/api/v1/user/getSubscribe", authData);
-    const sub = subRoot?.data;
-    if (!sub) return null;
-
-    // ── 可选调用：info 仅补充 balance / commission_balance / uuid ────────────
-    let info: any = null;
-    try {
-      const infoRoot = await httpGet("/api/v1/user/info", authData);
-      info = infoRoot?.data ?? null;
-    } catch {
-      // 失败不影响流量数据，降级处理
-    }
-
-    return {
-      email: sub.email || info?.email || "",
-      balance: info?.balance ?? 0,
-      commissionBalance: info?.commission_balance ?? 0,
-      expiredAt:
-        sub.expired_at == null || sub.expired_at === 0
-          ? null
-          : Number(sub.expired_at),
-      // u / d / transfer_enable 来自 getSubscribe，单位字节
-      transferEnable: sub.transfer_enable ?? 0,
-      usedDownload: sub.d ?? 0,
-      usedUpload: sub.u ?? 0,
-      uuid: info?.uuid || sub.uuid || "",
-      planName: sub.plan?.name?.trim() || null,
-    };
+    const infoRoot = await httpGet("/api/v1/user/info", authData);
+    info = infoRoot?.data ?? null;
   } catch {
-    return null;
+    // 失败不影响流量数据，降级处理
   }
+
+  return {
+    email: sub.email || info?.email || "",
+    balance: info?.balance ?? 0,
+    commissionBalance: info?.commission_balance ?? 0,
+    expiredAt:
+      sub.expired_at == null || sub.expired_at === 0
+        ? null
+        : Number(sub.expired_at),
+    // u / d / transfer_enable 来自 getSubscribe，单位字节
+    transferEnable: sub.transfer_enable ?? 0,
+    usedDownload: sub.d ?? 0,
+    usedUpload: sub.u ?? 0,
+    uuid: info?.uuid || sub.uuid || "",
+    planName: sub.plan?.name?.trim() || null,
+  };
 }
 
 /** 获取邀请信息 */
 export async function getInviteInfo(
   authData: string,
 ): Promise<InviteInfo | null> {
-  try {
-    // 正确路径：/api/v1/user/invite/fetch（非 /invite）
-    const root = await httpGet("/api/v1/user/invite/fetch", authData);
-    const data = root?.data;
-    if (!data) return null;
+  // 正确路径：/api/v1/user/invite/fetch（非 /invite）
+  const root = await httpGet("/api/v1/user/invite/fetch", authData);
+  const data = root?.data;
+  if (!data) return null;
 
-    const codes: any[] = data.codes ?? [];
-    const code: string = codes[0]?.code ?? "";
-    const inviteUrl = code ? `${BASE_URL}/#/register?code=${code}` : "";
-    const stat: number[] = data.stat ?? [];
-    return { inviteUrl, referralCount: stat[0] ?? 0 };
-  } catch {
-    return null;
-  }
+  const codes: any[] = data.codes ?? [];
+  const code: string = codes[0]?.code ?? "";
+  const inviteUrl = code ? `${BASE_URL}/#/register?code=${code}` : "";
+  const stat: number[] = data.stat ?? [];
+  return { inviteUrl, referralCount: stat[0] ?? 0 };
 }
 
 /**
@@ -331,30 +323,26 @@ export async function getInviteInfo(
  * 响应结构：{ data: [...], total: N }（非 success 包装）
  */
 export async function getNotices(authData: string): Promise<Notice[]> {
-  try {
-    const all: any[] = [];
-    let current = 1;
-    const MAX_PAGES = 50;
-    while (current <= MAX_PAGES) {
-      const root = await httpGet(
-        `/api/v1/user/notice/fetch?current=${current}`,
-        authData,
-      );
-      const page: any[] = root?.data ?? [];
-      const total: number = root?.total ?? 0;
-      all.push(...page);
-      if (all.length >= total || page.length === 0) break;
-      current++;
-    }
-    return all.map((item) => ({
-      id: item.id ?? 0,
-      title: item.title ?? "",
-      content: item.content ?? "",
-      createdAt: item.created_at ?? 0,
-    }));
-  } catch {
-    return [];
+  const all: any[] = [];
+  let current = 1;
+  const MAX_PAGES = 50;
+  while (current <= MAX_PAGES) {
+    const root = await httpGet(
+      `/api/v1/user/notice/fetch?current=${current}`,
+      authData,
+    );
+    const page: any[] = root?.data ?? [];
+    const total: number = root?.total ?? 0;
+    all.push(...page);
+    if (all.length >= total || page.length === 0) break;
+    current++;
   }
+  return all.map((item) => ({
+    id: item.id ?? 0,
+    title: item.title ?? "",
+    content: item.content ?? "",
+    createdAt: item.created_at ?? 0,
+  }));
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -363,29 +351,25 @@ export async function getNotices(authData: string): Promise<Notice[]> {
 
 /** 获取套餐列表（公开接口，无需认证） */
 export async function getPlans(): Promise<Plan[]> {
-  try {
-    const root = await httpGetGuest("/api/v1/guest/plan/fetch");
-    const arr: any[] = root?.data ?? [];
-    return arr.map((item) => {
-      const transferBytes: number = item.transfer_enable ?? 0;
-      return {
-        id: item.id ?? 0,
-        name: item.name ?? "",
-        content: item.content ?? "",
-        transferGb:
-          transferBytes > 0
-            ? Math.round(transferBytes / (1024 * 1024 * 1024))
-            : 0,
-        monthPrice: item.month_price ?? null,
-        quarterPrice: item.quarter_price ?? null,
-        halfYearPrice: item.half_year_price ?? null,
-        yearPrice: item.year_price ?? null,
-        onetimePrice: item.onetime_price ?? null,
-      };
-    });
-  } catch {
-    return [];
-  }
+  const root = await httpGetGuest("/api/v1/guest/plan/fetch");
+  const arr: any[] = root?.data ?? [];
+  return arr.map((item) => {
+    const transferBytes: number = item.transfer_enable ?? 0;
+    return {
+      id: item.id ?? 0,
+      name: item.name ?? "",
+      content: item.content ?? "",
+      transferGb:
+        transferBytes > 0
+          ? Math.round(transferBytes / (1024 * 1024 * 1024))
+          : 0,
+      monthPrice: item.month_price ?? null,
+      quarterPrice: item.quarter_price ?? null,
+      halfYearPrice: item.half_year_price ?? null,
+      yearPrice: item.year_price ?? null,
+      onetimePrice: item.onetime_price ?? null,
+    };
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────────────
