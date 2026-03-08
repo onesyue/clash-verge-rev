@@ -3,7 +3,7 @@ use crate::{
     utils::{
         dirs, help,
         network::{NetworkManager, ProxyType},
-        tmpl,
+        subscription, tmpl,
     },
 };
 use anyhow::{Context as _, Result, bail};
@@ -281,7 +281,10 @@ impl PrfItem {
             ProxyType::None
         };
 
-        let url = fix_dirty_url(url)?;
+        let mut url = fix_dirty_url(url)?;
+
+        // 自动追加 flag=meta，让面板返回 Clash Meta 格式（支持 hy2/vless/ss2022）
+        subscription::ensure_meta_flag(&mut url);
 
         // 使用网络管理器发送请求
         let resp = match NetworkManager::new()
@@ -379,17 +382,9 @@ impl PrfItem {
         let name = name
             .map(|s| s.to_owned())
             .unwrap_or_else(|| filename.map(|s| s.into()).unwrap_or_else(|| "Remote File".into()));
-        let data = resp.text_with_charset()?;
-
-        // process the charset "UTF-8 with BOM"
-        let data = data.trim_start_matches('\u{feff}');
-
-        // check the data whether the valid yaml format
-        let yaml = serde_yaml_ng::from_str::<Mapping>(data).context("the remote profile data is invalid yaml")?;
-
-        if !yaml.contains_key("proxies") && !yaml.contains_key("proxy-providers") {
-            bail!("profile does not contain `proxies` or `proxy-providers`");
-        }
+        let raw_data = resp.text_with_charset()?;
+        let raw_data = raw_data.trim_start_matches('\u{feff}'); // strip BOM
+        let data = parse_subscription_response(raw_data)?;
 
         if merge.is_none() {
             let merge_item = &mut Self::from_merge(None)?;
@@ -581,6 +576,36 @@ impl PrfItem {
 #[allow(clippy::unnecessary_wraps)]
 const fn default_allow_auto_update() -> Option<bool> {
     Some(true)
+}
+
+/// 解析订阅响应内容：尝试直接 YAML 解析，失败则 Base64 解码 + 代理 URI 转换
+fn parse_subscription_response(raw_data: &str) -> Result<std::string::String> {
+    // 先尝试直接解析为 Clash YAML
+    if let Ok(yaml) = serde_yaml_ng::from_str::<Mapping>(raw_data)
+        && (yaml.contains_key("proxies") || yaml.contains_key("proxy-providers"))
+    {
+        return Ok(raw_data.into());
+    }
+
+    // 响应不是有效的 Clash YAML，尝试 Base64 解码
+    match subscription::try_decode_subscription(raw_data) {
+        Ok(Some(converted)) => {
+            log::info!("订阅内容已从 Base64/URI 格式转换为 Clash YAML");
+            // 验证转换后的 YAML
+            let yaml = serde_yaml_ng::from_str::<Mapping>(&converted)
+                .context("the converted profile data is invalid yaml")?;
+            if !yaml.contains_key("proxies") && !yaml.contains_key("proxy-providers") {
+                bail!("converted profile does not contain `proxies` or `proxy-providers`");
+            }
+            Ok(converted)
+        }
+        Ok(None) => {
+            bail!("the remote profile data is not valid Clash YAML, nor a recognized subscription format (Base64/URI)");
+        }
+        Err(e) => {
+            bail!("subscription format conversion failed: {e}");
+        }
+    }
 }
 
 /// Fix URLs where query parameters are incorrectly appended to the path segment

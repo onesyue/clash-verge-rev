@@ -10,5 +10,6 @@ pub mod resolve;
 pub mod schtasks;
 pub mod server;
 pub mod singleton;
+pub mod subscription;
 pub mod tmpl;
 pub mod window_manager;
