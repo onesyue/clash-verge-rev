@@ -28,12 +28,12 @@
 
 前往 [Releases](https://github.com/onesyue/clash-verge-rev/releases) 页面下载对应平台的安装包：
 
-| 平台 | 文件 |
-| :--- | :--- |
-| Windows 64位 | `Clash Verge_x.x.x_x64-setup.exe` |
-| Windows ARM64 | `Clash Verge_x.x.x_arm64-setup.exe` |
-| macOS Apple Silicon | `Clash Verge_x.x.x_aarch64.dmg` |
-| Linux (Debian/Ubuntu) | `Clash Verge_x.x.x_amd64.deb` |
+| 平台                  | 文件                            |
+| :-------------------- | :------------------------------ |
+| Windows 64位          | `YueTong_x.x.x_x64-setup.exe`   |
+| Windows ARM64         | `YueTong_x.x.x_arm64-setup.exe` |
+| macOS Apple Silicon   | `YueTong_x.x.x_aarch64.dmg`     |
+| Linux (Debian/Ubuntu) | `YueTong_x.x.x_amd64.deb`       |
 
 ## XBoard 面板集成
 
