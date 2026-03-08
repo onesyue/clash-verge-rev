@@ -204,6 +204,9 @@ const Layout = () => {
             const silentKeys = [
               "getVersion",
               "getClashConfig",
+              "getProxies",
+              "getSystemState",
+              "getRules",
               "getAutotemProxy",
             ];
             if (silentKeys.includes(key)) return;
@@ -325,7 +328,7 @@ const Layout = () => {
 
               {/* Main content */}
               <div className="layout-content">
-                <BaseErrorBoundary>
+                <BaseErrorBoundary resetKeys={[location.pathname]}>
                   <ProtectedOutlet />
                 </BaseErrorBoundary>
               </div>

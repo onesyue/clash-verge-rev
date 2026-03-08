@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 
-function ErrorFallback({ error }: FallbackProps) {
+function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -10,6 +10,10 @@ function ErrorFallback({ error }: FallbackProps) {
       <h4>Something went wrong:(</h4>
 
       <pre>{errorMessage}</pre>
+
+      <button onClick={resetErrorBoundary} style={{ marginTop: 8 }}>
+        Retry
+      </button>
 
       <details title="Error Stack">
         <summary>Error Stack</summary>
@@ -21,10 +25,13 @@ function ErrorFallback({ error }: FallbackProps) {
 
 interface Props {
   children?: ReactNode;
+  resetKeys?: unknown[];
 }
 
-export const BaseErrorBoundary = ({ children }: Props) => {
+export const BaseErrorBoundary = ({ children, resetKeys }: Props) => {
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback}>{children}</ErrorBoundary>
+    <ErrorBoundary FallbackComponent={ErrorFallback} resetKeys={resetKeys}>
+      {children}
+    </ErrorBoundary>
   );
 };

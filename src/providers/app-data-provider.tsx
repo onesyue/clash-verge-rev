@@ -19,6 +19,35 @@ import { SWR_DEFAULTS, SWR_MIHOMO } from "@/services/config";
 
 import { AppDataContext, AppDataContextType } from "./app-data-context";
 
+// Fallback defaults so consumers never see undefined during initial load
+const EMPTY_PROXIES: any = {
+  global: {
+    name: "GLOBAL",
+    type: "Selector",
+    now: "",
+    all: [],
+    udp: false,
+    xudp: false,
+    tfo: false,
+    mptcp: false,
+    smux: false,
+    history: [],
+  },
+  direct: {
+    name: "DIRECT",
+    type: "Direct",
+    udp: false,
+    xudp: false,
+    tfo: false,
+    mptcp: false,
+    smux: false,
+    history: [],
+  },
+  groups: [],
+  records: {},
+  proxies: [],
+};
+
 // 全局数据提供者组件
 export const AppDataProvider = ({
   children,
@@ -30,7 +59,7 @@ export const AppDataProvider = ({
   const { data: proxiesData, mutate: refreshProxy } = useSWR(
     "getProxies",
     calcuProxies,
-    SWR_MIHOMO,
+    { ...SWR_MIHOMO, fallbackData: EMPTY_PROXIES },
   );
 
   const { data: clashConfig, mutate: refreshClashConfig } = useSWR(

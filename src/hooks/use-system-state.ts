@@ -42,15 +42,15 @@ export function useSystemState() {
       return { runningMode, isAdminMode, isServiceOk } as SystemState;
     },
     {
-      suspense: true,
       refreshInterval: 30000,
-      fallback: defaultSystemState,
+      fallbackData: defaultSystemState,
     },
   );
 
-  const isSidecarMode = systemState.runningMode === "Sidecar";
-  const isServiceMode = systemState.runningMode === "Service";
-  const isTunModeAvailable = systemState.isAdminMode || systemState.isServiceOk;
+  const state = systemState ?? defaultSystemState;
+  const isSidecarMode = state.runningMode === "Sidecar";
+  const isServiceMode = state.runningMode === "Service";
+  const isTunModeAvailable = state.isAdminMode || state.isServiceOk;
 
   const enable_tun_mode = verge?.enable_tun_mode;
   useEffect(() => {
@@ -86,9 +86,9 @@ export function useSystemState() {
   }, [enable_tun_mode, isTunModeAvailable, patchVerge, isLoading]);
 
   return {
-    runningMode: systemState.runningMode,
-    isAdminMode: systemState.isAdminMode,
-    isServiceOk: systemState.isServiceOk,
+    runningMode: state.runningMode,
+    isAdminMode: state.isAdminMode,
+    isServiceOk: state.isServiceOk,
     isSidecarMode,
     isServiceMode,
     isTunModeAvailable,

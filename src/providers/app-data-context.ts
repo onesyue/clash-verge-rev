@@ -8,7 +8,7 @@ import {
 
 export interface AppDataContextType {
   proxies: any;
-  clashConfig: BaseConfig;
+  clashConfig: BaseConfig | undefined;
   rules: Rule[];
   sysproxy: any;
   runningMode?: string;
