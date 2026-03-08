@@ -35,7 +35,7 @@ jobs:
             --draft \
             --prerelease \
             --title "Prerelease-alpha" \
-            --notes "dev 分支最新构建，可能不稳定。"
+            --notes "Latest dev branch build — may be unstable. Use for testing only."
 
   build:
     name: Build ${{ matrix.target }}
