@@ -186,14 +186,17 @@ export const useProfiles = () => {
         setTimeout(() => {
           mutate("getProxies", calcuProxies());
         }, 100);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(
           "[ActivateSelected] 保存代理选择配置失败:",
-          error.message,
+          error instanceof Error ? error.message : error,
         );
       }
-    } catch (error: any) {
-      console.error("[ActivateSelected] 处理代理选择失败:", error.message);
+    } catch (error: unknown) {
+      console.error(
+        "[ActivateSelected] 处理代理选择失败:",
+        error instanceof Error ? error.message : error,
+      );
     }
   };
 

@@ -1,13 +1,13 @@
 /**
- * XBoard 会话状态管理
+ * XBoard 会话状态管理（Zustand）
  *
  * 职责：
  *  1. 持久化 session（authData + subscribeUrl）到 localStorage
- *  2. 通过 React Context 在组件树中共享登录态
+ *  2. 通过 Zustand store 在组件间共享登录态（无需 Provider）
  *  3. 提供 login / logout / refresh helpers
  */
 
-import { createContextState } from "foxact/create-context-state";
+import { create } from "zustand";
 
 import type { AuthResult, XBoardSession } from "./types";
 
@@ -38,6 +38,8 @@ export function saveSession(session: XBoardSession): void {
 
 export function clearSession(): void {
   localStorage.removeItem(STORAGE_KEY);
+  // Also update the Zustand store
+  useXBoardSessionStore.getState().setSession(null);
 }
 
 /** 从 AuthResult 组合成 XBoardSession 并保存 */
@@ -51,17 +53,53 @@ export function persistAuthResult(result: AuthResult): XBoardSession {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// React Context State
+// Zustand Store
 // ────────────────────────────────────────────────────────────────────────────
 
-/**
- * 当前会话，null 表示未登录
- * 从 localStorage 读取初始值，保证刷新后不丢失登录态
- */
-const [XBoardSessionProvider, useXBoardSession, useSetXBoardSession] =
-  createContextState<XBoardSession | null>(loadSession());
+interface XBoardSessionStore {
+  session: XBoardSession | null;
+  setSession: (
+    session:
+      | XBoardSession
+      | null
+      | ((prev: XBoardSession | null) => XBoardSession | null),
+  ) => void;
+}
 
-export { XBoardSessionProvider, useXBoardSession, useSetXBoardSession };
+export const useXBoardSessionStore = create<XBoardSessionStore>((set) => ({
+  session: loadSession(),
+  setSession: (updater) =>
+    set((state) => ({
+      session: typeof updater === "function" ? updater(state.session) : updater,
+    })),
+}));
+
+/** 读取当前 session */
+export const useXBoardSession = () => useXBoardSessionStore((s) => s.session);
+
+/** 设置 session（同时持久化到 localStorage） */
+export function useSetXBoardSession() {
+  const setSession = useXBoardSessionStore((s) => s.setSession);
+  return (
+    updater:
+      | XBoardSession
+      | null
+      | ((prev: XBoardSession | null) => XBoardSession | null),
+  ) => {
+    // Use Zustand's set() with an updater to avoid stale getState() reads
+    setSession((prev) => {
+      const newSession =
+        typeof updater === "function" ? updater(prev) : updater;
+      // Persist to localStorage
+      if (newSession) {
+        saveSession(newSession);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      return newSession;
+    });
+  };
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Convenience helpers（在组件外也可直接调用）
