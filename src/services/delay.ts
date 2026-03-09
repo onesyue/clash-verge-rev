@@ -326,20 +326,24 @@ class DelayManager {
   }
 
   formatDelay(delay: number, timeout = 10000) {
-    if (delay === -1) return "-";
+    if (delay === -1) return "●"; // untested
     if (delay === -2) return "testing";
-    if (delay === 0 || (delay >= timeout && delay <= 1e5)) return "Timeout";
-    if (delay > 1e5) return "Error";
+    if (delay === 0 || delay >= timeout || delay > 1e5) return "●"; // timeout/error
     return `${delay}`;
   }
 
   formatDelayColor(delay: number, timeout = 10000) {
-    if (delay < 0) return "";
-    if (delay === 0 || delay >= timeout) return "error.main";
-    if (delay >= 10000) return "error.main";
-    if (delay >= 400) return "warning.main";
-    if (delay >= 250) return "primary.main";
-    return "success.main";
+    if (delay === -1) return "#10B981"; // untested → green (assume available)
+    if (delay === -2) return "";
+    if (delay === 0 || delay >= timeout || delay > 1e5) return "#94A3B8"; // timeout → grey
+    if (delay < 200) return "#10B981"; // good → green
+    if (delay < 500) return "#F59E0B"; // medium → yellow
+    return "#EF4444"; // slow → red
+  }
+
+  /** Whether the delay represents a dot (untested/timeout) rather than a number */
+  isDelayDot(delay: number, timeout = 10000) {
+    return delay === -1 || delay === 0 || delay >= timeout || delay > 1e5;
   }
 }
 

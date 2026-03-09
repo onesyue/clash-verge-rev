@@ -68,17 +68,16 @@ function convertDelayColor(
   const colorStr = delayManager.formatDelayColor(delayValue);
   if (!colorStr) return "default";
 
-  const mainColor = colorStr.split(".")[0];
-
-  switch (mainColor) {
-    case "success":
+  // Map hex colors to MUI palette names
+  switch (colorStr) {
+    case "#10B981":
       return "success";
-    case "warning":
+    case "#F59E0B":
       return "warning";
-    case "error":
+    case "#EF4444":
       return "error";
-    case "primary":
-      return "primary";
+    case "#94A3B8":
+      return "default";
     default:
       return "default";
   }

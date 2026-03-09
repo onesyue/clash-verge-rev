@@ -46,16 +46,7 @@ const TypeBox = styled("span")(({ theme }) => ({
 
 // Colored dot based on latency
 function DelayDot({ delay, timeout }: { delay: number; timeout: number }) {
-  let color = "#94A3B8"; // default grey
-  if (delay > 0 && delay < timeout) {
-    if (delay < 200)
-      color = "#10B981"; // good - emerald
-    else if (delay < 500)
-      color = "#F59E0B"; // medium - amber
-    else color = "#EF4444"; // slow - red
-  } else if (delay >= timeout) {
-    color = "#EF4444";
-  }
+  const color = delayManager.formatDelayColor(delay, timeout) || "#94A3B8";
 
   return (
     <Box
@@ -65,7 +56,10 @@ function DelayDot({ delay, timeout }: { delay: number; timeout: number }) {
         borderRadius: "50%",
         bgcolor: color,
         flexShrink: 0,
-        boxShadow: delay > 0 ? `0 0 6px ${alpha(color, 0.5)}` : "none",
+        boxShadow:
+          delay > 0 && delay < timeout
+            ? `0 0 6px ${alpha(color, 0.5)}`
+            : "none",
       }}
     />
   );
@@ -146,7 +140,7 @@ export const ProxyItem = (props: Props) => {
           ({ palette }) => {
             const { mode, primary, background, divider } = palette;
             const selectColor = mode === "light" ? primary.main : primary.light;
-            const showDelay = delayValue > 0;
+            const showDelay = delayValue !== -2;
 
             return {
               "&:hover .the-check": { display: !showDelay ? "block" : "none" },
@@ -190,10 +184,12 @@ export const ProxyItem = (props: Props) => {
                   color: "text.primary",
                 }}
               >
-                {/* Delay dot */}
-                {!isPreset && delayValue > 0 && (
-                  <DelayDot delay={delayValue} timeout={timeout} />
-                )}
+                {/* Delay dot - show for tested nodes with actual delay */}
+                {!isPreset &&
+                  delayValue > 0 &&
+                  !delayManager.isDelayDot(delayValue, timeout) && (
+                    <DelayDot delay={delayValue} timeout={timeout} />
+                  )}
                 {proxy.name}
                 {showType && proxy.now && ` - ${proxy.now}`}
               </Box>
@@ -242,7 +238,7 @@ export const ProxyItem = (props: Props) => {
             </Widget>
           )}
 
-          {delayValue > 0 && (
+          {delayValue !== -2 && (
             <Widget
               className="the-delay"
               onClick={(e) => {
@@ -251,10 +247,12 @@ export const ProxyItem = (props: Props) => {
                 e.stopPropagation();
                 onDelay();
               }}
-              color={delayManager.formatDelayColor(delayValue, timeout)}
               sx={({ palette }) => ({
                 fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
-                fontSize: "12px",
+                fontSize: delayManager.isDelayDot(delayValue, timeout)
+                  ? "10px"
+                  : "12px",
+                color: delayManager.formatDelayColor(delayValue, timeout),
                 ...(!proxy.provider
                   ? {
                       borderRadius: "8px",

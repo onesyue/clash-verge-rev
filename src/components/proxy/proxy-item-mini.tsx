@@ -101,7 +101,7 @@ export const ProxyItemMini = (props: Props) => {
         },
         ({ palette }) => {
           const { mode, primary, background, divider } = palette;
-          const showDelay = delayValue > 0;
+          const showDelay = delayValue !== -2;
           const selectColor = mode === "light" ? primary.main : primary.light;
 
           return {
@@ -243,8 +243,8 @@ export const ProxyItemMini = (props: Props) => {
           </Widget>
         )}
 
-        {delayValue >= 0 && (
-          // 显示延迟
+        {delayValue !== -2 && (
+          // 显示延迟或状态圆点
           <Widget
             className="the-delay"
             onClick={(e) => {
@@ -253,12 +253,16 @@ export const ProxyItemMini = (props: Props) => {
               e.stopPropagation();
               onDelay();
             }}
-            color={delayManager.formatDelayColor(delayValue, timeout)}
-            sx={({ palette }) =>
-              !proxy.provider
+            sx={({ palette }) => ({
+              fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+              fontSize: delayManager.isDelayDot(delayValue, timeout)
+                ? "10px"
+                : "12px",
+              color: delayManager.formatDelayColor(delayValue, timeout),
+              ...(!proxy.provider
                 ? { ":hover": { bgcolor: alpha(palette.primary.main, 0.15) } }
-                : {}
-            }
+                : {}),
+            })}
           >
             {delayManager.formatDelay(delayValue, timeout)}
           </Widget>
