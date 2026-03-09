@@ -181,10 +181,12 @@ jobs:
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tauriScript: pnpm
           tagName: Prerelease-alpha
           releaseName: "Prerelease-alpha"
           releaseDraft: false
           prerelease: true
-          args: --target ${{ matrix.target }} -b ${{ matrix.bundle }} --config '{"bundle":{"createUpdaterArtifacts":false,"macOS":{"signingIdentity":null}}}'
+          args: --target ${{ matrix.target }} -b ${{ matrix.bundle }} --config '{"bundle":{"macOS":{"signingIdentity":null}},"plugins":{"updater":{"endpoints":["https://github.com/onesyue/clash-verge-rev/releases/download/Prerelease-alpha/latest.json"]}}}'
