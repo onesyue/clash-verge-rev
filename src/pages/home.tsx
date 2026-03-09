@@ -9,8 +9,6 @@ import {
   AppsRounded,
   NotificationsNoneRounded,
   ChevronRightRounded,
-  FiberManualRecordRounded,
-  ContentCopyRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -706,128 +704,6 @@ function ProxyCard() {
   );
 }
 
-// ─── Status Bar (global connection indicator) ────────────────────────────────
-
-function StatusBar({
-  connected,
-  connecting,
-  elapsed,
-}: {
-  connected: boolean;
-  connecting: boolean;
-  elapsed: number;
-}) {
-  const { t } = useTranslation();
-  const { currentProxy, primaryGroupName } = useCurrentProxy();
-  const { systemProxyAddress } = useAppData();
-
-  const statusColor = connecting
-    ? "warning.main"
-    : connected
-      ? "success.main"
-      : "text.disabled";
-
-  const statusText = connecting
-    ? t("home.components.connectButton.status.connecting")
-    : connected
-      ? t("home.components.connectButton.status.connected")
-      : t("home.components.connectButton.status.disconnected");
-
-  const nodeName =
-    connected && currentProxy
-      ? `${primaryGroupName ? primaryGroupName + " · " : ""}${currentProxy.name}`
-      : null;
-
-  const handleCopyProxy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!systemProxyAddress || systemProxyAddress === "-") return;
-    navigator.clipboard.writeText(systemProxyAddress).then(() => {
-      showNotice.success(
-        "shared.feedback.notifications.common.copySuccess",
-        1000,
-      );
-    });
-  };
-
-  return (
-    <SurfaceCard
-      sx={{
-        px: 2,
-        py: 1.25,
-        display: "flex",
-        alignItems: "center",
-        gap: 1,
-        overflow: "hidden",
-      }}
-    >
-      <FiberManualRecordRounded
-        sx={{
-          fontSize: 10,
-          color: statusColor,
-          flexShrink: 0,
-          animation: connecting ? "blink 1s ease-in-out infinite" : "none",
-          "@keyframes blink": {
-            "0%, 100%": { opacity: 1 },
-            "50%": { opacity: 0.3 },
-          },
-        }}
-      />
-      <Typography
-        variant="caption"
-        fontWeight={600}
-        sx={{ color: statusColor, flexShrink: 0 }}
-      >
-        {statusText}
-      </Typography>
-      {nodeName && (
-        <Typography variant="caption" color="text.secondary" noWrap>
-          · {nodeName}
-        </Typography>
-      )}
-      <Box sx={{ flex: 1 }} />
-      {connected && systemProxyAddress && systemProxyAddress !== "-" && (
-        <Box
-          onClick={handleCopyProxy}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            cursor: "pointer",
-            flexShrink: 0,
-            "&:hover": { opacity: 0.7 },
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              color: "text.disabled",
-              fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
-              fontSize: "11px",
-            }}
-          >
-            {systemProxyAddress}
-          </Typography>
-          <ContentCopyRounded sx={{ fontSize: 12, color: "text.disabled" }} />
-        </Box>
-      )}
-      {connected && (
-        <Typography
-          variant="caption"
-          sx={{
-            color: "text.disabled",
-            fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
-            fontSize: "11px",
-            fontVariantNumeric: "tabular-nums",
-            flexShrink: 0,
-          }}
-        >
-          {formatElapsed(elapsed)}
-        </Typography>
-      )}
-    </SurfaceCard>
-  );
-}
-
 // ─── Home Page ────────────────────────────────────────────────────────────────
 
 const HomePage = () => {
@@ -933,11 +809,6 @@ const HomePage = () => {
   return (
     <BasePage contentStyle={{ padding: "16px 20px" }}>
       <Stack spacing={2}>
-        <StatusBar
-          connected={isConnected}
-          connecting={connecting}
-          elapsed={elapsed}
-        />
         <AccountBar />
         <ConnectButton
           connected={isConnected}

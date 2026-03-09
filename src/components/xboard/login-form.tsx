@@ -1,8 +1,7 @@
 /**
- * XBoard 登录 / 注册 / 找回密码 表单
+ * XBoard 登录 / 注册 / 找回密码 — iOS 26 Liquid Glass 风格
  *
- * 三个 Tab 共用固定服务器地址（BASE_URL），切换 Tab 时保留已输入内容。
- * 成功后通过 onSuccess 回调通知父组件更新 session。
+ * 默认显示登录，底部文字链接切换注册，忘记密码为密码框下方小链接。
  */
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -12,12 +11,9 @@ import {
   CircularProgress,
   IconButton,
   InputAdornment,
-  Tab,
-  Tabs,
   TextField,
   Typography,
   alpha,
-  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -34,11 +30,9 @@ import { persistAuthResult } from "@/services/xboard/store";
 import { syncXBoardSubscription } from "@/services/xboard/sync";
 import type { XBoardSession } from "@/services/xboard/types";
 
-// ────────────────────────────────────────────────────────────────────────────
-// Types
-// ────────────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
-type TabKey = "login" | "register" | "forgot";
+type View = "login" | "register" | "forgot";
 
 interface LoginFields {
   email: string;
@@ -66,14 +60,69 @@ interface Props {
   onSuccess: (session: XBoardSession) => void;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// LoginTab
-// ────────────────────────────────────────────────────────────────────────────
+// ── Shared styles ────────────────────────────────────────────────────────────
 
-function LoginTab({
+const textFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "12px",
+    bgcolor: "var(--glass-bg)",
+    backdropFilter: "saturate(180%) blur(12px)",
+    WebkitBackdropFilter: "saturate(180%) blur(12px)",
+    "& fieldset": {
+      borderColor: "var(--glass-border)",
+      borderWidth: "0.5px",
+    },
+    "&:hover fieldset": {
+      borderColor: "var(--glass-border)",
+    },
+    "&.Mui-focused fieldset": {
+      borderWidth: "1px",
+    },
+  },
+  "& .MuiInputLabel-root": {
+    fontSize: "14px",
+  },
+  "& .MuiOutlinedInput-input": {
+    fontSize: "14px",
+    padding: "14px 16px",
+  },
+} as const;
+
+const primaryBtnSx = {
+  borderRadius: "14px",
+  textTransform: "none",
+  fontWeight: 600,
+  fontSize: "15px",
+  py: 1.5,
+  background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+  boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
+  "&:hover": {
+    background: "linear-gradient(135deg, #5558E6, #7C4FE8)",
+    boxShadow: "0 6px 20px rgba(99, 102, 241, 0.4)",
+  },
+  "&.Mui-disabled": {
+    background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+    opacity: 0.5,
+  },
+} as const;
+
+const linkBtnSx = {
+  textTransform: "none",
+  fontWeight: 500,
+  fontSize: "13px",
+  px: 0.5,
+  minWidth: 0,
+  "&:hover": { background: "transparent", textDecoration: "underline" },
+} as const;
+
+// ── LoginView ────────────────────────────────────────────────────────────────
+
+function LoginView({
   onSuccess,
+  onSwitchView,
 }: {
   onSuccess: (session: XBoardSession) => void;
+  onSwitchView: (v: View) => void;
 }) {
   const { t } = useTranslation();
   const [showPwd, setShowPwd] = useState(false);
@@ -92,11 +141,8 @@ function LoginTab({
       const session = persistAuthResult(result);
       showNotice.success(t("account.login.feedback.success"));
       onSuccess(session);
-      // 后台同步订阅，完成后通知用户
       syncXBoardSubscription(result.subscribeUrl)
-        .then(() => {
-          showNotice.success(t("account.sync.feedback.success"));
-        })
+        .then(() => showNotice.success(t("account.sync.feedback.success")))
         .catch((err) => {
           console.warn("[XBoard] 订阅同步失败:", err);
           showNotice.error(t("account.sync.feedback.failed"));
@@ -115,16 +161,16 @@ function LoginTab({
     <Box
       component="form"
       onSubmit={onSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <TextField
-        label={t("account.login.form.email")}
+        placeholder={t("account.login.form.email")}
         type="email"
-        size="small"
         fullWidth
         autoComplete="email"
         error={!!errors.email}
         helperText={errors.email?.message}
+        sx={textFieldSx}
         {...reg("email", {
           required: t("account.validation.emailRequired"),
           pattern: {
@@ -133,64 +179,99 @@ function LoginTab({
           },
         })}
       />
-      <TextField
-        label={t("account.login.form.password")}
-        type={showPwd ? "text" : "password"}
-        size="small"
-        fullWidth
-        autoComplete="current-password"
-        error={!!errors.password}
-        helperText={errors.password?.message}
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => setShowPwd((v) => !v)}
-                  edge="end"
-                >
-                  {showPwd ? (
-                    <VisibilityOff fontSize="small" />
-                  ) : (
-                    <Visibility fontSize="small" />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-        {...reg("password", {
-          required: t("account.validation.passwordRequired"),
-          minLength: {
-            value: 6,
-            message: t("account.validation.passwordMinLength"),
-          },
-        })}
-      />
+      <Box>
+        <TextField
+          placeholder={t("account.login.form.password")}
+          type={showPwd ? "text" : "password"}
+          fullWidth
+          autoComplete="current-password"
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          sx={textFieldSx}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowPwd((v) => !v)}
+                    edge="end"
+                    sx={{ color: "text.disabled" }}
+                  >
+                    {showPwd ? (
+                      <VisibilityOff sx={{ fontSize: 18 }} />
+                    ) : (
+                      <Visibility sx={{ fontSize: 18 }} />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...reg("password", {
+            required: t("account.validation.passwordRequired"),
+            minLength: {
+              value: 6,
+              message: t("account.validation.passwordMinLength"),
+            },
+          })}
+        />
+        <Box sx={{ textAlign: "right", mt: 0.5 }}>
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => onSwitchView("forgot")}
+            sx={{ ...linkBtnSx, color: "text.secondary" }}
+          >
+            {t("account.forgot.tab")}
+          </Button>
+        </Box>
+      </Box>
+
       <Button
         type="submit"
         variant="contained"
         fullWidth
         disabled={loading}
-        startIcon={
-          loading ? <CircularProgress size={16} color="inherit" /> : undefined
-        }
+        disableElevation
+        sx={primaryBtnSx}
       >
-        {t("account.login.form.submit")}
+        {loading ? (
+          <CircularProgress size={20} sx={{ color: "white" }} />
+        ) : (
+          t("account.login.form.submit")
+        )}
       </Button>
+
+      <Box sx={{ textAlign: "center", mt: 0.5 }}>
+        <Typography
+          variant="body2"
+          component="span"
+          sx={{ color: "text.secondary", fontSize: "13px" }}
+        >
+          {t("account.login.noAccount")}{" "}
+        </Typography>
+        <Button
+          variant="text"
+          size="small"
+          onClick={() => onSwitchView("register")}
+          sx={linkBtnSx}
+        >
+          {t("account.register.tab")}
+        </Button>
+      </Box>
     </Box>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// RegisterTab
-// ────────────────────────────────────────────────────────────────────────────
+// ── RegisterView ─────────────────────────────────────────────────────────────
 
-function RegisterTab({
+function RegisterView({
   onSuccess,
+  onSwitchView,
 }: {
   onSuccess: (session: XBoardSession) => void;
+  onSwitchView: (v: View) => void;
 }) {
   const { t } = useTranslation();
   const [showPwd, setShowPwd] = useState(false);
@@ -216,11 +297,8 @@ function RegisterTab({
       const session = persistAuthResult(result);
       showNotice.success(t("account.register.feedback.success"));
       onSuccess(session);
-      // 后台同步订阅，完成后通知用户
       syncXBoardSubscription(result.subscribeUrl)
-        .then(() => {
-          showNotice.success(t("account.sync.feedback.success"));
-        })
+        .then(() => showNotice.success(t("account.sync.feedback.success")))
         .catch((err) => {
           console.warn("[XBoard] 注册后订阅同步失败:", err);
           showNotice.error(t("account.sync.feedback.failed"));
@@ -235,20 +313,37 @@ function RegisterTab({
     }
   });
 
+  const pwdAdornment = (
+    <InputAdornment position="end">
+      <IconButton
+        size="small"
+        onClick={() => setShowPwd((v) => !v)}
+        edge="end"
+        sx={{ color: "text.disabled" }}
+      >
+        {showPwd ? (
+          <VisibilityOff sx={{ fontSize: 18 }} />
+        ) : (
+          <Visibility sx={{ fontSize: 18 }} />
+        )}
+      </IconButton>
+    </InputAdornment>
+  );
+
   return (
     <Box
       component="form"
       onSubmit={onSubmit}
-      sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <TextField
-        label={t("account.register.form.email")}
+        placeholder={t("account.register.form.email")}
         type="email"
-        size="small"
         fullWidth
         autoComplete="email"
         error={!!errors.email}
         helperText={errors.email?.message}
+        sx={textFieldSx}
         {...reg("email", {
           required: t("account.validation.emailRequired"),
           pattern: {
@@ -258,32 +353,14 @@ function RegisterTab({
         })}
       />
       <TextField
-        label={t("account.register.form.password")}
+        placeholder={t("account.register.form.password")}
         type={showPwd ? "text" : "password"}
-        size="small"
         fullWidth
         autoComplete="new-password"
         error={!!errors.password}
         helperText={errors.password?.message}
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => setShowPwd((v) => !v)}
-                  edge="end"
-                >
-                  {showPwd ? (
-                    <VisibilityOff fontSize="small" />
-                  ) : (
-                    <Visibility fontSize="small" />
-                  )}
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
+        sx={textFieldSx}
+        slotProps={{ input: { endAdornment: pwdAdornment } }}
         {...reg("password", {
           required: t("account.validation.passwordRequired"),
           minLength: {
@@ -293,13 +370,13 @@ function RegisterTab({
         })}
       />
       <TextField
-        label={t("account.register.form.confirmPassword")}
+        placeholder={t("account.register.form.confirmPassword")}
         type={showPwd ? "text" : "password"}
-        size="small"
         fullWidth
         autoComplete="new-password"
         error={!!errors.confirmPassword}
         helperText={errors.confirmPassword?.message}
+        sx={textFieldSx}
         {...reg("confirmPassword", {
           required: t("account.validation.confirmPasswordRequired"),
           validate: (val) =>
@@ -308,33 +385,53 @@ function RegisterTab({
         })}
       />
       <TextField
-        label={t("account.register.form.inviteCode")}
-        size="small"
+        placeholder={t("account.register.form.inviteCode")}
         fullWidth
+        sx={textFieldSx}
         {...reg("inviteCode")}
       />
+
       <Button
         type="submit"
         variant="contained"
         fullWidth
         disabled={loading}
-        startIcon={
-          loading ? <CircularProgress size={16} color="inherit" /> : undefined
-        }
+        disableElevation
+        sx={primaryBtnSx}
       >
-        {t("account.register.form.submit")}
+        {loading ? (
+          <CircularProgress size={20} sx={{ color: "white" }} />
+        ) : (
+          t("account.register.form.submit")
+        )}
       </Button>
+
+      <Box sx={{ textAlign: "center", mt: 0.5 }}>
+        <Typography
+          variant="body2"
+          component="span"
+          sx={{ color: "text.secondary", fontSize: "13px" }}
+        >
+          {t("account.login.hasAccount")}{" "}
+        </Typography>
+        <Button
+          variant="text"
+          size="small"
+          onClick={() => onSwitchView("login")}
+          sx={linkBtnSx}
+        >
+          {t("account.login.tab")}
+        </Button>
+      </Box>
     </Box>
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// ForgotTab — 两步流程：发送验证码 → 重置密码
-// ────────────────────────────────────────────────────────────────────────────
+// ── ForgotView ───────────────────────────────────────────────────────────────
 
-const RESEND_COOLDOWN = 60; // 秒，与服务端限制一致
+const RESEND_COOLDOWN = 60;
 
-function ForgotTab() {
+function ForgotView({ onSwitchView }: { onSwitchView: (v: View) => void }) {
   const { t } = useTranslation();
   const [step, setStep] = useState<"email" | "reset">("email");
   const [confirmedEmail, setConfirmedEmail] = useState("");
@@ -343,14 +440,12 @@ function ForgotTab() {
   const [cooldown, setCooldown] = useState(0);
   const [showPwd, setShowPwd] = useState(false);
 
-  // 60 秒倒计时
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  // 第一步表单
   const {
     register: reg1,
     handleSubmit: submit1,
@@ -358,7 +453,6 @@ function ForgotTab() {
     formState: { errors: errors1 },
   } = useForm<ForgotStep1Fields>();
 
-  // 第二步表单
   const {
     register: reg2,
     handleSubmit: submit2,
@@ -411,11 +505,11 @@ function ForgotTab() {
     try {
       await forgotPassword(confirmedEmail, emailCode.trim(), password);
       showNotice.success(t("account.forgot.feedback.success"));
-      // 重置到第一步
       setStep("email");
       setConfirmedEmail("");
       setCooldown(0);
       reset2();
+      onSwitchView("login");
     } catch (err: any) {
       showNotice.error(
         t("account.forgot.feedback.failed"),
@@ -431,16 +525,22 @@ function ForgotTab() {
       <Box
         component="form"
         onSubmit={handleSendCode}
-        sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
+        <Typography
+          variant="body2"
+          sx={{ color: "text.secondary", fontSize: "13px", mb: 0.5 }}
+        >
+          {t("account.forgot.description")}
+        </Typography>
         <TextField
-          label={t("account.forgot.form.email")}
+          placeholder={t("account.forgot.form.email")}
           type="email"
-          size="small"
           fullWidth
           autoComplete="email"
           error={!!errors1.email}
           helperText={errors1.email?.message}
+          sx={textFieldSx}
           {...reg1("email", {
             required: t("account.validation.emailRequired"),
             pattern: {
@@ -454,38 +554,49 @@ function ForgotTab() {
           variant="contained"
           fullWidth
           disabled={sendingCode}
-          startIcon={
-            sendingCode ? (
-              <CircularProgress size={16} color="inherit" />
-            ) : undefined
-          }
+          disableElevation
+          sx={primaryBtnSx}
         >
-          {t("account.forgot.form.sendCode")}
+          {sendingCode ? (
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          ) : (
+            t("account.forgot.form.sendCode")
+          )}
         </Button>
+        <Box sx={{ textAlign: "center" }}>
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => onSwitchView("login")}
+            sx={linkBtnSx}
+          >
+            {t("account.forgot.backToLogin")}
+          </Button>
+        </Box>
       </Box>
     );
   }
 
   // step === "reset"
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
-      {/* 提示当前邮箱 + 重新发送 */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Box
-        sx={{
+        sx={({ palette }) => ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          px: 1,
-          py: 0.75,
-          borderRadius: 1.5,
-          bgcolor: "action.hover",
-        }}
+          px: 1.5,
+          py: 1,
+          borderRadius: "12px",
+          bgcolor: alpha(palette.primary.main, 0.06),
+          border: `0.5px solid ${alpha(palette.primary.main, 0.12)}`,
+        })}
       >
         <Typography
           variant="caption"
           color="text.secondary"
           noWrap
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, fontSize: "12px" }}
         >
           {t("account.forgot.emailHint", { email: confirmedEmail })}
         </Typography>
@@ -494,7 +605,7 @@ function ForgotTab() {
           variant="text"
           disabled={cooldown > 0 || sendingCode}
           onClick={handleResend}
-          sx={{ flexShrink: 0, fontSize: 12 }}
+          sx={{ ...linkBtnSx, flexShrink: 0 }}
         >
           {cooldown > 0
             ? t("account.forgot.form.resendCode", { s: cooldown })
@@ -508,13 +619,13 @@ function ForgotTab() {
         sx={{ display: "flex", flexDirection: "column", gap: 2 }}
       >
         <TextField
-          label={t("account.forgot.form.emailCode")}
-          size="small"
+          placeholder={t("account.forgot.form.emailCode")}
           fullWidth
           autoComplete="one-time-code"
           inputProps={{ maxLength: 6 }}
           error={!!errors2.emailCode}
           helperText={errors2.emailCode?.message}
+          sx={textFieldSx}
           {...reg2("emailCode", {
             required: t("account.validation.emailCodeRequired"),
             minLength: {
@@ -528,13 +639,13 @@ function ForgotTab() {
           })}
         />
         <TextField
-          label={t("account.forgot.form.newPassword")}
+          placeholder={t("account.forgot.form.newPassword")}
           type={showPwd ? "text" : "password"}
-          size="small"
           fullWidth
           autoComplete="new-password"
           error={!!errors2.password}
           helperText={errors2.password?.message}
+          sx={textFieldSx}
           slotProps={{
             input: {
               endAdornment: (
@@ -543,11 +654,12 @@ function ForgotTab() {
                     size="small"
                     onClick={() => setShowPwd((v) => !v)}
                     edge="end"
+                    sx={{ color: "text.disabled" }}
                   >
                     {showPwd ? (
-                      <VisibilityOff fontSize="small" />
+                      <VisibilityOff sx={{ fontSize: 18 }} />
                     ) : (
-                      <Visibility fontSize="small" />
+                      <Visibility sx={{ fontSize: 18 }} />
                     )}
                   </IconButton>
                 </InputAdornment>
@@ -563,13 +675,13 @@ function ForgotTab() {
           })}
         />
         <TextField
-          label={t("account.forgot.form.confirmNewPassword")}
+          placeholder={t("account.forgot.form.confirmNewPassword")}
           type={showPwd ? "text" : "password"}
-          size="small"
           fullWidth
           autoComplete="new-password"
           error={!!errors2.confirmPassword}
           helperText={errors2.confirmPassword?.message}
+          sx={textFieldSx}
           {...reg2("confirmPassword", {
             required: t("account.validation.confirmPasswordRequired"),
             validate: (val) =>
@@ -578,27 +690,32 @@ function ForgotTab() {
           })}
         />
 
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={resetting}
+          disableElevation
+          sx={primaryBtnSx}
+        >
+          {resetting ? (
+            <CircularProgress size={20} sx={{ color: "white" }} />
+          ) : (
+            t("account.forgot.form.submit")
+          )}
+        </Button>
+
+        <Box sx={{ textAlign: "center" }}>
           <Button
-            variant="outlined"
-            sx={{ flex: 1 }}
-            onClick={() => setStep("email")}
-            disabled={resetting}
+            variant="text"
+            size="small"
+            onClick={() => {
+              setStep("email");
+              onSwitchView("login");
+            }}
+            sx={linkBtnSx}
           >
-            {t("account.forgot.form.back")}
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            sx={{ flex: 2 }}
-            disabled={resetting}
-            startIcon={
-              resetting ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : undefined
-            }
-          >
-            {t("account.forgot.form.submit")}
+            {t("account.forgot.backToLogin")}
           </Button>
         </Box>
       </Box>
@@ -606,68 +723,98 @@ function ForgotTab() {
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// LoginForm (root export)
-// ────────────────────────────────────────────────────────────────────────────
+// ── LoginForm (root export) ──────────────────────────────────────────────────
 
 export function LoginForm({ onSuccess }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const [view, setView] = useState<View>("login");
 
-  const [tab, setTab] = useState<TabKey>("login");
+  const heading =
+    view === "login"
+      ? t("account.login.tab")
+      : view === "register"
+        ? t("account.register.tab")
+        : t("account.forgot.tab");
 
   return (
     <Box
       sx={{
-        maxWidth: 420,
+        maxWidth: 400,
         mx: "auto",
-        mt: 4,
-        p: 3,
-        borderRadius: 3,
-        backgroundColor: "background.paper",
-        boxShadow:
-          theme.palette.mode === "dark"
-            ? "0 4px 24px rgba(0,0,0,0.4)"
-            : "0 4px 24px rgba(0,0,0,0.08)",
+        mt: 6,
+        px: 3,
       }}
     >
-      <Typography
-        variant="h6"
-        fontWeight="bold"
-        mb={0.5}
-        sx={{ color: "text.primary" }}
-      >
-        {t("account.brand.name")}
-      </Typography>
-      <Typography
-        variant="body2"
-        mb={2}
-        sx={{ color: "text.secondary", fontSize: "13px" }}
-      >
-        {t("account.brand.tagline")}
-      </Typography>
-
-      {/* Tab 切换 */}
-      <Tabs
-        value={tab}
-        onChange={(_, v: TabKey) => setTab(v)}
+      {/* Brand logo */}
+      <Box
         sx={{
-          minHeight: 36,
-          "& .MuiTab-root": { minHeight: 36, py: 0.5, fontSize: 13 },
-          "& .MuiTabs-indicator": {
-            backgroundColor: alpha(theme.palette.primary.main, 0.8),
-          },
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          mb: 4,
         }}
       >
-        <Tab label={t("account.login.tab")} value="login" />
-        <Tab label={t("account.register.tab")} value="register" />
-        <Tab label={t("account.forgot.tab")} value="forgot" />
-      </Tabs>
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: "16px",
+            background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 2,
+            boxShadow: "0 8px 32px rgba(99, 102, 241, 0.3)",
+          }}
+        >
+          <Typography
+            sx={{
+              color: "white",
+              fontSize: "24px",
+              fontWeight: 800,
+              lineHeight: 1,
+            }}
+          >
+            悦
+          </Typography>
+        </Box>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            color: "text.primary",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {heading}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: "text.secondary", mt: 0.5, fontSize: "13px" }}
+        >
+          {t("account.brand.tagline")}
+        </Typography>
+      </Box>
 
-      {/* Tab 内容 */}
-      {tab === "login" && <LoginTab onSuccess={onSuccess} />}
-      {tab === "register" && <RegisterTab onSuccess={onSuccess} />}
-      {tab === "forgot" && <ForgotTab />}
+      {/* Glass card */}
+      <Box
+        sx={{
+          borderRadius: "var(--glass-radius)",
+          background: "var(--glass-bg)",
+          backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+          WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+          border: "0.5px solid var(--glass-border)",
+          p: 3,
+        }}
+      >
+        {view === "login" && (
+          <LoginView onSuccess={onSuccess} onSwitchView={setView} />
+        )}
+        {view === "register" && (
+          <RegisterView onSuccess={onSuccess} onSwitchView={setView} />
+        )}
+        {view === "forgot" && <ForgotView onSwitchView={setView} />}
+      </Box>
     </Box>
   );
 }

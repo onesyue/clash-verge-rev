@@ -8,7 +8,10 @@ import { useVerge } from "@/hooks/use-verge";
 import { exitApp } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
 import { checkUpdateSafe as checkUpdate } from "@/services/update";
-import { version } from "@root/package.json";
+import { version as rawVersion } from "@root/package.json";
+
+/** Format version for display: "2.1.2-alpha" → "2.1.2.Alpha", "2.1.2" → "2.1.2" */
+const version = rawVersion.replace(/-alpha$/i, ".Alpha");
 
 import { SettingItem, SettingList } from "./mods/setting-comp";
 import { UpdateViewer } from "./mods/update-viewer";

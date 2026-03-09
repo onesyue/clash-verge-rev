@@ -8,6 +8,8 @@
   },
   "login": {
     "tab": "登录",
+    "noAccount": "还没有账号？",
+    "hasAccount": "已有账号？",
     "form": {
       "email": "邮箱",
       "password": "密码",
@@ -35,6 +37,8 @@
   },
   "forgot": {
     "tab": "找回密码",
+    "description": "输入注册邮箱，我们将发送验证码帮您重置密码",
+    "backToLogin": "返回登录",
     "form": {
       "email": "邮箱",
       "sendCode": "发送验证码",

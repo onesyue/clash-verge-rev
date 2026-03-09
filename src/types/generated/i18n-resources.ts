@@ -66,6 +66,8 @@ export interface TranslationResources {
         };
       };
       forgot: {
+        backToLogin: string;
+        description: string;
         emailHint: string;
         feedback: {
           codeSent: string;
@@ -96,6 +98,8 @@ export interface TranslationResources {
           password: string;
           submit: string;
         };
+        hasAccount: string;
+        noAccount: string;
         tab: string;
       };
       notices: {

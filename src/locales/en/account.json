@@ -8,6 +8,8 @@
   },
   "login": {
     "tab": "Sign In",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
     "form": {
       "email": "Email",
       "password": "Password",
@@ -35,6 +37,8 @@
   },
   "forgot": {
     "tab": "Forgot Password",
+    "description": "Enter your email and we'll send a verification code to reset your password",
+    "backToLogin": "Back to Sign In",
     "form": {
       "email": "Email",
       "sendCode": "Send Verification Code",
