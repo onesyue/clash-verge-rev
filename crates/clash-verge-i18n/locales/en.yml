@@ -33,9 +33,6 @@ tray:
   globalMode: Global Mode
   directMode: Direct Mode
   outboundModes: Outbound Modes
-  rule: Rule
-  direct: Direct
-  global: Global
   profiles: Profiles
   proxies: Nodes
   systemProxy: System Connection

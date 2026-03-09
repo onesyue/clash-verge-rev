@@ -34,7 +34,6 @@ import {
 import { handleNoticeMessage } from "./_layout/utils";
 import { sidebarNavItems, sidebarBottomItems } from "./_routers";
 
-import "dayjs/locale/ru";
 import "dayjs/locale/zh-cn";
 
 /**

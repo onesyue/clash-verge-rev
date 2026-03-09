@@ -17,8 +17,31 @@ env:
   HUSKY: 0
 
 jobs:
+  check-version:
+    name: Check if alpha version
+    runs-on: ubuntu-latest
+    outputs:
+      is_alpha: ${{ steps.check.outputs.is_alpha }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Check version
+        id: check
+        run: |
+          VERSION=$(jq -r .version package.json)
+          if echo "$VERSION" | grep -qiE '-(alpha|beta|rc|pre)'; then
+            echo "is_alpha=true" >> $GITHUB_OUTPUT
+            echo "Alpha version detected: ${VERSION}"
+          else
+            echo "is_alpha=false" >> $GITHUB_OUTPUT
+            echo "Stable version ${VERSION}, skipping alpha build."
+          fi
+
   prepare:
     name: Create / reset Prerelease-alpha
+    needs: check-version
+    if: needs.check-version.outputs.is_alpha == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -39,7 +62,8 @@ jobs:
 
   build:
     name: Build ${{ matrix.target }}
-    needs: prepare
+    needs: [check-version, prepare]
+    if: needs.check-version.outputs.is_alpha == 'true'
     strategy:
       fail-fast: false
       matrix:

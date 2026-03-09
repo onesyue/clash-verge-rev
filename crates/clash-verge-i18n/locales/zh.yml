@@ -33,9 +33,6 @@ tray:
   globalMode: 全局模式
   directMode: 直连模式
   outboundModes: 出站模式
-  rule: 规则
-  direct: 直连
-  global: 全局
   profiles: 订阅
   proxies: 节点
   systemProxy: 系统连接
