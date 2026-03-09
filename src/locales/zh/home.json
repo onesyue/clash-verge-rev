@@ -105,6 +105,18 @@
       "upload": "上传",
       "totalTraffic": "总流量"
     },
+    "speedTest": {
+      "title": "一键测速",
+      "testing": "测速中…",
+      "result": "当前节点延迟 {{delay}}ms",
+      "failed": "测速失败",
+      "noNode": "暂无节点"
+    },
+    "expiryBanner": {
+      "expiringSoon": "订阅将在 {{days}} 天后到期",
+      "expired": "订阅已过期",
+      "renew": "立即续费"
+    },
     "currentProxy": {
       "title": "当前节点",
       "actions": {

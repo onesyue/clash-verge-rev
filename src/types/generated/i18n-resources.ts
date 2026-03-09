@@ -360,6 +360,11 @@ export interface TranslationResources {
           };
           title: string;
         };
+        expiryBanner: {
+          expired: string;
+          expiringSoon: string;
+          renew: string;
+        };
         ipInfo: {
           errors: {
             load: string;
@@ -393,6 +398,13 @@ export interface TranslationResources {
           download: string;
           totalTraffic: string;
           upload: string;
+        };
+        speedTest: {
+          failed: string;
+          noNode: string;
+          result: string;
+          testing: string;
+          title: string;
         };
         systemInfo: {
           actions: {
@@ -1492,6 +1504,7 @@ export interface TranslationResources {
         system: {
           fields: {
             autoLaunch: string;
+            killSwitch: string;
             silentStart: string;
           };
           notifications: {
@@ -1507,6 +1520,9 @@ export interface TranslationResources {
           };
           tooltips: {
             silentStart: string;
+          };
+          tooltips_extra: {
+            killSwitch: string;
           };
         };
       };

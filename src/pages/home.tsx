@@ -9,13 +9,15 @@ import {
   AppsRounded,
   NotificationsNoneRounded,
   ChevronRightRounded,
+  SpeedRounded,
+  WarningAmberRounded,
 } from "@mui/icons-material";
 import {
   Box,
+  ButtonBase,
   CircularProgress,
   Divider,
   LinearProgress,
-  Paper,
   Skeleton,
   Stack,
   Typography,
@@ -30,6 +32,7 @@ import { mutate } from "swr";
 import { closeAllConnections } from "tauri-plugin-mihomo-api";
 
 import { BasePage } from "@/components/base";
+import { GlassCard } from "@/components/shared/glass-card";
 import { useConnectionData } from "@/hooks/use-connection-data";
 import { useCurrentProxy } from "@/hooks/use-current-proxy";
 import { useTrafficData } from "@/hooks/use-traffic-data";
@@ -37,6 +40,7 @@ import { useVerge } from "@/hooks/use-verge";
 import { useXBoardUserInfo } from "@/hooks/use-xboard-user-info";
 import { useAppData } from "@/providers/app-data-context";
 import { enhanceProfiles, patchVergeConfig } from "@/services/cmds";
+import delayManager from "@/services/delay";
 import { showNotice } from "@/services/notice-service";
 import { useXBoardSession } from "@/services/xboard/store";
 import {
@@ -61,45 +65,6 @@ function formatElapsed(secs: number): string {
 function calcTrafficPct(used: number, total: number): number {
   if (total <= 0) return 0;
   return Math.min((used / total) * 100, 100);
-}
-
-// ─── Surface card wrapper ─────────────────────────────────────────────────────
-
-function SurfaceCard({
-  children,
-  onClick,
-  sx,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  sx?: object;
-}) {
-  return (
-    <Paper
-      elevation={0}
-      onClick={onClick}
-      sx={({ palette }) => ({
-        borderRadius: "16px",
-        bgcolor: "background.paper",
-        border: `1px solid`,
-        borderColor: "divider",
-        cursor: onClick ? "pointer" : "default",
-        transition: "all 0.2s ease",
-        ...(onClick && {
-          "&:hover": {
-            bgcolor: alpha(
-              palette.text.primary,
-              palette.mode === "dark" ? 0.08 : 0.04,
-            ),
-            borderColor: alpha(palette.divider, 1.5),
-          },
-        }),
-        ...sx,
-      })}
-    >
-      {children}
-    </Paper>
-  );
 }
 
 const BRAND_GRADIENT = "linear-gradient(135deg, #6366F1, #8B5CF6)";
@@ -137,7 +102,7 @@ function AccountBar() {
 
   if (!session) {
     return (
-      <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
+      <GlassCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={avatarBoxSx}>
             <Typography
@@ -163,12 +128,12 @@ function AccountBar() {
           </Box>
           <ChevronRightRounded sx={{ color: "text.disabled" }} />
         </Box>
-      </SurfaceCard>
+      </GlassCard>
     );
   }
 
   return (
-    <SurfaceCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
+    <GlassCard onClick={() => navigate("/account")} sx={{ p: 2 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <Box sx={avatarBoxSx}>
           {loading ? (
@@ -239,7 +204,7 @@ function AccountBar() {
           )}
         </Box>
       </Box>
-    </SurfaceCard>
+    </GlassCard>
   );
 }
 
@@ -272,7 +237,7 @@ function ConnectButton({
   const inactiveColor = theme.palette.text.disabled;
 
   return (
-    <SurfaceCard sx={{ py: 4, textAlign: "center" }}>
+    <GlassCard sx={{ py: 4, textAlign: "center" }}>
       {/* Circular button */}
       <Box
         sx={{
@@ -396,7 +361,7 @@ function ConnectButton({
           {t("home.components.connectButton.action")}
         </Typography>
       )}
-    </SurfaceCard>
+    </GlassCard>
   );
 }
 
@@ -420,7 +385,7 @@ function SpeedCard() {
   return (
     <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
       {/* Download card */}
-      <SurfaceCard sx={{ p: 2 }}>
+      <GlassCard sx={{ p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
           <Box
             sx={{
@@ -457,10 +422,10 @@ function SpeedCard() {
             {downUnit}/s
           </Typography>
         </Typography>
-      </SurfaceCard>
+      </GlassCard>
 
       {/* Upload card */}
-      <SurfaceCard sx={{ p: 2 }}>
+      <GlassCard sx={{ p: 2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1 }}>
           <Box
             sx={{
@@ -497,10 +462,10 @@ function SpeedCard() {
             {upUnit}/s
           </Typography>
         </Typography>
-      </SurfaceCard>
+      </GlassCard>
 
       {/* Total traffic - full width */}
-      <SurfaceCard
+      <GlassCard
         sx={{
           gridColumn: "1 / -1",
           p: 1.5,
@@ -523,7 +488,7 @@ function SpeedCard() {
         >
           {fwdVal} {fwdUnit}
         </Typography>
-      </SurfaceCard>
+      </GlassCard>
     </Box>
   );
 }
@@ -591,7 +556,7 @@ function ProxyCard() {
   };
 
   return (
-    <SurfaceCard onClick={handlePress} sx={{ overflow: "hidden" }}>
+    <GlassCard onClick={handlePress} sx={{ overflow: "hidden" }}>
       {/* Proxy mode row */}
       <Box
         sx={{
@@ -700,7 +665,183 @@ function ProxyCard() {
           />
         </Box>
       )}
-    </SurfaceCard>
+    </GlassCard>
+  );
+}
+
+// ─── Expiry Warning Banner ────────────────────────────────────────────────────
+
+function ExpiryBanner() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { userInfo } = useXBoardUserInfo();
+
+  if (!userInfo?.expiredAt) return null;
+
+  const daysLeft = Math.floor(
+    (userInfo.expiredAt * 1000 - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysLeft > 7) return null;
+
+  const isExpired = daysLeft < 0;
+
+  return (
+    <Box
+      onClick={() => navigate("/shop")}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        px: 2,
+        py: 1.25,
+        borderRadius: "var(--glass-radius)",
+        cursor: "pointer",
+        background: isExpired
+          ? "linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06))"
+          : "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06))",
+        border: `0.5px solid ${isExpired ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`,
+        transition: "all 0.2s ease",
+        "&:hover": { opacity: 0.85 },
+      }}
+    >
+      <WarningAmberRounded
+        sx={{
+          fontSize: 18,
+          color: isExpired ? "#EF4444" : "#F59E0B",
+          flexShrink: 0,
+        }}
+      />
+      <Typography
+        variant="body2"
+        sx={{
+          flex: 1,
+          fontSize: "13px",
+          color: isExpired ? "#EF4444" : "#F59E0B",
+          fontWeight: 500,
+        }}
+      >
+        {isExpired
+          ? t("home.components.expiryBanner.expired" as any)
+          : t("home.components.expiryBanner.expiringSoon" as any, {
+              days: daysLeft,
+            })}
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{
+          color: isExpired ? "#EF4444" : "#F59E0B",
+          fontWeight: 600,
+          fontSize: "12px",
+          flexShrink: 0,
+        }}
+      >
+        {t("home.components.expiryBanner.renew" as any)}
+      </Typography>
+    </Box>
+  );
+}
+
+// ─── Speed Test Button ───────────────────────────────────────────────────────
+
+function SpeedTestButton() {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const { currentProxy, primaryGroupName } = useCurrentProxy();
+  const { verge } = useVerge();
+  const timeout = verge?.default_latency_timeout || 10000;
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<number | null>(null);
+
+  const handleTest = async () => {
+    if (testing || !currentProxy) return;
+    setTesting(true);
+    setResult(null);
+    try {
+      const groupName = primaryGroupName || "GLOBAL";
+      const update = await delayManager.checkDelay(
+        currentProxy.name,
+        groupName,
+        timeout,
+      );
+      setResult(update.delay > 0 ? update.delay : -1);
+    } catch {
+      setResult(-1);
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const delayColor =
+    result === null
+      ? theme.palette.primary.main
+      : result > 0
+        ? delayManager.formatDelayColor(result, timeout)
+        : "#EF4444";
+
+  return (
+    <GlassCard sx={{ overflow: "hidden" }}>
+      <ButtonBase
+        onClick={handleTest}
+        disabled={!currentProxy}
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          height: 48,
+          px: 2,
+          gap: 1.25,
+          justifyContent: "flex-start",
+        }}
+      >
+        <Box
+          sx={{
+            width: 32,
+            height: 32,
+            borderRadius: "10px",
+            bgcolor: alpha(delayColor, 0.12),
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {testing ? (
+            <CircularProgress size={16} sx={{ color: delayColor }} />
+          ) : (
+            <SpeedRounded sx={{ fontSize: 18, color: delayColor }} />
+          )}
+        </Box>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ flexShrink: 0 }}
+        >
+          {t("home.components.speedTest.title" as any)}
+        </Typography>
+        <Box sx={{ flex: 1 }} />
+        {result !== null && !testing && (
+          <Typography
+            variant="body2"
+            fontWeight={600}
+            sx={{
+              fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+              fontSize: "13px",
+              color: delayColor,
+            }}
+          >
+            {result > 0
+              ? `${result}ms`
+              : t("home.components.speedTest.failed" as any)}
+          </Typography>
+        )}
+        {!currentProxy && !testing && (
+          <Typography variant="caption" color="text.disabled">
+            {t("home.components.speedTest.noNode" as any)}
+          </Typography>
+        )}
+      </ButtonBase>
+    </GlassCard>
   );
 }
 
@@ -784,8 +925,24 @@ const HomePage = () => {
     return () => clearInterval(id);
   }, [isConnected]);
 
+  // Kill Switch: auto-reconnect when proxy disconnects unexpectedly
+  const userToggledRef = useRef(false);
+  useEffect(() => {
+    if (userToggledRef.current) {
+      userToggledRef.current = false;
+      return;
+    }
+    const killSwitchOn = localStorage.getItem("kill_switch_enabled") === "true";
+    if (killSwitchOn && !isConnected && !connecting) {
+      patchVergeConfig({ enable_system_proxy: true })
+        .then(() => mutateVerge())
+        .catch(() => {});
+    }
+  }, [isConnected, connecting, mutateVerge]);
+
   const handleToggle = async () => {
     if (connecting) return;
+    userToggledRef.current = true;
     setConnecting(true);
     const newState = !configState;
     try {
@@ -808,7 +965,8 @@ const HomePage = () => {
 
   return (
     <BasePage contentStyle={{ padding: "16px 20px" }}>
-      <Stack spacing={2}>
+      <Stack spacing={1.5}>
+        <ExpiryBanner />
         <AccountBar />
         <ConnectButton
           connected={isConnected}
@@ -817,6 +975,7 @@ const HomePage = () => {
           elapsed={elapsed}
         />
         {isConnected && <SpeedCard />}
+        <SpeedTestButton />
         <ProxyCard />
       </Stack>
     </BasePage>

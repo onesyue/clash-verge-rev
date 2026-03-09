@@ -59,7 +59,6 @@ const allRoutes: RouteObject[] = [
   { path: "/shop", lazy: () => lazyPage(() => import("./shop")) },
   { path: "/account", lazy: () => lazyPage(() => import("./account")) },
   { path: "/proxies", lazy: () => lazyPage(() => import("./proxies")) },
-  { path: "/unlock", lazy: () => lazyPage(() => import("./unlock")) },
   { path: "/orders", lazy: () => lazyPage(() => import("./orders")) },
   { path: "/notices", lazy: () => lazyPage(() => import("./notices")) },
   { path: "/settings", lazy: () => lazyPage(() => import("./settings")) },

@@ -105,6 +105,18 @@
       "upload": "Upload",
       "totalTraffic": "Total Traffic"
     },
+    "speedTest": {
+      "title": "Speed Test",
+      "testing": "Testing...",
+      "result": "Current node latency {{delay}}ms",
+      "failed": "Speed test failed",
+      "noNode": "No active node"
+    },
+    "expiryBanner": {
+      "expiringSoon": "Subscription expires in {{days}} days",
+      "expired": "Subscription has expired",
+      "renew": "Renew Now"
+    },
     "currentProxy": {
       "title": "Current Node",
       "actions": {

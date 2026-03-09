@@ -19,7 +19,11 @@
       },
       "fields": {
         "autoLaunch": "Auto Launch",
-        "silentStart": "Silent Start"
+        "silentStart": "Silent Start",
+        "killSwitch": "Kill Switch"
+      },
+      "tooltips_extra": {
+        "killSwitch": "Auto-reconnect when disconnected to prevent traffic leaks"
       },
       "notifications": {
         "tunMode": {
