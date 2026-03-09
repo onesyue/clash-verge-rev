@@ -1504,7 +1504,6 @@ export interface TranslationResources {
         system: {
           fields: {
             autoLaunch: string;
-            killSwitch: string;
             silentStart: string;
           };
           notifications: {
@@ -1520,9 +1519,6 @@ export interface TranslationResources {
           };
           tooltips: {
             silentStart: string;
-          };
-          tooltips_extra: {
-            killSwitch: string;
           };
         };
       };

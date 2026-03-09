@@ -925,24 +925,8 @@ const HomePage = () => {
     return () => clearInterval(id);
   }, [isConnected]);
 
-  // Kill Switch: auto-reconnect when proxy disconnects unexpectedly
-  const userToggledRef = useRef(false);
-  useEffect(() => {
-    if (userToggledRef.current) {
-      userToggledRef.current = false;
-      return;
-    }
-    const killSwitchOn = localStorage.getItem("kill_switch_enabled") === "true";
-    if (killSwitchOn && !isConnected && !connecting) {
-      patchVergeConfig({ enable_system_proxy: true })
-        .then(() => mutateVerge())
-        .catch(() => {});
-    }
-  }, [isConnected, connecting, mutateVerge]);
-
   const handleToggle = async () => {
     if (connecting) return;
-    userToggledRef.current = true;
     setConnecting(true);
     const newState = !configState;
     try {

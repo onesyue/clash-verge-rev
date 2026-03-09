@@ -550,8 +550,6 @@ export const translationKeys = [
   "settings.sections.system.tooltips.silentStart",
   "settings.sections.system.fields.autoLaunch",
   "settings.sections.system.fields.silentStart",
-  "settings.sections.system.fields.killSwitch",
-  "settings.sections.system.tooltips_extra.killSwitch",
   "settings.sections.system.notifications.tunMode.autoDisabled",
   "settings.sections.system.notifications.tunMode.autoDisableFailed",
   "settings.sections.proxyControl.tooltips.systemProxy",

@@ -185,7 +185,7 @@ export const ProxyRender = (props: RenderProps) => {
           pl: 2,
           pr: 2,
           pb: 1,
-          gridTemplateColumns: `repeat(auto-fill, minmax(160px, 1fr))`,
+          gridTemplateColumns: `repeat(auto-fit, minmax(160px, 1fr))`,
         }}
       >
         {proxyColItemsMemo}

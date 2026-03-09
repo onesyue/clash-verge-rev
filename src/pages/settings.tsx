@@ -1,9 +1,5 @@
-import {
-  HelpOutlineRounded,
-  LanguageRounded,
-  Telegram,
-} from "@mui/icons-material";
-import { ButtonGroup, IconButton, Grid } from "@mui/material";
+import { HelpOutlineRounded } from "@mui/icons-material";
+import { IconButton, Grid } from "@mui/material";
 import { useLockFn } from "ahooks";
 import { useTranslation } from "react-i18next";
 
@@ -22,15 +18,7 @@ const SettingPage = () => {
     showNotice.error(err);
   };
 
-  const toWebsite = useLockFn(() => {
-    return openWebUrl("https://yue.to");
-  });
-
   const toDoc = useLockFn(() => {
-    return openWebUrl("https://yue.to");
-  });
-
-  const toTelegramChannel = useLockFn(() => {
     return openWebUrl("https://yue.to");
   });
 
@@ -38,32 +26,14 @@ const SettingPage = () => {
     <BasePage
       title={t("settings.page.title")}
       header={
-        <ButtonGroup variant="contained" aria-label="Basic button group">
-          <IconButton
-            size="medium"
-            color="inherit"
-            title={t("settings.page.actions.manual")}
-            onClick={toDoc}
-          >
-            <HelpOutlineRounded fontSize="inherit" />
-          </IconButton>
-          <IconButton
-            size="medium"
-            color="inherit"
-            title={t("settings.page.actions.telegram")}
-            onClick={toTelegramChannel}
-          >
-            <Telegram fontSize="inherit" />
-          </IconButton>
-          <IconButton
-            size="medium"
-            color="inherit"
-            title={t("settings.page.actions.github")}
-            onClick={toWebsite}
-          >
-            <LanguageRounded fontSize="inherit" />
-          </IconButton>
-        </ButtonGroup>
+        <IconButton
+          size="medium"
+          color="inherit"
+          title={t("settings.page.actions.manual")}
+          onClick={toDoc}
+        >
+          <HelpOutlineRounded fontSize="inherit" />
+        </IconButton>
       }
     >
       <Grid container spacing={1.5} columns={{ xs: 6, sm: 6, md: 12 }}>

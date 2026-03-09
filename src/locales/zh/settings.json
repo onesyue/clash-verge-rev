@@ -19,11 +19,7 @@
       },
       "fields": {
         "autoLaunch": "开机自启",
-        "silentStart": "静默启动",
-        "killSwitch": "网络锁定"
-      },
-      "tooltips_extra": {
-        "killSwitch": "断开连接时自动重连，防止流量泄露"
+        "silentStart": "静默启动"
       },
       "notifications": {
         "tunMode": {
