@@ -645,6 +645,7 @@ export const translationKeys = [
   "settings.components.verge.advanced.actions.copyVersion",
   "settings.components.verge.advanced.notifications.latestVersion",
   "settings.components.verge.advanced.notifications.versionCopied",
+  "settings.components.verge.advanced.notifications.updateCheckFailed",
   "settings.components.verge.advanced.fields.backupSetting",
   "settings.components.verge.advanced.fields.runtimeConfig",
   "settings.components.verge.advanced.fields.openConfDir",

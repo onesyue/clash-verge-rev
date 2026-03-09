@@ -1,8 +1,6 @@
 import {
   BuildRounded,
   DeleteForeverRounded,
-  PauseCircleOutlineRounded,
-  PlayCircleOutlineRounded,
   SettingsRounded,
   WarningRounded,
 } from "@mui/icons-material";
@@ -72,11 +70,6 @@ const SwitchRow = ({
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        {active ? (
-          <PlayCircleOutlineRounded sx={{ color: "success.main", mr: 1 }} />
-        ) : (
-          <PauseCircleOutlineRounded sx={{ color: "text.disabled", mr: 1 }} />
-        )}
         <Typography
           variant="subtitle1"
           sx={{ fontWeight: 500, fontSize: "15px" }}

@@ -121,9 +121,7 @@ export function UpdateViewer({ ref }: { ref?: Ref<DialogRef> }) {
               variant="contained"
               size="small"
               onClick={() => {
-                openUrl(
-                  `https://github.com/onesyue/clash-verge-rev/releases/tag/v${updateInfo?.version}`,
-                );
+                openUrl("https://yue.to");
               }}
             >
               {t("settings.modals.update.actions.goToRelease")}

@@ -899,6 +899,7 @@ export interface TranslationResources {
             };
             notifications: {
               latestVersion: string;
+              updateCheckFailed: string;
               versionCopied: string;
             };
             title: string;

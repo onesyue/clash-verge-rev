@@ -71,8 +71,10 @@ const SettingVergeAdvanced = ({ onError: _ }: Props) => {
       } else {
         updateRef.current?.open();
       }
-    } catch (err: any) {
-      showNotice.error(err);
+    } catch {
+      showNotice.error(
+        t("settings.components.verge.advanced.notifications.updateCheckFailed"),
+      );
     }
   };
 

@@ -187,7 +187,8 @@
         },
         "notifications": {
           "latestVersion": "当前已是最新版本",
-          "versionCopied": "版本号已复制到剪贴板"
+          "versionCopied": "版本号已复制到剪贴板",
+          "updateCheckFailed": "检查更新失败，请稍后重试"
         },
         "fields": {
           "backupSetting": "备份设置",

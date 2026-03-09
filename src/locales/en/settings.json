@@ -187,7 +187,8 @@
         },
         "notifications": {
           "latestVersion": "Currently on the Latest Version",
-          "versionCopied": "Version copied to clipboard"
+          "versionCopied": "Version copied to clipboard",
+          "updateCheckFailed": "Update check failed, please try again later"
         },
         "fields": {
           "backupSetting": "Backup Setting",
