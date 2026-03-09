@@ -17,17 +17,17 @@ $sidebar-collapsed-width: 64px;
   overflow: hidden;
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────────────────
+// ── Sidebar — Liquid Glass ───────────────────────────────────────────────────
 .layout-sidebar {
   width: $sidebar-width;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid var(--divider-color);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: width 0.2s ease;
+  border-right: 0.5px solid var(--glass-border);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   .sidebar-brand {
     height: 56px;
@@ -108,7 +108,7 @@ $sidebar-collapsed-width: 64px;
       padding: 8px 12px;
       box-sizing: border-box;
       height: 36px;
-      border-bottom: 1px solid var(--divider-color);
+      border-bottom: 0.5px solid var(--glass-border);
       flex-shrink: 0;
     }
   }

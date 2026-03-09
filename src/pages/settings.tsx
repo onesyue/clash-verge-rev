@@ -13,7 +13,16 @@ import SettingVergeAdvanced from "@/components/setting/setting-verge-advanced";
 import SettingVergeBasic from "@/components/setting/setting-verge-basic";
 import { openWebUrl } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
-import { useThemeMode } from "@/services/states";
+
+// Glass card wrapper style
+const glassCard = {
+  borderRadius: "var(--glass-radius)",
+  background: "var(--glass-bg)",
+  backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+  WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+  border: "0.5px solid var(--glass-border)",
+  marginBottom: 1.5,
+};
 
 const SettingPage = () => {
   const { t } = useTranslation();
@@ -33,9 +42,6 @@ const SettingPage = () => {
   const toTelegramChannel = useLockFn(() => {
     return openWebUrl("https://yue.to");
   });
-
-  const mode = useThemeMode();
-  const isDark = mode === "light" ? false : true;
 
   return (
     <BasePage
@@ -71,31 +77,15 @@ const SettingPage = () => {
     >
       <Grid container spacing={1.5} columns={{ xs: 6, sm: 6, md: 12 }}>
         <Grid size={6}>
-          <Box
-            sx={{
-              borderRadius: 2,
-              marginBottom: 1.5,
-              backgroundColor: isDark ? "#282a36" : "#ffffff",
-            }}
-          >
+          <Box sx={glassCard}>
             <SettingSystem onError={onError} />
           </Box>
-          <Box
-            sx={{
-              borderRadius: 2,
-              backgroundColor: isDark ? "#282a36" : "#ffffff",
-            }}
-          >
+          <Box sx={glassCard}>
             <SettingVergeBasic onError={onError} />
           </Box>
         </Grid>
         <Grid size={6}>
-          <Box
-            sx={{
-              borderRadius: 2,
-              backgroundColor: isDark ? "#282a36" : "#ffffff",
-            }}
-          >
+          <Box sx={glassCard}>
             <SettingVergeAdvanced onError={onError} />
           </Box>
         </Grid>

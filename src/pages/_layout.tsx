@@ -82,20 +82,22 @@ function SidebarItem({
         display: "flex",
         alignItems: "center",
         gap: "12px",
-        padding: "10px 12px",
-        borderRadius: "12px",
+        padding: "10px 14px",
+        borderRadius: "14px",
         textAlign: "left",
         justifyContent: "flex-start",
-        transition: "all 0.15s ease",
+        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
         color: active ? palette.primary.main : palette.text.secondary,
-        bgcolor: active ? alpha(palette.primary.main, 0.12) : "transparent",
-        ...(active && {
-          boxShadow: `0 0 12px ${alpha(palette.primary.main, 0.2)}`,
-        }),
+        bgcolor: active ? alpha(palette.primary.main, 0.1) : "transparent",
+        border: active
+          ? `0.5px solid ${alpha(palette.primary.main, 0.2)}`
+          : "0.5px solid transparent",
+        backdropFilter: active ? "blur(12px)" : "none",
+        WebkitBackdropFilter: active ? "blur(12px)" : "none",
         "&:hover": {
           bgcolor: active
-            ? alpha(palette.primary.main, 0.16)
-            : alpha(palette.text.secondary, 0.08),
+            ? alpha(palette.primary.main, 0.14)
+            : alpha(palette.text.secondary, 0.06),
         },
         "& .MuiSvgIcon-root": {
           fontSize: 20,
@@ -182,7 +184,7 @@ const Layout = () => {
         style={{
           width: "100vw",
           height: "100vh",
-          background: mode === "light" ? "#F1F5F9" : "#0F172A",
+          background: mode === "light" ? "#F2F2F7" : "#000000",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -248,12 +250,9 @@ const Layout = () => {
               {/* Sidebar */}
               <Box
                 className="layout-sidebar"
-                sx={({ palette }) => ({
-                  bgcolor:
-                    palette.mode === "dark"
-                      ? "rgba(15, 23, 42, 0.8)"
-                      : "rgba(255, 255, 255, 0.8)",
-                })}
+                sx={{
+                  bgcolor: "var(--glass-bg)",
+                }}
               >
                 {/* Brand */}
                 <div className="sidebar-brand" data-tauri-drag-region="true">

@@ -63,7 +63,7 @@ ${css}
 };
 
 /**
- * custom theme
+ * custom theme — iOS 26 Liquid Glass
  */
 export const useCustomTheme = () => {
   const appWindow: WebviewWindow = useMemo(() => getCurrentWebviewWindow(), []);
@@ -144,6 +144,7 @@ export const useCustomTheme = () => {
   const theme = useMemo(() => {
     const setting = theme_setting || {};
     const dt = mode === "light" ? defaultTheme : defaultDarkTheme;
+    const isLight = mode === "light";
     let muiTheme: MuiTheme;
 
     try {
@@ -174,6 +175,9 @@ export const useCustomTheme = () => {
             ? `${setting.font_family}, ${dt.font_family}`
             : dt.font_family,
         },
+        shape: {
+          borderRadius: 16,
+        },
       });
     } catch (e) {
       console.error("Error creating MUI theme, falling back to defaults:", e);
@@ -196,17 +200,20 @@ export const useCustomTheme = () => {
           },
         },
         typography: { fontFamily: dt.font_family },
+        shape: { borderRadius: 16 },
       });
     }
 
     const rootEle = document.documentElement;
     if (rootEle) {
-      const backgroundColor =
-        mode === "light" ? "#F1F5F9" : dt.background_color;
-      const selectColor = mode === "light" ? "#E2E8F0" : "#1E293B";
-      const scrollColor = mode === "light" ? "#94A3B880" : "#334155";
-      const dividerColor =
-        mode === "light" ? "rgba(0, 0, 0, 0.06)" : "rgba(148, 163, 184, 0.08)";
+      const backgroundColor = dt.background_color;
+      const selectColor = isLight ? "#D1D1D6" : "#3A3A3C";
+      const scrollColor = isLight ? "#C7C7CC80" : "#48484A80";
+      const dividerColor = isLight
+        ? "rgba(0, 0, 0, 0.06)"
+        : "rgba(255, 255, 255, 0.06)";
+
+      // Core variables
       rootEle.style.setProperty("--divider-color", dividerColor);
       rootEle.style.setProperty("--background-color", backgroundColor);
       rootEle.style.setProperty("--selection-color", selectColor);
@@ -221,16 +228,34 @@ export const useCustomTheme = () => {
       );
       rootEle.style.setProperty(
         "--window-border-color",
-        mode === "light" ? "#CBD5E1" : "#1E293B",
+        isLight ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.08)",
       );
       rootEle.style.setProperty(
         "--scrollbar-bg",
-        mode === "light" ? "#F1F5F9" : "#0F172A",
+        isLight ? "transparent" : "transparent",
       );
       rootEle.style.setProperty(
         "--scrollbar-thumb",
-        mode === "light" ? "#94A3B8" : "#334155",
+        isLight ? "#C7C7CC" : "#48484A",
       );
+
+      // Liquid Glass tokens
+      rootEle.style.setProperty(
+        "--glass-bg",
+        isLight ? "rgba(255, 255, 255, 0.72)" : "rgba(44, 44, 46, 0.72)",
+      );
+      rootEle.style.setProperty(
+        "--glass-border",
+        isLight ? "rgba(0, 0, 0, 0.06)" : "rgba(255, 255, 255, 0.08)",
+      );
+      rootEle.style.setProperty("--glass-blur", "20px");
+      rootEle.style.setProperty("--glass-radius", "16px");
+      rootEle.style.setProperty(
+        "--glass-bg-elevated",
+        isLight ? "rgba(255, 255, 255, 0.85)" : "rgba(58, 58, 60, 0.78)",
+      );
+
+      // Background image
       rootEle.style.setProperty(
         "--user-background-image",
         hasUserBackground ? `url('${userBackgroundImage}')` : "none",
@@ -262,7 +287,7 @@ export const useCustomTheme = () => {
       }
       const effectiveInjectedCss = scopedCss ?? setting.css_injection ?? "";
       const globalStyles = `
-        /* Scrollbar — transparent track, subtle thumb */
+        /* Scrollbar — minimal, iOS-like */
         ::-webkit-scrollbar {
           width: 6px;
           height: 6px;
@@ -276,10 +301,10 @@ export const useCustomTheme = () => {
           border-radius: 3px;
         }
         ::-webkit-scrollbar-thumb:hover {
-          background-color: ${mode === "light" ? "#64748B" : "#475569"};
+          background-color: ${isLight ? "#A1A1A6" : "#636366"};
         }
 
-        /* 背景图处理 */
+        /* Background */
         body {
           background-color: var(--background-color);
           ${
@@ -296,20 +321,29 @@ export const useCustomTheme = () => {
           }
         }
 
-        /* 修复可能的白色边框 */
+        /* Glass cards */
         .MuiPaper-root {
-          border-color: var(--window-border-color) !important;
+          border-color: var(--glass-border) !important;
         }
 
-        /* 确保模态框和对话框也使用暗色主题 */
+        /* Dialog — Liquid Glass */
         .MuiDialog-paper {
-          background-color: ${mode === "light" ? "#ffffff" : "#1E293B"} !important;
+          background: var(--glass-bg-elevated) !important;
+          backdrop-filter: saturate(180%) blur(20px) !important;
+          -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+          border: 0.5px solid var(--glass-border) !important;
+          border-radius: var(--glass-radius) !important;
         }
 
-        /* 移除可能的白色点或线条 */
+        .MuiBackdrop-root {
+          background-color: ${isLight ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.5)"} !important;
+          backdrop-filter: blur(4px) !important;
+          -webkit-backdrop-filter: blur(4px) !important;
+        }
+
+        /* Remove all box shadows — glass uses borders + blur for depth */
         * {
           outline: none !important;
-          box-shadow: none !important;
         }
       `;
 
