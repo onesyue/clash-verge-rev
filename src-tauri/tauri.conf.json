@@ -30,7 +30,7 @@
   "identifier": "io.yuetong.app",
   "plugins": {
     "updater": {
-      "pubkey": "RWRNZjuHIwyU6rJMhiQbb2WJyNuRUa8+TPoUcdFC/7YXycJIVkrg77Cm",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNGMDFGMjMyMUIzNTRDQjQKUldTMFREVWJNdklCUHloRjY3aVZSbFZsSW55Z2tYeEUzK1JvMkZCbGF4TkZTMndoU3hVQ0lPcy8K",
       "endpoints": [
         "https://github.com/onesyue/clash-verge-rev/releases/latest/download/latest.json"
       ],
