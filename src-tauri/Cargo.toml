@@ -1,6 +1,6 @@
 [package]
 name = "clash-verge"
-version = "2.1.2-alpha"
+version = "1.0.0"
 description = "YueTong - Proxy Client"
 authors = ["YueTong"]
 license = "GPL-3.0-only"

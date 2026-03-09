@@ -375,6 +375,7 @@ function RegisterView({
         error={!!errors.confirmPassword}
         helperText={errors.confirmPassword?.message}
         sx={textFieldSx}
+        slotProps={{ input: { endAdornment: pwdAdornment } }}
         {...reg("confirmPassword", {
           required: t("account.validation.confirmPasswordRequired"),
           validate: (val) =>
@@ -680,6 +681,26 @@ function ForgotView({ onSwitchView }: { onSwitchView: (v: View) => void }) {
           error={!!errors2.confirmPassword}
           helperText={errors2.confirmPassword?.message}
           sx={textFieldSx}
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowPwd((v) => !v)}
+                    edge="end"
+                    sx={{ color: "text.disabled" }}
+                  >
+                    {showPwd ? (
+                      <VisibilityOff sx={{ fontSize: 18 }} />
+                    ) : (
+                      <Visibility sx={{ fontSize: 18 }} />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
           {...reg2("confirmPassword", {
             required: t("account.validation.confirmPasswordRequired"),
             validate: (val) =>
@@ -727,13 +748,6 @@ export function LoginForm({ onSuccess }: Props) {
   const { t } = useTranslation();
   const [view, setView] = useState<View>("login");
 
-  const heading =
-    view === "login"
-      ? t("account.login.tab")
-      : view === "register"
-        ? t("account.register.tab")
-        : t("account.forgot.tab");
-
   return (
     <Box
       sx={{
@@ -752,29 +766,6 @@ export function LoginForm({ onSuccess }: Props) {
           mb: 4,
         }}
       >
-        <Box
-          sx={{
-            width: 56,
-            height: 56,
-            borderRadius: "16px",
-            bgcolor: "primary.main",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 2,
-          }}
-        >
-          <Typography
-            sx={{
-              color: "white",
-              fontSize: "24px",
-              fontWeight: 800,
-              lineHeight: 1,
-            }}
-          >
-            悦
-          </Typography>
-        </Box>
         <Typography
           variant="h5"
           sx={{
@@ -783,7 +774,7 @@ export function LoginForm({ onSuccess }: Props) {
             letterSpacing: "-0.02em",
           }}
         >
-          {heading}
+          悦通
         </Typography>
         <Typography
           variant="body2"

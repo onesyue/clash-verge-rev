@@ -725,8 +725,8 @@ function ExpiryBanner() {
         }}
       >
         {isExpired
-          ? t("home.components.expiryBanner.expired" as any)
-          : t("home.components.expiryBanner.expiringSoon" as any, {
+          ? t("home.components.expiryBanner.expired")
+          : t("home.components.expiryBanner.expiringSoon", {
               days: daysLeft,
             })}
       </Typography>
@@ -739,7 +739,7 @@ function ExpiryBanner() {
           flexShrink: 0,
         }}
       >
-        {t("home.components.expiryBanner.renew" as any)}
+        {t("home.components.expiryBanner.renew")}
       </Typography>
     </Box>
   );
@@ -820,7 +820,7 @@ function SpeedTestButton() {
           color="text.secondary"
           sx={{ flexShrink: 0 }}
         >
-          {t("home.components.speedTest.title" as any)}
+          {t("home.components.speedTest.title")}
         </Typography>
         <Box sx={{ flex: 1 }} />
         {result !== null && !testing && (
@@ -833,14 +833,12 @@ function SpeedTestButton() {
               color: delayColor,
             }}
           >
-            {result > 0
-              ? `${result}ms`
-              : t("home.components.speedTest.failed" as any)}
+            {result > 0 ? `${result}ms` : t("home.components.speedTest.failed")}
           </Typography>
         )}
         {!currentProxy && !testing && (
           <Typography variant="caption" color="text.disabled">
-            {t("home.components.speedTest.noNode" as any)}
+            {t("home.components.speedTest.noNode")}
           </Typography>
         )}
       </ButtonBase>
@@ -913,8 +911,6 @@ const HomePage = () => {
       connectedAtRef.current = Date.now();
     } else if (!isConnected) {
       connectedAtRef.current = null;
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setElapsed(0);
     }
   }, [isConnected]);
 

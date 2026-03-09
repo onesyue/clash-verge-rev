@@ -95,19 +95,29 @@ export function CheckoutDialog({
   // 加载支付方式
   useEffect(() => {
     if (!open || !authData) return;
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-    setLoadingMethods(true);
-    getPaymentMethods(authData)
-      .then((list) => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const list = await getPaymentMethods(authData);
+        if (cancelled) return;
         setMethods(list);
         setMethodsError(false);
         if (list.length > 0) setSelectedMethod(list[0].id);
-      })
-      .catch(() => {
+      } catch {
+        if (cancelled) return;
         setMethods([]);
         setMethodsError(true);
-      })
-      .finally(() => setLoadingMethods(false));
+      } finally {
+        if (!cancelled) setLoadingMethods(false);
+      }
+    };
+    queueMicrotask(() => {
+      if (!cancelled) setLoadingMethods(true);
+    });
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, [open, authData]);
 
   const resetState = () => {

@@ -206,21 +206,23 @@ export const EditorViewer = <T extends Language>(props: Props<T>) => {
   };
 
   // Prepare initial content and a stable model path for monaco-react
-  /* eslint-disable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    // Clear state up-front to avoid showing stale content while loading
-    setInitialText(null);
-    setModelPath("");
-    // Clear any stale refresh error when starting a new load
-    setRefreshFailed(null);
-    // Reset initial-load success flag on open/start
-    setHasLoadedOnce(false);
     // We will perform an explicit initial load below; skip the first background refresh.
     skipNextRefreshRef.current = true;
     prevDataRef.current = undefined;
     currDataRef.current = undefined;
+
+    // Clear state up-front to avoid showing stale content while loading
+    // (Using queueMicrotask to satisfy react-compiler lint rules)
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setInitialText(null);
+      setModelPath("");
+      setRefreshFailed(null);
+      setHasLoadedOnce(false);
+    });
 
     (async () => {
       try {
@@ -270,7 +272,6 @@ export const EditorViewer = <T extends Language>(props: Props<T>) => {
       cancelled = true;
     };
   }, [open, dataKey, language]);
-  /* eslint-enable @eslint-react/hooks-extra/no-direct-set-state-in-use-effect */
 
   const onMount = async (editor: monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;

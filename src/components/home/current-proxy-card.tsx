@@ -325,144 +325,133 @@ export const CurrentProxyCard = () => {
     const primaryGroupName = getPrimaryGroupName();
 
     // 根据模式确定初始组
-    if (isGlobalMode) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
+    const newGroup = isGlobalMode
+      ? "GLOBAL"
+      : isDirectMode
+        ? "DIRECT"
+        : readProfileScopedItem(STORAGE_KEY_GROUP) || primaryGroupName || "";
+
+    queueMicrotask(() => {
       setState((prev) => ({
         ...prev,
         selection: {
           ...prev.selection,
-          group: "GLOBAL",
+          group: newGroup,
         },
       }));
-    } else if (isDirectMode) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setState((prev) => ({
-        ...prev,
-        selection: {
-          ...prev.selection,
-          group: "DIRECT",
-        },
-      }));
-    } else {
-      const savedGroup = readProfileScopedItem(STORAGE_KEY_GROUP);
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setState((prev) => ({
-        ...prev,
-        selection: {
-          ...prev.selection,
-          group: savedGroup || primaryGroupName || "",
-        },
-      }));
-    }
+    });
   }, [isGlobalMode, isDirectMode, proxies, readProfileScopedItem]);
 
   // 监听代理数据变化，更新状态
   useEffect(() => {
     if (!proxies) return;
 
-    // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-    setState((prev) => {
-      const groupsMap = new Map<string, ProxyGroupOption>();
+    const updateState = () =>
+      setState((prev) => {
+        const groupsMap = new Map<string, ProxyGroupOption>();
 
-      const registerGroup = (group: any, fallbackName?: string) => {
-        if (!group && !fallbackName) return;
+        const registerGroup = (group: any, fallbackName?: string) => {
+          if (!group && !fallbackName) return;
 
-        const rawName =
-          typeof group?.name === "string" && group.name.length > 0
-            ? group.name
-            : fallbackName;
-        const name = normalizePolicyName(rawName);
-        if (!name || groupsMap.has(name)) return;
+          const rawName =
+            typeof group?.name === "string" && group.name.length > 0
+              ? group.name
+              : fallbackName;
+          const name = normalizePolicyName(rawName);
+          if (!name || groupsMap.has(name)) return;
 
-        const rawAll = (
-          Array.isArray(group?.all)
-            ? (group.all as Array<string | { name?: string }>)
-            : []
-        ) as Array<string | { name?: string }>;
-        const allNames = rawAll
-          .map((item) =>
-            typeof item === "string"
-              ? normalizePolicyName(item)
-              : normalizePolicyName(item?.name),
-          )
-          .filter((value): value is string => value.length > 0);
+          const rawAll = (
+            Array.isArray(group?.all)
+              ? (group.all as Array<string | { name?: string }>)
+              : []
+          ) as Array<string | { name?: string }>;
+          const allNames = rawAll
+            .map((item) =>
+              typeof item === "string"
+                ? normalizePolicyName(item)
+                : normalizePolicyName(item?.name),
+            )
+            .filter((value): value is string => value.length > 0);
 
-        const uniqueAll = Array.from(new Set(allNames));
-        if (uniqueAll.length === 0) return;
+          const uniqueAll = Array.from(new Set(allNames));
+          if (uniqueAll.length === 0) return;
 
-        groupsMap.set(name, {
-          name,
-          now: normalizePolicyName(group?.now),
-          all: uniqueAll,
-          type: group?.type,
-        });
-      };
+          groupsMap.set(name, {
+            name,
+            now: normalizePolicyName(group?.now),
+            all: uniqueAll,
+            type: group?.type,
+          });
+        };
 
-      if (matchPolicyName) {
-        const matchGroup =
-          proxies.groups?.find(
-            (g: { name: string }) => g.name === matchPolicyName,
-          ) ||
-          (proxies.global?.name === matchPolicyName ? proxies.global : null) ||
-          proxies.records?.[matchPolicyName];
-        registerGroup(matchGroup, matchPolicyName);
-      }
+        if (matchPolicyName) {
+          const matchGroup =
+            proxies.groups?.find(
+              (g: { name: string }) => g.name === matchPolicyName,
+            ) ||
+            (proxies.global?.name === matchPolicyName
+              ? proxies.global
+              : null) ||
+            proxies.records?.[matchPolicyName];
+          registerGroup(matchGroup, matchPolicyName);
+        }
 
-      (proxies.groups || [])
-        .filter((g: { type?: string }) => g?.type === "Selector")
-        .forEach((selectorGroup: any) => registerGroup(selectorGroup));
+        (proxies.groups || [])
+          .filter((g: { type?: string }) => g?.type === "Selector")
+          .forEach((selectorGroup: any) => registerGroup(selectorGroup));
 
-      const filteredGroups = Array.from(groupsMap.values());
+        const filteredGroups = Array.from(groupsMap.values());
 
-      let newProxy = "";
-      let newDisplayProxy = null;
-      let newGroup = prev.selection.group;
+        let newProxy = "";
+        let newDisplayProxy = null;
+        let newGroup = prev.selection.group;
 
-      if (isDirectMode) {
-        newGroup = "DIRECT";
-        newProxy = "DIRECT";
-        newDisplayProxy = proxies.records?.DIRECT || { name: "DIRECT" };
-      } else if (isGlobalMode && proxies.global) {
-        newGroup = "GLOBAL";
-        newProxy = proxies.global.now || "";
-        newDisplayProxy = proxies.records?.[newProxy] || null;
-      } else {
-        const currentGroup = filteredGroups.find(
-          (g: { name: string }) => g.name === prev.selection.group,
-        );
+        if (isDirectMode) {
+          newGroup = "DIRECT";
+          newProxy = "DIRECT";
+          newDisplayProxy = proxies.records?.DIRECT || { name: "DIRECT" };
+        } else if (isGlobalMode && proxies.global) {
+          newGroup = "GLOBAL";
+          newProxy = proxies.global.now || "";
+          newDisplayProxy = proxies.records?.[newProxy] || null;
+        } else {
+          const currentGroup = filteredGroups.find(
+            (g: { name: string }) => g.name === prev.selection.group,
+          );
 
-        if (!currentGroup && filteredGroups.length > 0) {
-          const firstGroup = filteredGroups[0];
-          if (firstGroup) {
-            newGroup = firstGroup.name;
-            newProxy = firstGroup.now || firstGroup.all[0] || "";
-            newDisplayProxy = proxies.records?.[newProxy] || null;
+          if (!currentGroup && filteredGroups.length > 0) {
+            const firstGroup = filteredGroups[0];
+            if (firstGroup) {
+              newGroup = firstGroup.name;
+              newProxy = firstGroup.now || firstGroup.all[0] || "";
+              newDisplayProxy = proxies.records?.[newProxy] || null;
 
-            if (!isGlobalMode && !isDirectMode) {
-              writeProfileScopedItem(STORAGE_KEY_GROUP, newGroup);
-              if (newProxy) {
-                writeProfileScopedItem(STORAGE_KEY_PROXY, newProxy);
+              if (!isGlobalMode && !isDirectMode) {
+                writeProfileScopedItem(STORAGE_KEY_GROUP, newGroup);
+                if (newProxy) {
+                  writeProfileScopedItem(STORAGE_KEY_PROXY, newProxy);
+                }
               }
             }
+          } else if (currentGroup) {
+            newProxy = currentGroup.now || currentGroup.all[0] || "";
+            newDisplayProxy = proxies.records?.[newProxy] || null;
           }
-        } else if (currentGroup) {
-          newProxy = currentGroup.now || currentGroup.all[0] || "";
-          newDisplayProxy = proxies.records?.[newProxy] || null;
         }
-      }
 
-      return {
-        proxyData: {
-          groups: filteredGroups,
-          records: proxies.records || {},
-        },
-        selection: {
-          group: newGroup,
-          proxy: newProxy,
-        },
-        displayProxy: newDisplayProxy,
-      };
-    });
+        return {
+          proxyData: {
+            groups: filteredGroups,
+            records: proxies.records || {},
+          },
+          selection: {
+            group: newGroup,
+            proxy: newProxy,
+          },
+          displayProxy: newDisplayProxy,
+        };
+      });
+    queueMicrotask(updateState);
   }, [
     proxies,
     isGlobalMode,

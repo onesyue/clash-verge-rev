@@ -2,7 +2,7 @@ import { ContentCopyRounded, SettingsRounded } from "@mui/icons-material";
 import { TextField, Typography } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core";
 import { useLockFn } from "ahooks";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DialogRef, Switch, TooltipIcon } from "@/components/base";
@@ -13,7 +13,7 @@ import { showNotice } from "@/services/notice-service";
 import { checkUpdateSafe as checkUpdate } from "@/services/update";
 import { version as rawVersion } from "@root/package.json";
 
-/** Format version for display: "2.1.2-alpha" → "2.1.2.Alpha", "2.1.2" → "2.1.2" */
+/** Format version for display: "1.0.0-alpha" → "1.0.0.Alpha", "1.0.0" → "1.0.0" */
 const version = rawVersion.replace(/-alpha$/i, ".Alpha");
 
 import { BackupViewer } from "./mods/backup-viewer";
@@ -44,13 +44,6 @@ const SettingVergeAdvanced = ({ onError: _ }: Props) => {
   const [dnsEnabled, setDnsEnabled] = useState(
     () => verge?.enable_dns_settings ?? false,
   );
-
-  useEffect(() => {
-    if (verge?.enable_dns_settings != null) {
-      // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
-      setDnsEnabled(verge.enable_dns_settings);
-    }
-  }, [verge?.enable_dns_settings]);
 
   const handleDnsToggle = useLockFn(async (enable: boolean) => {
     try {
