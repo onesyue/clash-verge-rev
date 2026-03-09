@@ -10,7 +10,6 @@ import { showNotice } from "@/services/notice-service";
 import { checkUpdateSafe as checkUpdate } from "@/services/update";
 import { version } from "@root/package.json";
 
-import { BackupViewer } from "./mods/backup-viewer";
 import { SettingItem, SettingList } from "./mods/setting-comp";
 import { UpdateViewer } from "./mods/update-viewer";
 
@@ -22,7 +21,6 @@ const SettingVergeAdvanced = ({ onError: _ }: Props) => {
   const { t } = useTranslation();
   const { verge, patchVerge, mutateVerge } = useVerge();
 
-  const backupRef = useRef<DialogRef>(null);
   const updateRef = useRef<DialogRef>(null);
 
   const onCheckUpdate = async () => {
@@ -51,19 +49,7 @@ const SettingVergeAdvanced = ({ onError: _ }: Props) => {
 
   return (
     <SettingList title={t("settings.components.verge.advanced.title")}>
-      <BackupViewer ref={backupRef} />
       <UpdateViewer ref={updateRef} />
-
-      <SettingItem
-        onClick={() => backupRef.current?.open()}
-        label={t("settings.components.verge.advanced.fields.backupSetting")}
-        extra={
-          <TooltipIcon
-            title={t("settings.components.verge.advanced.tooltips.backupInfo")}
-            sx={{ opacity: "0.7" }}
-          />
-        }
-      />
 
       <SettingItem
         onClick={onCheckUpdate}
