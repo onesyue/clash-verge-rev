@@ -305,7 +305,7 @@ export const HomeProfileCard = ({
 
   // 导航到订阅页面
   const goToProfiles = useCallback(() => {
-    navigate("/profile");
+    navigate("/account");
   }, [navigate]);
 
   // 卡片标题

@@ -1,12 +1,8 @@
 import AccountCircleRoundedIcon from "@mui/icons-material/AccountCircleRounded";
 import CellTowerRounded from "@mui/icons-material/CellTowerRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
-import ListAltRounded from "@mui/icons-material/ListAltRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import ShoppingCartRounded from "@mui/icons-material/ShoppingCartRounded";
-import StorageRounded from "@mui/icons-material/StorageRounded";
-import SwapHorizRounded from "@mui/icons-material/SwapHorizRounded";
-import TextSnippetRounded from "@mui/icons-material/TextSnippetRounded";
 import { createBrowserRouter, RouteObject } from "react-router";
 
 import Layout from "./_layout";
@@ -22,26 +18,6 @@ export const sidebarNavItems = [
     label: "layout.components.navigation.tabs.proxies",
     path: "/proxies",
     icon: <CellTowerRounded />,
-  },
-  {
-    label: "layout.components.navigation.tabs.profiles",
-    path: "/profile",
-    icon: <StorageRounded />,
-  },
-  {
-    label: "layout.components.navigation.tabs.connections",
-    path: "/connections",
-    icon: <SwapHorizRounded />,
-  },
-  {
-    label: "layout.components.navigation.tabs.rules",
-    path: "/rules",
-    icon: <ListAltRounded />,
-  },
-  {
-    label: "layout.components.navigation.tabs.logs",
-    path: "/logs",
-    icon: <TextSnippetRounded />,
   },
 ];
 
@@ -68,13 +44,6 @@ export const sidebarBottomItems = [
 export const navItems = [
   { label: "layout.components.navigation.tabs.home", path: "/" },
   { label: "layout.components.navigation.tabs.proxies", path: "/proxies" },
-  { label: "layout.components.navigation.tabs.profiles", path: "/profile" },
-  {
-    label: "layout.components.navigation.tabs.connections",
-    path: "/connections",
-  },
-  { label: "layout.components.navigation.tabs.rules", path: "/rules" },
-  { label: "layout.components.navigation.tabs.logs", path: "/logs" },
   { label: "layout.components.navigation.tabs.shop", path: "/shop" },
   { label: "layout.components.navigation.tabs.account", path: "/account" },
   { label: "layout.components.navigation.tabs.settings", path: "/settings" },
@@ -90,13 +59,6 @@ const allRoutes: RouteObject[] = [
   { path: "/shop", lazy: () => lazyPage(() => import("./shop")) },
   { path: "/account", lazy: () => lazyPage(() => import("./account")) },
   { path: "/proxies", lazy: () => lazyPage(() => import("./proxies")) },
-  { path: "/profile", lazy: () => lazyPage(() => import("./profiles")) },
-  {
-    path: "/connections",
-    lazy: () => lazyPage(() => import("./connections")),
-  },
-  { path: "/rules", lazy: () => lazyPage(() => import("./rules")) },
-  { path: "/logs", lazy: () => lazyPage(() => import("./logs")) },
   { path: "/unlock", lazy: () => lazyPage(() => import("./unlock")) },
   { path: "/orders", lazy: () => lazyPage(() => import("./orders")) },
   { path: "/notices", lazy: () => lazyPage(() => import("./notices")) },
