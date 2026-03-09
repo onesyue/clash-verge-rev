@@ -484,6 +484,7 @@ export const ProxyGroups = (props: Props) => {
                   mode === "rule" && proxyGroups.length > 0
                     ? "calc(100% - 80px)" // 只有标题的高度
                     : "calc(100% - 14px)",
+                overflowX: "hidden",
               }}
               totalCount={renderList.length}
               increaseViewportBy={{ top: 200, bottom: 200 }}
@@ -607,7 +608,7 @@ export const ProxyGroups = (props: Props) => {
 
       <Virtuoso
         ref={virtuosoRef}
-        style={{ height: "calc(100% - 14px)" }}
+        style={{ height: "calc(100% - 14px)", overflowX: "hidden" }}
         totalCount={renderList.length}
         increaseViewportBy={{ top: 200, bottom: 200 }}
         overscan={150}
