@@ -15,6 +15,8 @@ export interface TranslationResources {
           noExpiry: string;
           noPlan: string;
           plan: string;
+          renewNow: string;
+          renewNowExpired: string;
           subscribeUrl: string;
           syncFailed: string;
           syncing: string;
@@ -425,6 +427,10 @@ export interface TranslationResources {
             minutes: string;
           };
         };
+      };
+      notifications: {
+        expired: string;
+        expiryWarning: string;
       };
       onboarding: {
         getStarted: string;

@@ -351,6 +351,7 @@ function SubscriptionCard({
 }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const usedBytes = (userInfo?.usedDownload ?? 0) + (userInfo?.usedUpload ?? 0);
   const totalBytes = userInfo?.transferEnable ?? 0;
@@ -365,6 +366,13 @@ function SubscriptionCard({
     expiredAt === null
       ? t("account.dashboard.account.noExpiry")
       : dayjs(expiredAt * 1000).format("YYYY-MM-DD");
+
+  const daysLeft =
+    expiredAt !== null
+      ? Math.floor((expiredAt * 1000 - Date.now()) / (1000 * 60 * 60 * 24))
+      : Infinity;
+  const isExpiringSoon = daysLeft <= 7 && daysLeft >= 0;
+  const isExpired = daysLeft < 0;
 
   const barColor =
     pct >= 95
@@ -462,6 +470,33 @@ function SubscriptionCard({
             },
           }}
         />
+      )}
+
+      {!loading && (isExpired || isExpiringSoon) && (
+        <Button
+          variant="contained"
+          size="small"
+          fullWidth
+          onClick={() => navigate("/shop")}
+          sx={{
+            mt: 1.5,
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 600,
+            background: isExpired
+              ? theme.palette.error.main
+              : theme.palette.warning.main,
+            "&:hover": {
+              background: isExpired
+                ? theme.palette.error.dark
+                : theme.palette.warning.dark,
+            },
+          }}
+        >
+          {isExpired
+            ? t("account.dashboard.account.renewNowExpired")
+            : t("account.dashboard.account.renewNow", { days: daysLeft })}
+        </Button>
       )}
     </Paper>
   );

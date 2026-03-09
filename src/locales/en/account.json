@@ -78,6 +78,8 @@
       "noPlan": "No plan",
       "expiry": "Expiry",
       "noExpiry": "Permanent",
+      "renewNow": "Renew Now ({{days}} days left)",
+      "renewNowExpired": "Expired — Renew Now",
       "uuid": "UUID",
       "subscribeUrl": "Subscribe URL",
       "syncNow": "Sync now",

@@ -10,6 +10,7 @@ import {
   NotificationsNoneRounded,
   ChevronRightRounded,
   FiberManualRecordRounded,
+  ContentCopyRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -718,6 +719,7 @@ function StatusBar({
 }) {
   const { t } = useTranslation();
   const { currentProxy, primaryGroupName } = useCurrentProxy();
+  const { systemProxyAddress } = useAppData();
 
   const statusColor = connecting
     ? "warning.main"
@@ -735,6 +737,17 @@ function StatusBar({
     connected && currentProxy
       ? `${primaryGroupName ? primaryGroupName + " · " : ""}${currentProxy.name}`
       : null;
+
+  const handleCopyProxy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!systemProxyAddress || systemProxyAddress === "-") return;
+    navigator.clipboard.writeText(systemProxyAddress).then(() => {
+      showNotice.success(
+        "shared.feedback.notifications.common.copySuccess",
+        1000,
+      );
+    });
+  };
 
   return (
     <SurfaceCard
@@ -772,6 +785,31 @@ function StatusBar({
         </Typography>
       )}
       <Box sx={{ flex: 1 }} />
+      {connected && systemProxyAddress && systemProxyAddress !== "-" && (
+        <Box
+          onClick={handleCopyProxy}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            cursor: "pointer",
+            flexShrink: 0,
+            "&:hover": { opacity: 0.7 },
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.disabled",
+              fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+              fontSize: "11px",
+            }}
+          >
+            {systemProxyAddress}
+          </Typography>
+          <ContentCopyRounded sx={{ fontSize: 12, color: "text.disabled" }} />
+        </Box>
+      )}
       {connected && (
         <Typography
           variant="caption"
@@ -800,6 +838,25 @@ const HomePage = () => {
   const configState = verge?.enable_system_proxy ?? false;
   const isConnected = configState;
   const [connecting, setConnecting] = useState(false);
+
+  // Subscription expiry reminder (within 3 days)
+  const { userInfo } = useXBoardUserInfo();
+  const expiryWarnedRef = useRef(false);
+  useEffect(() => {
+    if (expiryWarnedRef.current || !userInfo?.expiredAt) return;
+    const daysLeft = Math.floor(
+      (userInfo.expiredAt * 1000 - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    if (daysLeft <= 3 && daysLeft >= 0) {
+      expiryWarnedRef.current = true;
+      showNotice.info(
+        t("home.notifications.expiryWarning", { days: daysLeft }),
+      );
+    } else if (daysLeft < 0) {
+      expiryWarnedRef.current = true;
+      showNotice.error(t("home.notifications.expired"));
+    }
+  }, [userInfo, t]);
 
   // Auto-sync subscription when logged in but no proxy nodes
   const autoSyncDoneRef = useRef(false);

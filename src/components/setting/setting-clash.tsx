@@ -8,29 +8,19 @@ import { useTranslation } from "react-i18next";
 
 import { DialogRef, Switch, TooltipIcon } from "@/components/base";
 import { useClash } from "@/hooks/use-clash";
-import { useClashLog } from "@/hooks/use-clash-log";
 import {
   GEO_INTERVAL_OPTIONS,
   type GeoIntervalHours,
   useGeoAutoUpdate,
 } from "@/hooks/use-geo-auto-update";
 import { useVerge } from "@/hooks/use-verge";
-import { invoke_uwp_tool } from "@/services/cmds";
 import { showNotice } from "@/services/notice-service";
-import getSystem from "@/utils/get-system";
 
-import { ClashCoreViewer } from "./mods/clash-core-viewer";
 import { ClashPortViewer } from "./mods/clash-port-viewer";
-import { ControllerViewer } from "./mods/controller-viewer";
 import { DnsViewer } from "./mods/dns-viewer";
-import { HeaderConfiguration } from "./mods/external-controller-cors";
 import { GuardState } from "./mods/guard-state";
 import { NetworkInterfaceViewer } from "./mods/network-interface-viewer";
 import { SettingItem, SettingList } from "./mods/setting-comp";
-import { TunnelsViewer } from "./mods/tunnels-viewer";
-import { WebUIViewer } from "./mods/web-ui-viewer";
-
-const isWIN = getSystem() === "windows";
 
 interface Props {
   onError: (err: Error) => void;
@@ -40,24 +30,20 @@ const SettingClash = ({ onError }: Props) => {
   const { t } = useTranslation();
 
   const { clash, version, mutateClash, patchClash } = useClash();
-  const { verge, patchVerge } = useVerge();
-  const [, setClashLog] = useClashLog();
+  const { verge, patchVerge, mutateVerge } = useVerge();
 
   const {
     ipv6,
     "allow-lan": allowLan,
-    "log-level": logLevel,
     "unified-delay": unifiedDelay,
   } = clash ?? {};
 
   const { verge_mixed_port } = verge ?? {};
 
-  // 独立跟踪DNS设置开关状态
   const [dnsSettingsEnabled, setDnsSettingsEnabled] = useState(() => {
     return verge?.enable_dns_settings ?? false;
   });
 
-  // Sync local state when verge config loads asynchronously
   useEffect(() => {
     if (verge?.enable_dns_settings != null) {
       // eslint-disable-next-line @eslint-react/hooks-extra/no-direct-set-state-in-use-effect
@@ -65,14 +51,9 @@ const SettingClash = ({ onError }: Props) => {
     }
   }, [verge?.enable_dns_settings]);
 
-  const webRef = useRef<DialogRef>(null);
   const portRef = useRef<DialogRef>(null);
-  const ctrlRef = useRef<DialogRef>(null);
-  const coreRef = useRef<DialogRef>(null);
   const networkRef = useRef<DialogRef>(null);
   const dnsRef = useRef<DialogRef>(null);
-  const corsRef = useRef<DialogRef>(null);
-  const tunnelRef = useRef<DialogRef>(null);
 
   const onSwitchFormat = (_e: any, value: boolean) => value;
   const onChangeData = (patch: Partial<IConfigData>) => {
@@ -98,7 +79,6 @@ const SettingClash = ({ onError }: Props) => {
     }
   };
 
-  // 实现DNS设置开关处理函数
   const handleDnsToggle = useLockFn(async (enable: boolean) => {
     try {
       setDnsSettingsEnabled(enable);
@@ -119,14 +99,10 @@ const SettingClash = ({ onError }: Props) => {
 
   return (
     <SettingList title={t("settings.sections.clash.title")}>
-      <WebUIViewer ref={webRef} />
       <ClashPortViewer ref={portRef} />
-      <ControllerViewer ref={ctrlRef} />
-      <ClashCoreViewer ref={coreRef} />
       <NetworkInterfaceViewer ref={networkRef} />
       <DnsViewer ref={dnsRef} />
-      <HeaderConfiguration ref={corsRef} />
-      <TunnelsViewer ref={tunnelRef} />
+
       <SettingItem
         label={t("settings.sections.clash.form.fields.allowLan")}
         extra={
@@ -202,45 +178,6 @@ const SettingClash = ({ onError }: Props) => {
         </GuardState>
       </SettingItem>
 
-      <SettingItem
-        label={t("settings.sections.clash.form.fields.logLevel")}
-        extra={
-          <TooltipIcon
-            title={t("settings.sections.clash.form.tooltips.logLevel")}
-            sx={{ opacity: "0.7" }}
-          />
-        }
-      >
-        <GuardState
-          value={logLevel === "warn" ? "warning" : (logLevel ?? "info")}
-          onCatch={onError}
-          onFormat={(e: any) => e.target.value}
-          onChange={(e) => onChangeData({ "log-level": e })}
-          onGuard={(e) => {
-            setClashLog((pre: any) => ({ ...pre, logLevel: e }));
-            return patchClash({ "log-level": e });
-          }}
-        >
-          <Select size="small" sx={{ width: 100, "> div": { py: "7.5px" } }}>
-            <MenuItem value="debug">
-              {t("settings.sections.clash.form.options.logLevel.debug")}
-            </MenuItem>
-            <MenuItem value="info">
-              {t("settings.sections.clash.form.options.logLevel.info")}
-            </MenuItem>
-            <MenuItem value="warning">
-              {t("settings.sections.clash.form.options.logLevel.warning")}
-            </MenuItem>
-            <MenuItem value="error">
-              {t("settings.sections.clash.form.options.logLevel.error")}
-            </MenuItem>
-            <MenuItem value="silent">
-              {t("settings.sections.clash.form.options.logLevel.silent")}
-            </MenuItem>
-          </Select>
-        </GuardState>
-      </SettingItem>
-
       <SettingItem label={t("settings.sections.clash.form.fields.portConfig")}>
         <TextField
           autoComplete="new-password"
@@ -254,53 +191,6 @@ const SettingClash = ({ onError }: Props) => {
           }}
         />
       </SettingItem>
-
-      <SettingItem
-        label={t("settings.sections.clash.form.fields.external")}
-        extra={
-          <TooltipIcon
-            title={t("settings.sections.externalCors.tooltips.open")}
-            icon={SettingsRounded}
-            onClick={(e) => {
-              e.stopPropagation();
-              corsRef.current?.open();
-            }}
-          />
-        }
-        onClick={() => {
-          ctrlRef.current?.open();
-        }}
-      />
-
-      <SettingItem
-        onClick={() => webRef.current?.open()}
-        label={t("settings.sections.clash.form.fields.webUI")}
-      />
-
-      <SettingItem
-        label={t("settings.sections.clash.form.fields.clashCore")}
-        extra={
-          <TooltipIcon
-            icon={SettingsRounded}
-            onClick={() => coreRef.current?.open()}
-          />
-        }
-      >
-        <Typography sx={{ py: "7px", pr: 1 }}>{version}</Typography>
-      </SettingItem>
-
-      {isWIN && (
-        <SettingItem
-          onClick={invoke_uwp_tool}
-          label={t("settings.sections.clash.form.fields.openUwpTool")}
-          extra={
-            <TooltipIcon
-              title={t("settings.sections.clash.form.tooltips.openUwpTool")}
-              sx={{ opacity: "0.7" }}
-            />
-          }
-        />
-      )}
 
       <SettingItem
         onClick={onUpdateGeo}
@@ -341,9 +231,27 @@ const SettingClash = ({ onError }: Props) => {
       </SettingItem>
 
       <SettingItem
-        label={t("settings.sections.clash.form.fields.tunnels.title")}
-        onClick={() => tunnelRef.current?.open()}
-      />
+        label={t("settings.modals.misc.fields.autoCloseConnections")}
+        extra={
+          <TooltipIcon
+            title={t("settings.modals.misc.tooltips.autoCloseConnections")}
+            sx={{ opacity: "0.7" }}
+          />
+        }
+      >
+        <Switch
+          edge="end"
+          checked={verge?.auto_close_connection ?? true}
+          onChange={(_, c) => {
+            mutateVerge((v) => ({ ...v!, auto_close_connection: c }), false);
+            patchVerge({ auto_close_connection: c }).catch(() => mutateVerge());
+          }}
+        />
+      </SettingItem>
+
+      <SettingItem label={t("settings.sections.clash.form.fields.clashCore")}>
+        <Typography sx={{ py: "7px", pr: 1 }}>{version}</Typography>
+      </SettingItem>
     </SettingList>
   );
 };

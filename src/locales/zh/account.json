@@ -80,6 +80,8 @@
       "noExpiry": "永久有效",
       "uuid": "UUID",
       "subscribeUrl": "订阅链接",
+      "renewNow": "立即续费（剩余 {{days}} 天）",
+      "renewNowExpired": "已过期 — 立即续费",
       "syncNow": "立即同步",
       "syncing": "同步中…",
       "syncSuccess": "订阅已同步",
