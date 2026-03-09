@@ -6,7 +6,7 @@
 </h1>
 
 <h3 align="center">
-A high-performance proxy client built with <a href="https://github.com/tauri-apps/tauri">Tauri 2</a> and powered by <a href="https://github.com/MetaCubeX/mihomo">mihomo</a>, with native <a href="https://github.com/cedar2025/Xboard">XBoard</a> panel integration.
+A proxy client for AI & streaming, built with <a href="https://github.com/tauri-apps/tauri">Tauri 2</a> and powered by <a href="https://github.com/MetaCubeX/mihomo">mihomo</a>.
 </h3>
 
 <p align="center">
@@ -22,19 +22,20 @@ A high-performance proxy client built with <a href="https://github.com/tauri-app
 
 ## Features
 
-- **Rust + Tauri 2** — native performance, low memory footprint, small binary size
-- **mihomo (Clash.Meta) core** with Alpha version switching support
-- **XBoard panel integration** — login, register, plan purchase, order management, and announcements without leaving the app
-- **One-click subscription sync** — automatically imports subscriptions after purchase
-- **Modern UI** — sidebar navigation, dark/light themes, custom CSS injection, responsive proxy grid
-- **Profile management** — merge, JavaScript scripting, chain enhancement
-- **Network modes** — system proxy guard, TUN virtual NIC, rule/global/direct switching
-- **WebDAV backup** — sync configurations across devices
+- **iOS 26 Liquid Glass UI** — translucent glass cards, blur effects, Apple system colors, dark/light themes
+- **VPN Dashboard** — one-tap connect, real-time speed stats, connection timer, speed test
+- **XBoard Panel** — login, register, browse plans, purchase, manage orders, and read announcements — all in-app
+- **One-click Subscription Sync** — automatically imports proxy configs after login or purchase
+- **Proxy Management** — rule/global/direct modes, group selection, latency testing, auto-fit card grid
+- **TUN & System Proxy** — TUN virtual NIC mode, system proxy toggle with auto-launch
+- **Profile Enhancement** — merge profiles, JavaScript scripting, chain sequencing
+- **WebDAV Backup** — sync configurations across devices
 - **Cross-platform** — Windows, macOS, and Linux
+- **Rust + Tauri 2** — native performance, low memory, small binary
 
 ## Download
 
-Download the latest installer from the [Releases](https://github.com/onesyue/clash-verge-rev/releases) page.
+Grab the latest installer from [Releases](https://github.com/onesyue/clash-verge-rev/releases).
 
 | Platform              | File                            |
 | :-------------------- | :------------------------------ |
@@ -45,44 +46,38 @@ Download the latest installer from the [Releases](https://github.com/onesyue/cla
 | Linux (deb)           | `YueTong_x.x.x_amd64.deb`       |
 | Linux (AppImage)      | `YueTong_x.x.x_amd64.AppImage`  |
 
-## XBoard Panel Integration
+## Pages
 
-YueTong includes a built-in XBoard panel client — no browser needed:
-
-1. **Account** — Sign in or register directly from the Account page
-2. **Plans** — Browse available plans, select billing cycle, apply coupon codes
-3. **Payment** — Choose a payment method and complete checkout in-app
-4. **Subscription Sync** — After purchase, tap "Sync Now" to import the subscription into your proxy configuration
-5. **Orders** — View order history, retry pending payments, cancel orders
-6. **Notices** — Real-time provider announcements with unread badge
+| Page     | Description                                                             |
+| :------- | :---------------------------------------------------------------------- |
+| Home     | VPN dashboard — connect button, speed cards, proxy info, expiry warning |
+| Proxies  | Node list with group selector, latency test, sorting                    |
+| Shop     | Browse plans, apply coupons, checkout with multiple payment methods     |
+| Account  | Login / register / forgot password, user info, traffic usage            |
+| Orders   | Order history, retry pending payments, cancel orders                    |
+| Notices  | Provider announcements with unread badges                               |
+| Settings | System proxy, TUN, DNS, theme, port config, backup, updates             |
 
 ## Development
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Download mihomo core binary
-pnpm run prebuild
-
-# Start development server
-pnpm dev
-
-# Production build
-pnpm build
+pnpm install            # Install dependencies
+pnpm run prebuild       # Download mihomo core binary
+pnpm dev                # Start dev server (Tauri + Vite)
+pnpm build              # Production build
 ```
 
-For more details, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
 ## Tech Stack
 
-| Layer      | Technology                                       |
-| :--------- | :----------------------------------------------- |
-| Frontend   | React 19, TypeScript, MUI v7, Vite               |
-| Backend    | Rust, Tauri 2                                    |
-| Proxy Core | mihomo (Clash.Meta)                              |
-| State      | SWR, Jotai                                       |
-| i18n       | react-i18next (English, Chinese, + 10 languages) |
+| Layer      | Technology                         |
+| :--------- | :--------------------------------- |
+| Frontend   | React 19, TypeScript, MUI v7, Vite |
+| Backend    | Rust, Tauri 2                      |
+| Proxy Core | mihomo (Clash.Meta)                |
+| State      | SWR, Zustand                       |
+| i18n       | react-i18next (English, Chinese)   |
 
 ## License
 
@@ -90,4 +85,4 @@ For more details, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
-> Based on [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev). Thanks to the upstream project and all contributors.
+> Based on [clash-verge-rev](https://github.com/clash-verge-rev/clash-verge-rev).
