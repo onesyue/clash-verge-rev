@@ -76,7 +76,7 @@ export function OnboardingOverlay() {
               width: 64,
               height: 64,
               borderRadius: "16px",
-              background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+              bgcolor: "primary.main",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

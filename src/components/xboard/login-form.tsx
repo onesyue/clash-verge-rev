@@ -94,14 +94,12 @@ const primaryBtnSx = {
   fontWeight: 600,
   fontSize: "15px",
   py: 1.5,
-  background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-  boxShadow: "0 4px 16px rgba(99, 102, 241, 0.3)",
+  bgcolor: "primary.main",
   "&:hover": {
-    background: "linear-gradient(135deg, #5558E6, #7C4FE8)",
-    boxShadow: "0 6px 20px rgba(99, 102, 241, 0.4)",
+    bgcolor: "primary.dark",
   },
   "&.Mui-disabled": {
-    background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+    bgcolor: "primary.main",
     opacity: 0.5,
   },
 } as const;
@@ -759,12 +757,11 @@ export function LoginForm({ onSuccess }: Props) {
             width: 56,
             height: 56,
             borderRadius: "16px",
-            background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+            bgcolor: "primary.main",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             mb: 2,
-            boxShadow: "0 8px 32px rgba(99, 102, 241, 0.3)",
           }}
         >
           <Typography

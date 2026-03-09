@@ -261,7 +261,7 @@ const Layout = () => {
                       width: 28,
                       height: 28,
                       borderRadius: "8px",
-                      background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                      bgcolor: "primary.main",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -285,7 +285,7 @@ const Layout = () => {
                       color: palette.text.primary,
                       background:
                         palette.mode === "dark"
-                          ? "linear-gradient(135deg, #6366F1, #8B5CF6)"
+                          ? `linear-gradient(135deg, ${palette.primary.main}, ${palette.secondary.main})`
                           : "none",
                       WebkitBackgroundClip:
                         palette.mode === "dark" ? "text" : "unset",

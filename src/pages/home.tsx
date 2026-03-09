@@ -67,13 +67,11 @@ function calcTrafficPct(used: number, total: number): number {
   return Math.min((used / total) * 100, 100);
 }
 
-const BRAND_GRADIENT = "linear-gradient(135deg, #6366F1, #8B5CF6)";
-
 const avatarBoxSx = {
   width: 44,
   height: 44,
   borderRadius: "12px",
-  background: BRAND_GRADIENT,
+  bgcolor: "primary.main",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -196,7 +194,7 @@ function AccountBar() {
                         ? theme.palette.error.main
                         : pct >= 80
                           ? theme.palette.warning.main
-                          : "linear-gradient(90deg, #6366F1, #8B5CF6)",
+                          : theme.palette.primary.main,
                   },
                 }}
               />
@@ -233,7 +231,7 @@ function ConnectButton({
     animKeyRef.current += 1;
   }
 
-  const activeGradient = BRAND_GRADIENT;
+  const activeColor = theme.palette.primary.main;
   const inactiveColor = theme.palette.text.disabled;
 
   return (
@@ -257,7 +255,7 @@ function ConnectButton({
             width: 160,
             height: 160,
             borderRadius: "50%",
-            background: connected ? activeGradient : inactiveColor,
+            background: connected ? activeColor : inactiveColor,
             opacity: 0.1,
             pointerEvents: "none",
             transition: "all 0.4s",
@@ -277,7 +275,7 @@ function ConnectButton({
             width: 130,
             height: 130,
             borderRadius: "50%",
-            background: connected ? activeGradient : inactiveColor,
+            background: connected ? activeColor : inactiveColor,
             opacity: 0.18,
             pointerEvents: "none",
             transition: "all 0.4s",
@@ -293,13 +291,13 @@ function ConnectButton({
             width: 100,
             height: 100,
             borderRadius: "50%",
-            background: connected ? activeGradient : inactiveColor,
+            background: connected ? activeColor : inactiveColor,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: connecting ? "default" : "pointer",
             boxShadow: connected
-              ? "0 8px 32px rgba(99, 102, 241, 0.4)"
+              ? `0 8px 32px ${alpha(activeColor, 0.4)}`
               : "none",
             transition: "all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
             animation:
@@ -369,6 +367,7 @@ function ConnectButton({
 
 function SpeedCard() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const {
     response: { data: traffic },
   } = useTrafficData();
@@ -392,13 +391,15 @@ function SpeedCard() {
               width: 28,
               height: 28,
               borderRadius: "8px",
-              bgcolor: alpha("#6366F1", 0.12),
+              bgcolor: alpha(theme.palette.primary.main, 0.12),
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <ArrowDownwardRounded sx={{ fontSize: 16, color: "#6366F1" }} />
+            <ArrowDownwardRounded
+              sx={{ fontSize: 16, color: "primary.main" }}
+            />
           </Box>
           <Typography variant="caption" color="text.secondary">
             {t("home.components.speedCard.download")}
@@ -432,13 +433,15 @@ function SpeedCard() {
               width: 28,
               height: 28,
               borderRadius: "8px",
-              bgcolor: alpha("#8B5CF6", 0.12),
+              bgcolor: alpha(theme.palette.secondary.main, 0.12),
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <ArrowUpwardRounded sx={{ fontSize: 16, color: "#8B5CF6" }} />
+            <ArrowUpwardRounded
+              sx={{ fontSize: 16, color: "secondary.main" }}
+            />
           </Box>
           <Typography variant="caption" color="text.secondary">
             {t("home.components.speedCard.upload")}

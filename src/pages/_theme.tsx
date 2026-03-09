@@ -5,13 +5,13 @@ const baseFontFamily = `Inter, -apple-system, BlinkMacSystemFont, "Microsoft YaH
   OS === "windows" ? ", twemoji mozilla" : ""
 }`;
 
-// default theme setting (light) — iOS 26 Liquid Glass inspired
+// default theme setting (light) — iOS 26 Apple System Colors
 export const defaultTheme = {
-  primary_color: "#6366F1",
-  secondary_color: "#8B5CF6",
+  primary_color: "#007AFF",
+  secondary_color: "#5856D6",
   primary_text: "#1C1C1E",
   secondary_text: "#8E8E93",
-  info_color: "#5856D6",
+  info_color: "#5AC8FA",
   error_color: "#FF3B30",
   warning_color: "#FF9500",
   success_color: "#34C759",
@@ -19,16 +19,16 @@ export const defaultTheme = {
   font_family: baseFontFamily,
 };
 
-// dark mode — iOS 26 dark glass
+// dark mode — iOS 26 dark
 export const defaultDarkTheme = {
   ...defaultTheme,
-  primary_color: "#7B7FFF",
-  secondary_color: "#A78BFA",
+  primary_color: "#0A84FF",
+  secondary_color: "#5E5CE6",
   primary_text: "#F5F5F7",
   background_color: "#000000",
   secondary_text: "#98989D",
-  info_color: "#7B7FFF",
+  info_color: "#64D2FF",
   error_color: "#FF453A",
-  warning_color: "#FFD60A",
+  warning_color: "#FF9F0A",
   success_color: "#30D158",
 };
