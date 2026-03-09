@@ -153,7 +153,7 @@
   "components": {
     "verge": {
       "basic": {
-        "title": "YueTong Basic Settings",
+        "title": "Basic Settings",
         "actions": {
           "browse": "Browse"
         },
@@ -176,7 +176,7 @@
         }
       },
       "advanced": {
-        "title": "YueTong Advanced Settings",
+        "title": "Advanced Settings",
         "tooltips": {
           "backupInfo": "Support local or WebDAV backup of configuration files",
           "openConfDir": "If the software runs abnormally, BACKUP and delete all files in this folder then restart the software",
@@ -200,7 +200,7 @@
           "liteModeSettings": "LightWeight Mode Settings",
           "exit": "Exit",
           "exportDiagnostics": "Export Diagnostic Info",
-          "vergeVersion": "YueTong Version"
+          "vergeVersion": "Version"
         }
       },
       "theme": {

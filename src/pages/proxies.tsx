@@ -1,4 +1,4 @@
-import { Box, Tab, Tabs } from "@mui/material";
+import { alpha, Box, ButtonBase, Typography } from "@mui/material";
 import { useLockFn } from "ahooks";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,6 +40,61 @@ const ProxyPage = () => {
     }
   }, [normalizedMode, onChangeMode]);
 
+  // iOS-style segmented control in the header
+  const modeSelector = useMemo(
+    () => (
+      <Box
+        sx={({ palette }) => ({
+          display: "flex",
+          borderRadius: "10px",
+          p: "2px",
+          bgcolor: alpha(
+            palette.text.primary,
+            palette.mode === "dark" ? 0.08 : 0.06,
+          ),
+          gap: "2px",
+        })}
+      >
+        {modeList.map((mode) => {
+          const active = (curMode ?? "rule") === mode;
+          return (
+            <ButtonBase
+              key={mode}
+              onClick={() => onChangeMode(mode)}
+              sx={({ palette }) => ({
+                px: 1.25,
+                py: 0.5,
+                borderRadius: "8px",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                bgcolor: active
+                  ? palette.mode === "dark"
+                    ? alpha(palette.background.paper, 0.8)
+                    : "background.paper"
+                  : "transparent",
+                boxShadow: active
+                  ? "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)"
+                  : "none",
+              })}
+            >
+              <Typography
+                sx={({ palette }) => ({
+                  fontSize: "12px",
+                  fontWeight: active ? 600 : 400,
+                  lineHeight: 1,
+                  color: active ? palette.text.primary : palette.text.secondary,
+                  whiteSpace: "nowrap",
+                })}
+              >
+                {t(`proxies.page.modes.${mode}`)}
+              </Typography>
+            </ButtonBase>
+          );
+        })}
+      </Box>
+    ),
+    [modeList, curMode, onChangeMode, t],
+  );
+
   return (
     <BasePage
       full
@@ -49,46 +104,13 @@ const ProxyPage = () => {
         flexDirection: "column",
       }}
       title={t("proxies.page.title.default")}
-      header={<ProviderButton />}
+      header={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {modeSelector}
+          <ProviderButton />
+        </Box>
+      }
     >
-      {/* 模式分段控件（对齐安卓，无下划线横线） */}
-      <Box sx={{ px: 1.5, pt: 1, pb: 0.5, flexShrink: 0 }}>
-        <Tabs
-          value={curMode ?? "rule"}
-          onChange={(_, v) => onChangeMode(v as Mode)}
-          variant="fullWidth"
-          TabIndicatorProps={{ style: { display: "none" } }}
-          sx={{
-            minHeight: 36,
-            borderRadius: 2,
-            bgcolor: "action.hover",
-            p: 0.5,
-            "& .MuiTab-root": {
-              minHeight: 28,
-              fontSize: 13,
-              fontWeight: 500,
-              borderRadius: 1.5,
-              py: 0.5,
-              transition: "all 0.2s",
-              color: "text.secondary",
-            },
-            "& .Mui-selected": {
-              color: "primary.main",
-              bgcolor: "background.paper",
-              boxShadow: 1,
-            },
-          }}
-        >
-          {modeList.map((mode) => (
-            <Tab
-              key={mode}
-              label={t(`proxies.page.modes.${mode}`)}
-              value={mode}
-            />
-          ))}
-        </Tabs>
-      </Box>
-
       {/* 代理分组列表 */}
       <Box sx={{ flex: 1, overflow: "hidden" }}>
         <ProxyGroups

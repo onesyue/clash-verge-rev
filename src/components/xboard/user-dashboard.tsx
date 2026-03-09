@@ -193,11 +193,14 @@ function ProfileHeader({
 
   return (
     <Paper
-      elevation={4}
+      elevation={0}
       sx={{
-        borderRadius: 2,
+        borderRadius: "var(--glass-radius)",
         p: 2,
-        bgcolor: "background.paper",
+        background: "var(--glass-bg)",
+        backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        border: "0.5px solid var(--glass-border)",
         position: "relative",
       }}
     >
@@ -389,8 +392,15 @@ function SubscriptionCard({
 
   return (
     <Paper
-      elevation={4}
-      sx={{ borderRadius: 2, p: 2, bgcolor: "background.paper" }}
+      elevation={0}
+      sx={{
+        borderRadius: "var(--glass-radius)",
+        p: 2,
+        background: "var(--glass-bg)",
+        backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        border: "0.5px solid var(--glass-border)",
+      }}
     >
       {/* 套餐名 */}
       <Row
@@ -502,7 +512,7 @@ function SubscriptionCard({
   );
 }
 
-// ─── 余额卡（对齐安卓两列横排）────────────────────────────────────────────────
+// ─── 余额卡（紧凑横排，iOS 风格）──────────────────────────────────────────────
 
 function BalanceCard({
   userInfo,
@@ -512,12 +522,20 @@ function BalanceCard({
   loading: boolean;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const unit = t("account.dashboard.wallet.unit");
 
   return (
     <Paper
-      elevation={4}
-      sx={{ borderRadius: 2, bgcolor: "background.paper", overflow: "hidden" }}
+      elevation={0}
+      sx={{
+        borderRadius: "var(--glass-radius)",
+        background: "var(--glass-bg)",
+        backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        border: "0.5px solid var(--glass-border)",
+        overflow: "hidden",
+      }}
     >
       <Box sx={{ display: "flex" }}>
         {/* 余额 */}
@@ -525,25 +543,30 @@ function BalanceCard({
           sx={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            py: 2.25,
-            px: 1,
+            justifyContent: "center",
+            gap: 1,
+            py: 1.5,
+            px: 1.5,
           }}
         >
           <Typography
             variant="caption"
-            sx={{ color: "text.secondary", fontSize: "11px" }}
+            sx={{ color: "text.secondary", fontSize: "12px", flexShrink: 0 }}
           >
             {t("account.dashboard.wallet.balance")}
           </Typography>
           {loading ? (
-            <Skeleton width={60} height={28} />
+            <Skeleton width={50} height={20} />
           ) : (
             <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{ color: "text.primary", mt: 0.5 }}
+              variant="body1"
+              fontWeight={700}
+              sx={{
+                color: "text.primary",
+                fontSize: "15px",
+                fontVariantNumeric: "tabular-nums",
+              }}
             >
               {formatBalance(userInfo?.balance ?? 0, unit)}
             </Typography>
@@ -552,7 +575,12 @@ function BalanceCard({
 
         {/* 分隔线 */}
         <Box
-          sx={{ width: 1, bgcolor: "divider", alignSelf: "center", height: 40 }}
+          sx={{
+            width: "0.5px",
+            bgcolor: alpha(theme.palette.divider, 0.5),
+            alignSelf: "center",
+            height: 24,
+          }}
         />
 
         {/* 返利余额 */}
@@ -560,25 +588,30 @@ function BalanceCard({
           sx={{
             flex: 1,
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            py: 2.25,
-            px: 1,
+            justifyContent: "center",
+            gap: 1,
+            py: 1.5,
+            px: 1.5,
           }}
         >
           <Typography
             variant="caption"
-            sx={{ color: "text.secondary", fontSize: "11px" }}
+            sx={{ color: "text.secondary", fontSize: "12px", flexShrink: 0 }}
           >
             {t("account.dashboard.wallet.commission")}
           </Typography>
           {loading ? (
-            <Skeleton width={60} height={28} />
+            <Skeleton width={50} height={20} />
           ) : (
             <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{ color: "text.primary", mt: 0.5 }}
+              variant="body1"
+              fontWeight={700}
+              sx={{
+                color: "text.primary",
+                fontSize: "15px",
+                fontVariantNumeric: "tabular-nums",
+              }}
             >
               {formatBalance(userInfo?.commissionBalance ?? 0, unit)}
             </Typography>
@@ -616,8 +649,15 @@ function InviteCard({
 
   return (
     <Paper
-      elevation={4}
-      sx={{ borderRadius: 2, p: 2, bgcolor: "background.paper" }}
+      elevation={0}
+      sx={{
+        borderRadius: "var(--glass-radius)",
+        p: 2,
+        background: "var(--glass-bg)",
+        backdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        WebkitBackdropFilter: "saturate(180%) blur(var(--glass-blur))",
+        border: "0.5px solid var(--glass-border)",
+      }}
     >
       {/* 标题行 + 邀请人数 */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>

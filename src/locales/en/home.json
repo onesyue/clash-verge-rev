@@ -26,7 +26,7 @@
         "traffic": "Traffic Stats Card",
         "tests": "Website Tests Card",
         "ip": "IP Information Card",
-        "clashInfo": "Yuetong Info Cards",
+        "clashInfo": "Info Cards",
         "systemInfo": "System Info Cards"
       },
       "title": "Home Settings"
@@ -48,7 +48,7 @@
       }
     },
     "clashInfo": {
-      "title": "Yuetong Info",
+      "title": "App Info",
       "fields": {
         "coreVersion": "Core Version",
         "systemProxyAddress": "System Proxy Address",
@@ -64,7 +64,7 @@
         "autoLaunch": "Auto Launch",
         "runningMode": "Running Mode",
         "lastCheckUpdate": "Last Check Update",
-        "vergeVersion": "Yuetong Version"
+        "vergeVersion": "Version"
       },
       "actions": {
         "settings": "Settings"
