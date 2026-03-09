@@ -17,7 +17,7 @@
     "copyright": "GNU General Public License v3.0",
     "category": "Utility",
     "shortDescription": "Proxy client with XBoard panel integration",
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": false
   },
   "build": {
     "beforeBuildCommand": "pnpm run web:build",
